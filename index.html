@@ -166,8 +166,9 @@
                 </div>
 
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
-                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Scan to Pay via GCash/Instapay</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
                     <img src="https://placehold.co/200x200?text=YOUR+QR+HERE" class="w-40 h-40 mx-auto rounded-lg">
+                    <p class="text-[10px] font-black text-slate-400 uppercase mb-3">Orders amounting to ₱50,000 and above may settle via Private Message</p>
                 </div>
             </div>
 
@@ -257,7 +258,7 @@
                     summary += `STATUS: Payment Pending`;
                     
                     await navigator.clipboard.writeText(summary);
-                    alert("Order details copied! Redirecting to Messenger...");
+                    alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
                     window.open("https://m.me/cratedropcollective", "_blank");
                 }
             }
