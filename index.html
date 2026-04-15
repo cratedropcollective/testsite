@@ -205,7 +205,7 @@
 
                 <div class="text-center mb-4">
                     <h3 class="text-sm font-black text-slate-800 uppercase mb-1">Scan to Pay</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via GCash or Maya. <strong class="text-slate-800">Take a screenshot</strong> of this screen and your payment receipt.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt. (for payments exceeding ₱50,000, you may message our page privately.)</p>
                     
                     <div class="bg-white border-2 border-dashed border-gray-300 rounded-xl p-4 inline-block mx-auto relative group">
                         
@@ -218,7 +218,7 @@
                 <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase flex items-center justify-center mb-2">
                     <i class="fab fa-facebook-messenger mr-2 text-lg"></i> Send Proof to Messenger
                 </button>
-                <p class="text-center text-[10px] text-gray-400 font-medium">This will copy your order details so you can paste them in our chat.</p>
+                <strong class="text-center text-[10px] text-slate-400 font-medium">This will copy your order details so you can paste them in our chat.</p>
             </div>
             
         </div>
@@ -316,7 +316,7 @@
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Order details copied! Paste them in our chat along with your payment screenshot.");
+                        alert("Order Details Copied! [Paste them in our chat] or Send a Screenshot of this page and Proof of Payment.");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");
