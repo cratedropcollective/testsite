@@ -264,8 +264,9 @@
                     summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
                     summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
                     summary += `STATUS: Payment Pending`;
+                    {
                     summary += `Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.`;
-                    
+                    },
                     await navigator.clipboard.writeText(summary);
                     alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
                     window.open("https://m.me/cratedropcollective", "_blank");
