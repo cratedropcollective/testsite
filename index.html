@@ -205,12 +205,11 @@
 
                 <div class="text-center mb-4">
                     <h3 class="text-sm font-black text-slate-800 uppercase mb-1">Scan to Pay</h3>
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt. (for payments exceeding ₱50,000, you may message our page privately.)</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt. (For payments exceeding ₱50,000, please message us privately.)</p>
                     
                     <div class="bg-white border-2 border-dashed border-gray-300 rounded-xl p-4 inline-block mx-auto relative group">
-                        
                         <img src="https://placehold.co/200x200?text=Drop+QR+Here" alt="Payment QR Code" class="w-48 h-48 object-contain mx-auto group-hover:opacity-90 transition-opacity">
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -228,7 +227,7 @@
         function shop() {
             return {
                 cartOpen: false,
-                paymentModalOpen: false, // Controls the new payment pop-up
+                paymentModalOpen: false,
                 searchQuery: '',
                 cart: [],
                 products: [
@@ -298,8 +297,8 @@
                 },
                 checkout() {
                     if(this.cart.length === 0) return;
-                    this.cartOpen = false; // Close the cart
-                    this.paymentModalOpen = true; // Open the payment modal
+                    this.cartOpen = false;
+                    this.paymentModalOpen = true;
                 },
                 async confirmAndRedirect() {
                     let orderSummary = "🛒 PREORDER FROM CRATE DROP COLLECTIVE\n";
@@ -316,7 +315,7 @@
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Send us the [Screenshot of this page] along with the [Proof of Payment]" "(Your Order Details are also Copied on your clipboard, you may choose to paste them in our chat for manual assisted checkouts)");
+                        alert("Order Details Copied to Clipboard!\n\nPlease send us the [Screenshot of the payment summary] along with your [Proof of Payment] in our Messenger chat.");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");
