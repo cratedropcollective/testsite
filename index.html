@@ -246,37 +246,41 @@
                 paymentModalOpen: false,
                 searchQuery: '',
                 sortOrder: 'newest',
-                currentCategory: 'All',
+                currentCategory: 'All Products',
                 categories: ['All Products', 'On Sale', 'Gunpla Kits', 'Pokemon TCG', 'One Piece TCG', 'Gundam TCG', 'Lorcana TCG', 'Magic The Gathering', 'Weiss Schwarz TCG', 'Dragonball TCG', 'Product Accessory'],
                 cart: [],
                 products: PRODUCT_INVENTORY.map(p => ({ ...p, selectedQty: 1, justAdded: false })),
 
                 get filteredProducts() {
-                    let filtered = this.products.filter(p => {
-                        const matchesSearch = p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                        const matchesCat = this.currentCategory === 'All' || p.category === this.currentCategory;
-                        return matchesSearch && matchesCat;
-                    });
+    return this.products.filter(p => {
+        // 1. Search Logic
+        const matchesSearch = p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+        
+        // 2. Category Logic
+        let matchesCat = false;
+        if (this.currentCategory === 'All Products') {
+            matchesCat = true;
+        } else if (this.currentCategory === 'On Sale') {
+            matchesCat = !!p.originalPrice; // Only shows items with a discount
+        } else {
+            matchesCat = p.category === this.currentCategory;
+        }
 
-                    if (this.sortOrder === 'low') filtered.sort((a, b) => a.price - b.price);
-                    if (this.sortOrder === 'high') filtered.sort((a, b) => b.price - a.price);
-                    
-                    // Sold out items always go to the bottom
-                    return filtered.sort((a, b) => a.soldOut - b.soldOut);
-                },
+        return matchesSearch && matchesCat;
+    }).sort((a, b) => {
+        // 3. Sorting Logic
+        if (a.soldOut !== b.soldOut) return a.soldOut - b.soldOut; // Keep Sold Out at bottom
+        if (this.sortOrder === 'low') return a.price - b.price;
+        if (this.sortOrder === 'high') return b.price - a.price;
+        return b.id - a.id; // "Newest" (assuming higher ID is newer)
+    });
+},
 
-                get totalItems() {
-                    return this.cart.reduce((s, i) => s + i.quantity, 0);
-                },
-
-                get cartTotal() {
-                    return this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString();
-                },
-
-                getCategoryCount(cat) {
-                    if (cat === 'All') return this.products.length;
-                    return this.products.filter(p => p.category === cat).length;
-                },
+getCategoryCount(cat) {
+    if (cat === 'All Products') return this.products.length;
+    if (cat === 'On Sale') return this.products.filter(p => p.originalPrice).length;
+    return this.products.filter(p => p.category === cat).length;
+},
 
                 addToCart(product) {
                     const existing = this.cart.find(i => i.id === product.id);
