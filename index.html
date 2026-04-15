@@ -199,9 +199,9 @@
                 </div>
 
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay/GCash. <strong class="text-slate-800">SCREENSHOT</strong> this screen and your payment receipt.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
                     <img src="https://placehold.co/200x200?text=YOUR+QR+HERE" class="w-40 h-40 mx-auto rounded-lg">
-                    <p class="text-[11px] text-gray-400 mt-4 px-4 italic">Note: Ensure correct shipping details are provided via Messenger after payment.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Orders amounting to <strong class="text-slate-800">₱50,000</strong> and above may settle via <strong class="text-slate-800">Private Message</strong>.</p>
                 </div>
             </div>
 
@@ -213,11 +213,32 @@
 
     <script>
         const PRODUCT_INVENTORY = [
-            { id: 1, name: "Pokémon: Phantasmal Flames Booster Box", category: "Pokémon", type: "Sealed Box", set: "SV09", price: 15500, originalPrice: 17000, image: "https://placehold.co/400x400?text=Phantasmal+Flames", soldOut: false },
-            { id: 2, name: "Gundam TCG: GD05 Freedom Ascension Case", category: "Gundam", type: "Sealed Case", set: "GD05", price: 85000, image: "https://placehold.co/400x400?text=GD05+Case", soldOut: false },
-            { id: 3, name: "One Piece: Pillars of Strength Booster Box", category: "One Piece", type: "Sealed Box", set: "OP-03", price: 4800, image: "https://placehold.co/400x400?text=OP-03", soldOut: true },
-            // Add more products here...
-        ];
+            { id: 1, name: "Phantasmal Flames Booster Box", category: "Pokemon TCG", type: "Booster Box", set: "Phantasmal Flames", price: 24800, image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 2, name: "Phantasmal Flames Elite Trainer Box", category: "Pokemon TCG", type: "ETB", set: "Phantasmal Flames", price: 6500, image: "https://tcgplayer-cdn.tcgplayer.com/product/654136_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 3, name: "Prismatic Evolutions Booster Bundle", category: "Pokemon TCG", type: "Booster Bundle", set: "Prismatic Evolutions", price: 4200, image: "https://tcgplayer-cdn.tcgplayer.com/product/600518_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 4, name: "PRE Booster Bundle Display (free Acrylic Case)", category: "Pokemon TCG", type: "Display Case", set: "Prismatic Evolutions", price: 100000, image: "https://tcgplayer-cdn.tcgplayer.com/product/610317_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 5, name: "GCG Newtype Rising [GD-01] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Newtype Rising [GD-01]", price: 34800, image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 6, name: "GCG Dual Impact [GD-02] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Dual Impact [GD-02]", price: 34800, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr8DrGGHzKuKHycM2YMFp8JnBPh3Gb4zmAAueM1bpCVA&s=10", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 7, name: "GCG Steel Requiem [GD-03] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Steel Requiem [GD-03]", price: 34800, image: "https://www.hobbydigi.com/media/catalog/product/cache/image/700x700/e9c3970ab036de70892d86c6d221abfe/_/j/_japanese_ver_bandai_gundam_card_game_card_game_booster_pack_-_gd03-steel_requiem_original_box_of_24_stock_guaranteed__251216023540_1.jpg?src=seo", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 8, name: "Mega Evolution Enhanced Booster Box", category: "Pokemon TCG", type: "Booster Box", set: "Mega Evolution", price: 15000, originalPrice: 16000, image: "https://tcgplayer-cdn.tcgplayer.com/product/644298_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 9, name: "Assorted Pokeball Tin [G25]", category: "Pokemon TCG", type: "Pokeball Tin", set:"DRI/SSP/JTG", price: 1850, originalPrice: 2000, image: "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/poke-ball-tin/poke-ball-tin-169-en.png", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 10, name: "Disney Lorcana Reign of Jafar Booster Box", category: "Lorcana TCG", type: "Booster Box", set: "Reign of Jafar", price: 7000, image: "https://tcgplayer-cdn.tcgplayer.com/product/623064_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 11, name: "Blaziken ex & Volcanion ex Premium Collection", category: "Pokemon TCG", type: "Premium Collection", set: "Misc.", price: 6800, image: "https://tcgplayer-cdn.tcgplayer.com/product/650229_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 12, name: "Cynthia's Garchomp ex Premium Collection", category: "Pokemon TCG", type: "Premium Collection", set: "Misc.", price: 3400, image: "https://tcgplayer-cdn.tcgplayer.com/product/625952_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 13, name: "Azure Lane Vol. 2 Booster Box [English]", category: "Weiss Schwarz TCG", type: "Booster Box", set: "Azure Lane", price: 3360, image: "https://en.ws-tcg.com/wordpress/wp-content/uploads/2025/08/26153914/BP-box_AZL2.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 14, name: "Lillie Premium Tournament Collection Box", category: "Pokemon TCG", type: "Premium Collection", set: "Misc.", price: 3600, image: "https://tcgplayer-cdn.tcgplayer.com/product/626605_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 15, name: "Mega Latias ex Box", category: "Pokemon TCG", type: "Ex Box", set: "Misc.", price: 2200, image: "https://tcgplayer-cdn.tcgplayer.com/product/654188_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 16, name: "Dandadan Booster Box [English]", category: "Weiss Schwarz TCG", type: "Booster Box", set: "Dandadan", price: 3360, image: "https://en.ws-tcg.com/wordpress/wp-content/uploads/2025/08/19101457/BP-box_DDD.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 17, name: "Mega Kangaskhan Ex Box", category: "Pokemon TCG", type: "Ex Box", set: "Misc.", price: 2000, image: "https://tcgplayer-cdn.tcgplayer.com/product/654211_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
+            { id: 18, name: "HG Gundam Naion", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 1899, image: "https://i.ibb.co/Y42cydwJ/image.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 19, name: "HG Union Flag Custom II", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 1099, image: "https://i.ibb.co/QV97mT4/image.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 20, name: "HG Gundam G7", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 1099, image: "https://i.ibb.co/YBG6LBzY/image.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 21, name: "RG Shining Gundam", category: "Gunpla Kits", type: "Real Grade", set: "Bandai Model Kit", price: 2099, image: "https://i.ibb.co/ccSXj15B/RG-Shining-Gundam-box.webp", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 22, name: "Weapon Set for RG Rx78-2 2.0", category: "Gunpla Kits", type: "Real Grade", set: "Premium Bandai", price: 1399, image: "https://i.ibb.co/v6Wwt1GQ/rg-ver-2-rx-78-2-weapon-set-2.webp", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 23, name: "HG Gundam Aerial", category: "Gunpla Kits", type: "High Grade", set: "Bandai Model Kit", price: 1099, image: "https://i.ibb.co/cfBYwyS/image.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 24, name: "HG Gundam Griepe", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 2099, image: "https://i.ibb.co/G4g5PQH2/image.png", selectedQty: 1, justAdded: false, soldOut: false },
+            { id: 25, name: "SD Hi-nu Gundam", category: "Gunpla Kits", type: "SD", set: "Bandai Model Kit", price: 1799, image: "https://inwfile.com/s-dc/vld5ph.jpg", selectedQty: 1, justAdded: false, soldOut: false },
+                ],
 
         function shop() {
             return {
@@ -226,7 +247,7 @@
                 searchQuery: '',
                 sortOrder: 'newest',
                 currentCategory: 'All',
-                categories: ['All', 'Pokémon', 'Gundam', 'One Piece', 'Yu-Gi-Oh!'],
+                categories: ['All Products', 'On Sale', 'Gunpla Kits', 'Pokemon TCG', 'One Piece TCG', 'Gundam TCG', 'Lorcana TCG', 'Magic The Gathering', 'Weiss Schwarz TCG', 'Dragonball TCG', 'Product Accessory'],
                 cart: [],
                 products: PRODUCT_INVENTORY.map(p => ({ ...p, selectedQty: 1, justAdded: false })),
 
