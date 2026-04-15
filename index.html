@@ -218,7 +218,7 @@
                 <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm shadow-lg hover:bg-blue-700 active:scale-95 transition-all uppercase flex items-center justify-center mb-2">
                     <i class="fab fa-facebook-messenger mr-2 text-lg"></i> Send Proof to Messenger
                 </button>
-                <strong class="text-center text-[10px] text-slate-400 font-medium">This will copy your order details so you can paste them in our chat.</p>
+                <p class="text-center text-[10px] text-gray-400 font-medium">This will copy your order details so you can paste them in our chat.</p>
             </div>
             
         </div>
@@ -316,7 +316,7 @@
 
                     try {
                         await navigator.clipboard.writeText(orderSummary);
-                        alert("Order Details Copied! [Paste them in our chat] or Send a Screenshot of this page and Proof of Payment.");
+                        alert("Send us the [Screenshot of this page] along with the [Proof of Payment]" "(Your Order Details are also Copied on your clipboard, you may choose to paste them in our chat for manual assisted checkouts)");
                         window.open("https://m.me/cratedropcollective", "_blank");
                     } catch (err) {
                         window.open("https://m.me/cratedropcollective", "_blank");
