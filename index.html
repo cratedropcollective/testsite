@@ -206,12 +206,17 @@
         </div>
 
         <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto overflow-hidden border border-gray-100" style="width: 800px; min-height: 800px;">
-            <div class="p-10 flex justify-center items-center border-b-2 border-gray-50">
-                <div class="text-center">
-                    <img src="https://www.image2url.com/r2/default/images/1777477876212-b4f15ac6-310e-41e4-9ef9-95b11a125694.png" class="w-40 h-40 mx-auto rounded-lg">
-                    <h1 class="text-5xl font-black text-blue-800 italic tracking-tighter uppercase">Order Confirmation</h1>
-                    <div class="mt-4 inline-block bg-blue-700 text-white px-6 py-1.5 font-black text-sm rounded-sm tracking-widest">
-                        DATE: <span x-text="orderDate"></span>
+            <div class="p-10 border-b-2 border-gray-50">
+    <div class="flex items-center justify-center space-x-6">
+        <img src="https://www.image2url.com/r2/default/images/1777477876212-b4f15ac6-310e-41e4-9ef9-95b11a125694.png" 
+             class="w-32 h-32 object-contain">
+        
+        <div class="text-left">
+            <h1 class="text-5xl font-black text-blue-800 italic tracking-tighter uppercase leading-none">
+                Order <br> Confirmation
+            </h1>
+            <div class="mt-2 inline-block bg-blue-700 text-white px-4 py-1 font-black text-xs rounded-sm tracking-widest uppercase">
+                DATE: <span x-text="orderDate"></span>
                     </div>
                 </div>
             </div>
