@@ -60,7 +60,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Select Sample Product</label>
-                    <select x-model="selectedId" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                    <select x-model="selectedid" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
                         <template x-for="item in samples" :key="item.id">
                             <option :value="item.id" x-text="item.name"></option>
                         </template>
