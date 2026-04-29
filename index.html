@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Sealed Products</title>
+    <title>Crate Drop Collective | Pre-orders</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -17,53 +17,32 @@
 
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity shrink-0">
+            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
                 <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
                 <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
-
+            
             <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
                  <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Preorder</a>
+                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
+                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Preorder</a>
             </div>
-
-            <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative shrink-0">
-                <i class="fas fa-shopping-cart mr-2 text-xs text-white"></i>
-                <span class="font-bold text-xs text-white">₱<span x-text="cartTotal"></span></span>
-                <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black text-white" x-text="totalItems"></span>
-            </button>
+            
+            <div class="flex items-center space-x-4">
+                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
+                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
+                    <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
+                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="totalItems"></span>
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="bg-white border-b border-gray-200 sticky top-[72px] md:top-[68px] z-40">
-        <div class="pt-4 px-4 container mx-auto flex flex-col md:flex-row gap-3">
-            <div class="relative flex-1">
-                <input type="text" x-model="searchQuery" placeholder="Search products..." 
-                       class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-base md:text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
+        <div class="py-4 px-4 container mx-auto">
+            <div class="relative">
+                <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-            </div>
-            <div class="relative min-w-[140px]">
-                <select x-model="sortOrder" 
-                        class="w-full h-full pl-4 pr-10 py-2 bg-gray-100 border-none rounded-xl text-xs font-bold uppercase appearance-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
-                    <option value="newest">Latest</option>
-                    <option value="low">Price: Low to High</option>
-                    <option value="high">Price: High to Low</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-4 top-3 text-gray-400 text-[10px] pointer-events-none"></i>
-            </div>
-        </div>
-
-        <div class="container mx-auto mt-2">
-            <div class="flex overflow-x-auto no-scrollbar px-4 py-3 space-x-2 whitespace-nowrap">
-                <template x-for="cat in categories" :key="cat">
-                    <button @click="currentCategory = cat" 
-                            :class="currentCategory === cat ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all flex items-center">
-                        <span x-text="cat"></span>
-                        <span class="ml-2 opacity-50 text-[9px]" x-text="`(${getCategoryCount(cat)})`"></span>
-                    </button>
-                </template>
             </div>
         </div>
     </div>
@@ -71,58 +50,42 @@
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col"
-                     :class="product.soldOut ? 'opacity-70' : ''">
-                    
-                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4 overflow-hidden"
-                         :class="product.soldOut ? 'grayscale' : ''">
-                        <img :src="product.image" :alt="product.name" 
-                             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 hover:scale-105">
-                        
-                        <span x-show="!product.soldOut" class="absolute top-2 left-2 text-[8px] font-black bg-black/80 text-white px-1.5 py-0.5 rounded uppercase" x-text="product.type"></span>
-                        
-                        <template x-if="product.originalPrice && !product.soldOut">
-                            <span class="absolute top-2 right-2 text-[8px] font-black bg-red-600 text-white px-1.5 py-0.5 rounded uppercase shadow-lg animate-pulse">SALE</span>
-                        </template>
-
-                        <span x-show="product.soldOut" class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-black text-xs">SOLD OUT</span>
+                <div :class="product.soldOut ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
+                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
+                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded shadow-sm uppercase tracking-wider z-10" x-text="product.type"></span>
+                        <img :src="product.image" class="max-h-full max-w-full object-contain">
+                        <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded shadow-sm" x-text="'ETA: ' + product.eta"></span>
                     </div>
                     
                     <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <p class="text-[8px] md:text-[10px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12 overflow-hidden" x-text="product.name"></h2>
+                        <p class="text-[12px] md:text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
+                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
                         
-                        <div class="flex items-baseline space-x-2 mb-3">
-                            <p class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="product.price.toLocaleString()"></span></p>
-                            <template x-if="product.originalPrice">
-                                <p class="text-[10px] md:text-xs text-gray-400 line-through font-bold">₱<span x-text="product.originalPrice.toLocaleString()"></span></p>
-                            </template>
+                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
+                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
+                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
                         </div>
 
-                        <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-3">
-                            <div class="flex items-center border border-gray-300 rounded-lg px-1 h-7 bg-gray-50">
-                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="text-gray-500 px-2 font-bold">-</button>
-                                <span class="text-[10px] md:text-xs font-bold w-4 text-center" x-text="product.selectedQty"></span>
-                                <button @click="product.selectedQty++" class="text-gray-500 px-2 font-bold">+</button>
+                        <div class="space-y-2 mb-4">
+                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDepositx(product).toLocaleString()"></span></div>
+                            <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
+                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 mb-3">
+                            <div class="flex items-center border border-gray-300 rounded-lg h-7 bg-gray-50">
+                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold">-</button>
+                                <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
+                                <button @click="product.selectedQty++" class="px-2 font-bold">+</button>
                             </div>
                         </div>
 
-                        <button @click="addToCart(product)" 
-                                :disabled="product.soldOut"
-                                :class="product.soldOut ? 'bg-gray-300' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')"
-                                class="w-full h-9 rounded-lg text-white transition-all text-[10px] md:text-xs font-bold flex items-center justify-center uppercase mt-auto">
-                            <span x-show="product.soldOut">Out of Stock</span>
-                            <span x-show="!product.soldOut && !product.justAdded">Add to Crate</span>
-                            <span x-show="!product.soldOut && product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
+                        <button @click="addToCart(product)" :disabled="product.soldOut" :class="product.soldOut ? 'bg-gray-400' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
+                            <span x-text="product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate')"></span>
                         </button>
                     </div>
                 </div>
             </template>
-        </div>
-
-        <div x-show="filteredProducts.length === 0" class="text-center py-20 text-gray-400">
-            <i class="fas fa-search mb-4 text-3xl"></i>
-            <p class="text-sm font-bold uppercase tracking-widest">No products found</p>
         </div>
     </main>
 
@@ -139,8 +102,8 @@
                     <div class="flex items-start border-b border-gray-100 pb-4">
                         <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-gray-50 p-1 rounded-lg">
                         <div class="flex-1">
-                            <p class="font-bold text-xs" x-text="item.name"></p>
-                            <p class="text-[9px] text-blue-500 font-bold uppercase mb-2" x-text="item.set"></p>
+                            <p class="font-bold text-xs"><span x-text="item.name"></span> <span class="text-blue-600 text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span></p>
+                            <p class="text-[9px] text-blue-500 font-bold uppercase italic mb-2">ETA: <span x-text="item.eta"></span></p>
                             <div class="flex justify-between items-center">
                                 <div class="flex items-center border rounded h-6 bg-gray-50">
                                     <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
@@ -148,7 +111,8 @@
                                     <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
                                 </div>
                                 <div class="text-right">
-                                    <span class="font-black text-xs">₱<span x-text="(item.price * item.quantity).toLocaleString()"></span></span>
+                                    <span class="text-[10px] text-blue-600 font-bold block">30% DP:</span>
+                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +122,8 @@
 
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
                 <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
-                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase"><span>Total Amount:</span><span>₱<span x-text="cartTotal"></span></span></div>
+                    <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
+                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-2">
@@ -177,7 +142,7 @@
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Order Summary</h2>
+                <h2 class="text-xl font-black text-slate-900 uppercase">Order Breakdown</h2>
                 <button @click="paymentModalOpen = false" class="text-3xl">&times;</button>
             </div>
 
@@ -187,21 +152,34 @@
                         <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
                             <div class="flex justify-between text-xs font-bold">
                                 <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span></span>
-                                <span>₱<span x-text="(item.price * item.quantity).toLocaleString()"></span></span>
+                                <span>₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                            </div>
+                            <div class="flex justify-between text-[9px] font-bold text-blue-500 uppercase mt-1">
+                                <span class="text-blue-600 text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span>
+                                <span>ETA: <span x-text="item.eta"></span></span>
+                                <span>Balance: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
                             </div>
                         </div>
                     </template>
                 </div>
 
-                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-inner text-center">
-                    <div class="text-[10px] font-bold uppercase opacity-80 mb-1">Total Amount Paid</div>
-                    <div class="text-3xl font-black tracking-tighter">₱<span x-text="cartTotal"></span></div>
+                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-inner space-y-1">
+                    <div class="flex justify-between text-[10px] font-bold uppercase opacity-80"><span>Total Downpayment Due (30%)</span></div>
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-2xl font-black tracking-tighter">₱<span x-text="cartDepositTotal"></span></span>
+                        <span class="text-[10px] font-black uppercase">To be paid now</span>
+                    </div>
+                    <div class="pt-2 mt-2 border-t border-white/20 flex justify-between text-[10px] font-bold uppercase">
+                        <span>Balance Remaining Later:</span>
+                        <span>₱<span x-text="cartBalanceTotal"></span></span>
+                    </div>
                 </div>
 
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
-                    <img src="https://i.ibb.co/Kx9JR4dZ/image.png" class="w-40 h-40 mx-auto rounded-lg">
+                    <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Orders amounting to <strong class="text-slate-800">₱50,000</strong> and above may settle via <strong class="text-slate-800">Private Message</strong>.</p>
+                    <p class="text-[11px] text-black-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
 
@@ -212,117 +190,96 @@
     </div>
 
     <script>
-    const PRODUCT_INVENTORY = [
-        { id: 1, name: "Phantasmal Flames Booster Box", category: "Pokemon TCG", type: "Booster Box", set: "Phantasmal Flames", price: 24800, image: "https://tcgplayer-cdn.tcgplayer.com/product/654137_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 2, name: "Phantasmal Flames Elite Trainer Box", category: "Pokemon TCG", type: "ETB", set: "Phantasmal Flames", price: 6500, image: "https://tcgplayer-cdn.tcgplayer.com/product/654136_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
-        { id: 3, name: "Prismatic Evolutions Booster Bundle", category: "Pokemon TCG", type: "Booster Bundle", set: "Prismatic Evolutions", price: 4200, image: "https://tcgplayer-cdn.tcgplayer.com/product/600518_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
-        { id: 4, name: "PRE Booster Bundle Display (free Acrylic Case)", category: "Pokemon TCG", type: "Display Case", set: "Prismatic Evolutions", price: 100000, image: "https://tcgplayer-cdn.tcgplayer.com/product/610317_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 5, name: "GCG Newtype Rising [GD-01] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Newtype Rising [GD-01]", price: 34800, image: "https://www.gundam-gcg.com/gcg/bccard/asia-en/news/2025/05/02/8255768kkzrLLWCW/thumbnail_box_jp.webp", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 6, name: "GCG Dual Impact [GD-02] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Dual Impact [GD-02]", price: 34800, image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr8DrGGHzKuKHycM2YMFp8JnBPh3Gb4zmAAueM1bpCVA&s=10", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 7, name: "GCG Steel Requiem [GD-03] Case (JP)", category: "Gundam TCG", type: "Booster Box Case", set: "Steel Requiem [GD-03]", price: 34800, image: "https://www.hobbydigi.com/media/catalog/product/cache/image/700x700/e9c3970ab036de70892d86c6d221abfe/_/j/_japanese_ver_bandai_gundam_card_game_card_game_booster_pack_-_gd03-steel_requiem_original_box_of_24_stock_guaranteed__251216023540_1.jpg?src=seo", selectedQty: 1, justAdded: false, soldOut: true },
-        { id: 8, name: "Mega Evolution Enhanced Booster Box", category: "Pokemon TCG", type: "Booster Box", set: "Mega Evolution", price: 15000, originalPrice: 16000, image: "https://tcgplayer-cdn.tcgplayer.com/product/644298_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: true },
-        { id: 9, name: "Assorted Pokeball Tin [G25]", category: "Pokemon TCG", type: "Pokeball Tin", set:"DRI/SSP/JTG", price: 1850, originalPrice: 2000, image: "https://www.pokemon.com/static-assets/content-assets/cms2/img/trading-card-game/series/incrementals/2025/poke-ball-tin/poke-ball-tin-169-en.png", selectedQty: 1, justAdded: false, soldOut: true },
-        { id: 10, name: "Disney Lorcana Reign of Jafar Booster Box", category: "Lorcana TCG", type: "Booster Box", set: "Reign of Jafar", price: 7000, image: "https://tcgplayer-cdn.tcgplayer.com/product/623064_in_1000x1000.jpg", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 13, name: "Azure Lane Vol. 2 Booster Box [English]", category: "Weiss Schwarz TCG", type: "Booster Box", set: "Azure Lane", price: 3360, image: "https://en.ws-tcg.com/wordpress/wp-content/uploads/2025/08/26153914/BP-box_AZL2.png", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 16, name: "Dandadan Booster Box [English]", category: "Weiss Schwarz TCG", type: "Booster Box", set: "Dandadan", price: 3360, image: "https://en.ws-tcg.com/wordpress/wp-content/uploads/2025/08/19101457/BP-box_DDD.png", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 18, name: "HG Gundam Naion", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 1899, image: "https://i.ibb.co/Y42cydwJ/image.png", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 19, name: "HG Union Flag Custom II", category: "Gunpla Kits", type: "High Grade", set: "Premium Bandai", price: 1099, image: "https://i.ibb.co/QV97mT4/image.png", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 21, name: "RG Shining Gundam", category: "Gunpla Kits", type: "Real Grade", set: "Bandai Model Kit", price: 2099, image: "https://i.ibb.co/ccSXj15B/RG-Shining-Gundam-box.webp", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 23, name: "HG Gundam Aerial", category: "Gunpla Kits", type: "High Grade", set: "Bandai Model Kit", price: 1099, image: "https://i.ibb.co/cfBYwyS/image.png", selectedQty: 1, justAdded: false, soldOut: false },
-        { id: 25, name: "SD Hi-nu Gundam", category: "Gunpla Kits", type: "SD", set: "Bandai Model Kit", price: 1799, image: "https://inwfile.com/s-dc/vld5ph.jpg", selectedQty: 1, justAdded: false, soldOut: false }
-    ];
+        // --- EASY EDIT INVENTORY ---
+        const PREORDER_INVENTORY = [
+            { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, eta:"July 2026", image: "https://i.ibb.co/zV4R9N3z/booster-box.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, eta:"July 2026", image: "https://i.ibb.co/Ndd06Gp7/etb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, eta:"July 2026", image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, eta:"July 2026", image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, eta:"July 2026", image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 6, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, eta:"July 2026", image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 7, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, eta:"July 2026", image: "https://i.ibb.co/F4jx7w5z/3packblister.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 8, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://i.ibb.co/z0DbPsV/checklane.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 9, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", eta:"June 2026", price: 1400, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+            { id: 10, name: "[ME04] Mega Greninja Ex Premium Collection", type: "Premium Collection", set: "ME04 Chaos Rising", price: 3600, unitsPerCase: 6, eta:"July 2026", image: "https://antiquestore.com.mx/wp-content/uploads/2026/04/producto-28.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+            { id: 11, name: "ST11 Starter Deck ENG [Aquatic Assault]", type: "Gundam Starter Deck EN", set: "ST11", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/RpzgwW1Q/ST11.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 12, name: "ST12 Starter Deck ENG [Raging Onslaught]", type: "Gundam Starter Deck EN", set: "ST12", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/zhhdgRsY/ST12.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 13, name: "ST13 Starter Deck ENG [Silent Barrage]", type: "Gundam Starter Deck EN", set: "ST13", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/jP5Btfx6/ST13.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 14, name: "ST14 Starter Deck ENG [Heavy Dominion]", type: "Gundam Starter Deck EN", set: "ST14", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/j0H539B/ST14.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
+            { id: 15, name: "Dragon Ball Super Card Game Fusion World (JP) Booster Pack [FB11]", type: "Dragon Ball Fusion World Booster JP", set: "FB11", price: 3500, unitsPerCase: 12, eta:"September 2026", image: "https://i.ibb.co/v6GQqC4J/DBFWJAPTEMPLATE.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+            { id: 16, name: "Dragon Ball Super Card Game Masters (ENG) Booster Pack Ultra Bout #5 [B32]", type: "Dragon Ball Master Booster Box EN ", set: "B32", price: 9200, unitsPerCase: 12, eta:"November 2026", image: "https://i.ibb.co/7tFkdkzH/DBMB32.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+        ];
 
-    function shop() {
-        return {
-            cartOpen: false,
-            paymentModalOpen: false,
-            searchQuery: '',
-            sortOrder: 'newest',
-            currentCategory: 'All Products',
-            categories: ['All Products', 'On Sale', 'Gunpla Kits', 'Pokemon TCG', 'One Piece TCG', 'Gundam TCG', 'Lorcana TCG', 'Magic The Gathering', 'Weiss Schwarz TCG', 'Dragonball TCG', 'Product Accessory'],
-            cart: [],
-            products: PRODUCT_INVENTORY.map(p => ({ ...p, selectedQty: 1, justAdded: false })),
-
-            // --- GETTERS (The missing pieces) ---
-            get cartTotal() {
-                const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                return total.toLocaleString();
-            },
-
-            get totalItems() {
-                return this.cart.reduce((sum, item) => sum + item.quantity, 0);
-            },
-
-            get filteredProducts() {
-                return this.products.filter(p => {
-                    const matchesSearch = p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                    let matchesCat = false;
-                    
-                    if (this.currentCategory === 'All Products') {
-                        matchesCat = true;
-                    } else if (this.currentCategory === 'On Sale') {
-                        matchesCat = !!p.originalPrice; 
-                    } else {
-                        matchesCat = p.category === this.currentCategory;
-                    }
-                    return matchesSearch && matchesCat;
-                }).sort((a, b) => {
-                    // Always push Sold Out to the bottom regardless of sort
-                    if (a.soldOut !== b.soldOut) return a.soldOut - b.soldOut;
-                    
-                    if (this.sortOrder === 'low') return a.price - b.price;
-                    if (this.sortOrder === 'high') return b.price - a.price;
-                    return b.id - a.id; // Newest
-                });
-            },
-
-            // --- METHODS ---
-            getCategoryCount(cat) {
-                if (cat === 'All Products') return this.products.length;
-                if (cat === 'On Sale') return this.products.filter(p => p.originalPrice).length;
-                return this.products.filter(p => p.category === cat).length;
-            },
-
-            addToCart(product) {
-                const existing = this.cart.find(i => i.id === product.id);
-                if (existing) {
-                    existing.quantity += product.selectedQty;
-                } else {
-                    this.cart.push({ ...product, quantity: product.selectedQty });
-                }
-                product.justAdded = true;
-                setTimeout(() => product.justAdded = false, 1000);
-                product.selectedQty = 1; // Reset selector
-            },
-
-            updateCartQty(index, change) {
-                this.cart[index].quantity += change;
-                if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
-            },
-
-            checkoutSelf() {
-                this.cartOpen = false;
-                this.paymentModalOpen = true;
-            },
-
-            async confirmAndRedirect() {
-                let summary = "📦 CRATE DROP ORDER SUMMARY\n-----------------\n";
-                this.cart.forEach(i => {
-                    summary += `• ${i.quantity}x ${i.name}\n  Price: ₱${(i.price * i.quantity).toLocaleString()}\n\n`;
-                });
-                summary += `TOTAL AMOUNT: ₱${this.cartTotal}\n`;
-                summary += `STATUS: Full Payment / Proof Pending\n`;
+        function shop() {
+            return {
+                cartOpen: false,
+                paymentModalOpen: false,
+                searchQuery: '',
+                cart: [],
+                products: PREORDER_INVENTORY.map(p => ({ ...p, selectedQty: 1, isCase: false, justAdded: false })),
                 
-                try {
+                get filteredProducts() {
+                    return this.products
+                        .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                        // The magic happens here: 
+                        // false (0) comes before true (1), so opened preorders stay on top.
+                        .sort((a, b) => a.soldOut - b.soldOut);
+                },
+                get totalItems() {
+                    return this.cart.reduce((s, i) => s + i.quantity, 0);
+                },
+                get cartDepositTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();
+                },
+                get cartFullTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString();
+                },
+                get cartBalanceTotal() {
+                    const full = this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0);
+                    const dp = this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0);
+                    return (full - dp).toLocaleString();
+                },
+                calculateLiveDeposit(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * 0.3 * (product.selectedQty || 1);
+                },
+                calculateLiveDepositx(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * 1 * (product.selectedQty || 1);
+                },
+                addToCart(product) {
+                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
+                    if (existing) { existing.quantity += product.selectedQty; } 
+                    else {
+                        this.cart.push({ ...product, productId: product.id, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
+                    }
+                    product.justAdded = true;
+                    setTimeout(() => product.justAdded = false, 1000);
+                },
+                updateCartQty(index, change) {
+                    this.cart[index].quantity += change;
+                    if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
+                },
+                checkoutSelf() {
+                    this.cartOpen = false;
+                    this.paymentModalOpen = true;
+                },
+                async confirmAndRedirect() {
+                    let summary = "🛒 PRE ORDER SUMMARY\n-----------------\n";
+                    this.cart.forEach(i => {
+                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    });
+                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
+                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
+                    summary += `STATUS: Payment Pending\n`;
+                    summary += `**Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.**`;
                     await navigator.clipboard.writeText(summary);
-                    alert("Order details copied! Opening Messenger...");
-                } catch (err) {
-                    console.error('Failed to copy: ', err);
+                    alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
+                    window.open("https://m.me/cratedropcollective", "_blank");
                 }
-                window.open("https://m.me/cratedropcollective", "_blank");
             }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
