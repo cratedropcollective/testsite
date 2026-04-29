@@ -66,7 +66,7 @@
             <div class="bg-slate-900 p-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Simulator</h2>
-                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Planning Tool</p>
+                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Plan your order volume vs. expected cuts</p>
                 </div>
                 <i class="fas fa-chart-pie text-blue-500"></i>
             </div>
@@ -74,42 +74,59 @@
             <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Select Product</label>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">1. Select Product</label>
                         <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
                             <template x-for="item in products" :key="item.id">
-                                <option :value="item.id" x-text="item.name"></option>
+                                <option :value="item.id" x-text="item.name + ' (' + item.set + ')'"></option>
                             </template>
                         </select>
+                        <p class="mt-1 text-[9px] font-bold text-blue-600 uppercase">
+                            Standard Pack: <span x-text="products.find(p => p.id == calcSelectedId)?.unitsPerCase"></span> units per case
+                        </p>
+                    </div>
+
+                    <div class="flex bg-gray-100 p-1 rounded-xl">
+                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all">BY UNIT</button>
+                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">BY CASE</button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Target Qty</label>
+                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1" x-text="calcIsCase ? 'Target Cases' : 'Target Units'"></label>
                             <input type="number" x-model.number="calcInputQty" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Expected Allocation (%)</label>
+                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Expected Fill Rate (%)</label>
                             <input type="number" x-model.number="calcFillRate" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                     
-                    <input type="range" min="1" max="100" step="1" x-model="calcFillRate" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <input type="range" min="5" max="100" step="5" x-model="calcFillRate" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <p class="text-[9px] text-gray-400 italic">Adjust fill rate based on historical allocation cuts (e.g., 50% means you get half of what you order).</p>
                 </div>
 
-                <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100 flex flex-col justify-center">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
+                <div class="bg-slate-50 rounded-2xl p-5 border border-gray-200 flex flex-col justify-center space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
                             <p class="text-[9px] font-bold text-gray-400 uppercase">Est. Units Received</p>
-                            <p class="text-2xl font-black text-slate-900"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40">PCS</small></p>
+                            <p class="text-xl font-black text-slate-900"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40">PCS</small></p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase">Total Expected Value</p>
-                            <p class="text-lg font-black text-slate-900">₱<span x-text="calculatedTotalValue"></span></p>
+                        <div class="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+                            <p class="text-[9px] font-bold text-gray-400 uppercase">Expected Total Value</p>
+                            <p class="text-xl font-black text-slate-900">₱<span x-text="calculatedTotalValue"></span></p>
                         </div>
                     </div>
-                    <div class="pt-4 border-t border-blue-200">
-                        <p class="text-[9px] font-bold text-blue-600 uppercase">30% Downpayment Required to get Est. Units subject to Expected Allocation</p>
-                        <p class="text-3xl font-black text-blue-600 tracking-tighter">₱<span x-text="calculatedDownpayment"></span></p>
+
+                    <div class="p-4 bg-blue-600 text-white rounded-xl shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Cash Outlay Required (30% DP)</p>
+                            <p class="text-3xl font-black tracking-tighter">₱<span x-text="calculatedDownpayment"></span></p>
+                            <p class="text-[9px] font-medium mt-2 leading-tight opacity-90">
+                                This DP is calculated based on your <strong>Target Order</strong> of 
+                                <span x-text="calcInputQty"></span> <span x-text="calcIsCase ? 'Case(s)' : 'Unit(s)'"></span>.
+                            </p>
+                        </div>
+                        <i class="fas fa-wallet absolute -bottom-2 -right-2 text-6xl opacity-10 rotate-12"></i>
                     </div>
                 </div>
             </div>
@@ -287,24 +304,34 @@
                 products: PREORDER_INVENTORY.map(p => ({ ...p, selectedQty: 1, isCase: false, justAdded: false })),
                 
                 // --- Allocation Planner State ---
-                showPlanner: false,
-                calcSelectedId: PREORDER_INVENTORY[0].id,
-                calcInputQty: 1,
-                calcFillRate: 100,
+               showPlanner: false,
+            calcSelectedId: PREORDER_INVENTORY[0].id,
+            calcInputQty: 1,
+            calcFillRate: 100,
+            calcIsCase: false,
                 
                 get calculatedUnits() {
-                    return Math.floor(this.calcInputQty * (this.calcFillRate / 100));
-                },
-                get calculatedTotalValue() {
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
-                },
-                get calculatedDownpayment() {
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    // Changed from calculatedUnits to calcInputQty to reflect DP needed on TARGET order
-                    const total = this.calcInputQty * (product ? product.price : 0);
-                    return (total * 0.3).toLocaleString();
-                },
+                const product = this.products.find(p => p.id == this.calcSelectedId);
+                if (!product) return 0;
+                const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
+                return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
+            },
+            
+            get calculatedTotalValue() {
+                const product = this.products.find(p => p.id == this.calcSelectedId);
+                return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
+            },
+            
+            get calculatedDownpayment() {
+                const product = this.products.find(p => p.id == this.calcSelectedId);
+                if (!product) return "0";
+                
+                // DP is always calculated on the INITIAL TARGET (how much money they must put out)
+                const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
+                const totalTargetValue = basePrice * this.calcInputQty;
+                
+                return (totalTargetValue * 0.3).toLocaleString();
+            },
 
                 // --- Original Shop Methods ---
                 get filteredProducts() {
