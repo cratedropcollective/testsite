@@ -140,10 +140,39 @@
             <h2 class="text-xl font-black uppercase tracking-tighter mb-6">Order Slip Generator</h2>
             
             <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-500">Customer Name</label>
+                    <input type="text" x-model="order.customer" class="w-full p-2 bg-gray-50 border rounded-lg text-sm font-bold">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-500">Select Product Offering</label>
+                    <select @change="updateProduct($event.target.value)" class="w-full p-2 bg-gray-50 border rounded-lg text-sm font-bold">
+                        <option value="">-- Choose Product --</option>
+                        <template x-for="item in inventory" :key="item.id">
+                            <option :value="item.id" x-text="item.name + ' [' + item.set + ']'"></option>
+                        </template>
+                    </select>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase text-gray-500">Customer Name</label>
-                        <input type="text" x-model="order.customer" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Format</label>
+                        <select x-model="order.isCase" class="w-full p-2 bg-gray-50 border rounded-lg text-sm font-bold">
+                            <option :value="false">Single Units</option>
+                            <option :value="true">Full Cases</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Order Quantity</label>
+                        <input type="number" x-model.number="order.qty" class="w-full p-2 bg-gray-50 border rounded-lg text-sm font-bold">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Override Price (Optional)</label>
+                        <input type="number" x-model.number="order.price" class="w-full p-2 bg-gray-50 border rounded-lg text-sm italic">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold uppercase text-gray-500">Order Date</label>
@@ -151,78 +180,64 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-gray-500">Product Name</label>
-                    <input type="text" x-model="order.productName" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
-                </div>
-
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-gray-500">Qty</label>
-                        <input type="number" x-model.number="order.qty" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-gray-500">Price per Unit</label>
-                        <input type="number" x-model.number="order.price" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-gray-500">ETA</label>
-                        <input type="text" x-model="order.eta" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
-                    </div>
-                </div>
-
-                <button @click="downloadReceipt" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all mt-4">
-                    Download Image for Customer
+                <button @click="downloadReceipt" class="w-full bg-slate-900 text-white font-black py-4 rounded-xl uppercase tracking-widest hover:bg-blue-600 transition-all mt-4 shadow-lg">
+                    <i class="fas fa-file-download mr-2"></i> Download Order Confirmation
                 </button>
             </div>
         </div>
 
-        <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto overflow-hidden" style="width: 800px; min-height: 640px;">
-            <div class="p-8 flex justify-between items-start">
-                <div class="flex flex-col">
-                    <div class="flex items-center space-x-1">
-                        <div class="w-8 h-8 bg-blue-700 rounded-sm flex items-center justify-center text-white font-black italic">C</div>
-                        <div class="w-8 h-8 bg-red-500 rounded-sm flex items-center justify-center text-white font-black italic">C</div>
+        <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto overflow-hidden border border-gray-100" style="width: 800px; min-height: 640px;">
+            <div class="p-10 flex justify-center items-center border-b-2 border-gray-50">
+                <div class="text-center">
+                    <h1 class="text-5xl font-black text-blue-800 italic tracking-tighter uppercase">Order Confirmation</h1>
+                    <div class="mt-4 inline-block bg-blue-700 text-white px-6 py-1.5 font-black text-sm rounded-sm tracking-widest">
+                        DATE: <span x-text="order.date"></span>
                     </div>
-                    <span class="text-[12px] font-black text-slate-800 tracking-tighter mt-1">CRATEDROP<span class="text-yellow-500">COLLECTIVE</span></span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <h1 class="text-4xl font-black text-blue-800 italic tracking-tighter">ORDER CONFIRMATION</h1>
-                    <div class="bg-blue-600 text-white px-4 py-2 font-bold text-sm">DATE: <span x-text="order.date"></span></div>
                 </div>
             </div>
 
-            <div class="bg-blue-700 text-white px-8 py-2 flex justify-between font-bold text-sm uppercase tracking-wider">
-                <span>Customer Name: <span x-text="order.customer" class="ml-2 font-black"></span></span>
-                <span>Product ETA: <span x-text="order.eta" class="ml-2 font-black"></span></span>
+            <div class="bg-blue-700 text-white px-10 py-3 flex justify-between font-bold text-xs uppercase tracking-widest">
+                <span>Customer Name: <span x-text="order.customer" class="ml-2 font-black border-b border-white/40"></span></span>
+                <span>Product ETA: <span x-text="order.eta" class="ml-2 font-black border-b border-white/40"></span></span>
             </div>
 
-            <div class="px-8 mt-4 grid grid-cols-12 gap-2 text-blue-800 font-black text-[10px] uppercase border-b-4 border-blue-800 pb-2">
+            <div class="mx-10 mt-8 grid grid-cols-12 gap-2 text-blue-800 font-black text-[11px] uppercase border-b-4 border-blue-800 pb-3 tracking-tighter">
                 <div class="col-span-1">Qty.</div>
-                <div class="col-span-1">Units</div>
-                <div class="col-span-6">Product Name</div>
-                <div class="col-span-2 text-right">Price Per Unit</div>
+                <div class="col-span-2">Units/Format</div>
+                <div class="col-span-5">Product Name</div>
+                <div class="col-span-2 text-right">Price per Unit</div>
                 <div class="col-span-2 text-right">Total</div>
             </div>
 
-            <div class="px-8 py-4 grid grid-cols-12 gap-2 text-slate-800 font-bold text-sm items-center min-h-[100px]">
-                <div class="col-span-1" x-text="order.qty"></div>
-                <div class="col-span-1 text-[10px]">UNITS</div>
-                <div class="col-span-6 text-xs" x-text="order.productName"></div>
-                <div class="col-span-2 text-right">₱<span x-text="order.price.toLocaleString()"></span></div>
-                <div class="col-span-2 text-right">₱<span x-text="(order.qty * order.price).toLocaleString()"></span></div>
+            <div class="mx-10 py-6 grid grid-cols-12 gap-2 text-slate-800 font-bold text-sm items-center border-b border-gray-100 min-h-[120px]">
+                <div class="col-span-1 text-lg font-black" x-text="order.qty"></div>
+                <div class="col-span-2 text-[10px] font-black uppercase text-blue-600" x-text="order.isCase ? 'Full Cases' : 'Individual Units'"></div>
+                <div class="col-span-5 text-xs font-black uppercase leading-snug">
+                    <span x-text="order.productName"></span>
+                    <div class="text-[9px] text-gray-400 mt-1" x-text="'Set: ' + order.productSet"></div>
+                </div>
+                <div class="col-span-2 text-right font-black">₱<span x-text="currentBasePrice.toLocaleString()"></span></div>
+                <div class="col-span-2 text-right font-black text-lg">₱<span x-text="totalOrderValue.toLocaleString()"></span></div>
             </div>
 
-            <div class="px-8 flex flex-col items-end space-y-2 mt-4">
-                <div class="w-full max-w-[400px] bg-blue-700 text-white text-center py-1 font-bold text-[10px] uppercase">Total DP Paid</div>
-                <div class="w-full max-w-[400px] text-center font-black text-xl text-slate-800 pb-2">₱<span x-text="(order.qty * order.price * 0.3).toLocaleString()"></span></div>
+            <div class="mx-10 flex flex-col items-end space-y-4 mt-8">
+                <div class="w-full max-w-[350px]">
+                    <div class="bg-blue-700 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Total DP Paid (30%)</div>
+                    <div class="text-center font-black text-3xl text-slate-900 py-2 border-x border-b border-gray-100 shadow-sm">
+                        ₱<span x-text="totalDP.toLocaleString()"></span>
+                    </div>
+                </div>
                 
-                <div class="w-full max-w-[400px] bg-blue-700 text-white text-center py-1 font-bold text-[10px] uppercase">Total Balance</div>
-                <div class="w-full max-w-[400px] text-center font-black text-xl text-slate-800">₱<span x-text="(order.qty * order.price * 0.7).toLocaleString()"></span></div>
+                <div class="w-full max-w-[350px]">
+                    <div class="bg-slate-800 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Total Balance Remaining</div>
+                    <div class="text-center font-black text-2xl text-slate-700 py-2 border-x border-b border-gray-100 shadow-sm">
+                        ₱<span x-text="totalBalance.toLocaleString()"></span>
+                    </div>
+                </div>
             </div>
 
-            <div class="px-12 py-8 text-[9px] text-gray-500 text-center leading-tight font-medium">
-                By placing a pre-order, you confirm that you have understood all the information provided below, including the risks associated with your order. You also acknowledge and accept the possibility of pre-order country allocation cuts or reduction. Cancellations are not allowed, and the 30% pre-order deposit will be forfeited if the payment cannot be made.
+            <div class="px-16 py-10 text-[10px] text-gray-500 text-center leading-relaxed font-semibold italic">
+                "By placing a pre-order, you confirm that you have understood all the information provided below, including the risks associated with your order. You also acknowledge and accept the possibility of pre-order country allocation cuts or reduction. It is implied that if allocations are complete, the customer must complete payment within 3 days once confirmed. Cancellations are not allowed; 30% deposit is non-refundable."
             </div>
         </div>
     </div>
@@ -232,19 +247,57 @@
 <script>
 function orderGenerator() {
     return {
+        // Reference your actual store inventory
+        inventory: PREORDER_INVENTORY, 
+        
         order: {
             customer: 'HANS FAUSTO',
-            date: 'APR. 15, 2026',
-            productName: 'Gundam Card Game (English) Booster Pack Stardust Trails [GD06]',
-            qty: 2,
-            price: 7140,
-            eta: 'EST. NOV. 30, 2026'
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase(),
+            productName: '',
+            productSet: '',
+            qty: 1,
+            price: 0,
+            eta: '',
+            unitsPerCase: 1,
+            isCase: false
         },
+
+        updateProduct(id) {
+            const p = this.inventory.find(i => i.id == id);
+            if (p) {
+                this.order.productName = p.name;
+                this.order.productSet = p.set;
+                this.order.price = p.price;
+                this.order.eta = p.eta;
+                this.order.unitsPerCase = p.unitsPerCase;
+            }
+        },
+
+        get currentBasePrice() {
+            return this.order.isCase ? (this.order.price * this.order.unitsPerCase) : this.order.price;
+        },
+
+        get totalOrderValue() {
+            return this.currentBasePrice * this.order.qty;
+        },
+
+        get totalDP() {
+            return this.totalOrderValue * 0.3;
+        },
+
+        get totalBalance() {
+            return this.totalOrderValue * 0.7;
+        },
+
         downloadReceipt() {
             const canvas = document.getElementById('receipt-canvas');
-            html2canvas(canvas, { scale: 2 }).then(canvasElement => {
+            html2canvas(canvas, { 
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvasElement => {
                 const link = document.createElement('a');
-                link.download = `Order_${this.order.customer.replace(/\s+/g, '_')}.png`;
+                link.download = `CrateDrop_Order_${this.order.customer.replace(/\s+/g, '_')}.png`;
                 link.href = canvasElement.toDataURL('image/png');
                 link.click();
             });
