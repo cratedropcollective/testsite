@@ -189,7 +189,7 @@
                     <template x-for="(item, index) in orderItems" :key="index">
                         <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
                             <div class="flex-1">
-                                <p class="text-xs font-black uppercase" x-text="item.name"></p>
+                                <p class="text-xs font-black uppercase tracking-tighter" x-text="item.name"></p>
                                 <p class="text-[9px] text-gray-500 uppercase"><span x-text="item.qty"></span>x <span x-text="item.isCase ? 'Case' : 'Unit'"></span> | ₱<span x-text="item.price.toLocaleString()"></span></p>
                             </div>
                             <button @click="removeItem(index)" class="text-red-500 hover:text-red-700 px-2">
@@ -206,9 +206,10 @@
         </div>
 
         <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto overflow-hidden border border-gray-100" style="width: 800px; min-height: 800px;">
-            <div class="p-10 flex justify-center items-center border-b-2 border-gray-50">
+            <div class="p-10 flex flex-col items-center border-b-2 border-gray-50">
+                <img src="https://i.ibb.co/LpXF8B3h/image-1.png" alt="Crate Drop Collective Logo" class="h-20 w-auto mb-6">
                 <div class="text-center">
-                    <h1 class="text-5xl font-black text-blue-800 italic tracking-tighter uppercase">Order Confirmation</h1>
+                    <h1 class="text-5xl font-black text-blue-800 italic tracking-tighter uppercase leading-none">Order Confirmation</h1>
                     <div class="mt-4 inline-block bg-blue-700 text-white px-6 py-1.5 font-black text-sm rounded-sm tracking-widest">
                         DATE: <span x-text="orderDate"></span>
                     </div>
@@ -221,7 +222,7 @@
             </div>
 
             <div class="mx-10 mt-8">
-                <div class="grid grid-cols-12 gap-2 text-blue-800 font-black text-[11px] uppercase border-b-4 border-blue-800 pb-3">
+                <div class="grid grid-cols-12 gap-2 text-blue-800 font-black text-[11px] uppercase border-b-4 border-blue-800 pb-3 tracking-tighter">
                     <div class="col-span-1">Qty.</div>
                     <div class="col-span-2">Format</div>
                     <div class="col-span-5">Product Name</div>
@@ -230,12 +231,12 @@
                 </div>
 
                 <template x-for="(item, index) in orderItems" :key="index">
-                    <div class="grid grid-cols-12 gap-2 text-slate-800 font-bold text-[11px] py-4 border-b border-gray-100 items-center">
+                    <div class="grid grid-cols-12 gap-2 text-slate-900 font-bold text-[11px] py-4 border-b border-gray-100 items-center tracking-tighter">
                         <div class="col-span-1 font-black text-lg" x-text="item.qty"></div>
-                        <div class="col-span-2 uppercase text-[9px] text-blue-600" x-text="item.isCase ? 'Full Case' : 'Unit'"></div>
-                        <div class="col-span-5 uppercase leading-tight">
+                        <div class="col-span-2 uppercase text-[9px] font-black text-blue-600" x-text="item.isCase ? 'Full Case' : 'Unit'"></div>
+                        <div class="col-span-5 uppercase leading-tight font-black">
                             <span x-text="item.name"></span>
-                            <div class="text-[8px] text-gray-400 mt-1" x-text="'ETA: ' + item.eta"></div>
+                            <div class="text-[8px] text-gray-400 mt-1 font-medium" x-text="'ETA: ' + item.eta"></div>
                         </div>
                         <div class="col-span-2 text-right">₱<span x-text="item.price.toLocaleString()"></span></div>
                         <div class="col-span-2 text-right font-black">₱<span x-text="(item.price * item.qty).toLocaleString()"></span></div>
@@ -243,29 +244,33 @@
                 </template>
             </div>
 
-            <div class="mx-10 flex flex-col items-end space-y-4 mt-8">
+            <div class="mx-10 flex flex-col items-end space-y-4 mt-8 mb-10">
                 <div class="w-full max-w-[350px]">
-                    <div class="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-2 px-2">
-                        <span>Total Combined Order:</span>
+                    <div class="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-2 px-2 tracking-tighter">
+                        <span>Combined Order Total:</span>
                         <span>₱<span x-text="fullOrderTotal.toLocaleString()"></span></span>
                     </div>
                     
                     <div class="bg-blue-700 text-white text-center py-2 font-black text-[11px] uppercase tracking-widest">Total DP Paid (30%)</div>
-                    <div class="text-center font-black text-4xl text-slate-900 py-3 border-x border-b border-gray-100 shadow-sm">
-                        ₱<span x-text="totalDP.toLocaleString()"></span>
+                    <div class="text-center font-black text-4xl text-slate-900 py-3 tracking-tighter border-x border-b border-gray-100 shadow-sm relative overflow-hidden">
+                        <span class="relative z-10">₱<span x-text="totalDP.toLocaleString()"></span></span>
+                        <div class="absolute inset-0 bg-blue-50 opacity-20"></div>
                     </div>
                 </div>
                 
                 <div class="w-full max-w-[350px]">
-                    <div class="bg-slate-800 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Combined Balance Remaining</div>
-                    <div class="text-center font-black text-2xl text-slate-700 py-2 border-x border-b border-gray-100 shadow-sm">
-                        ₱<span x-text="totalBalance.toLocaleString()"></span>
+                    <div class="bg-slate-900 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Combined Balance Remaining</div>
+                    <div class="text-center font-black text-2xl text-slate-800 py-2 tracking-tighter border-x border-b border-gray-100 shadow-sm relative overflow-hidden">
+                        <span class="relative z-10">₱<span x-text="totalBalance.toLocaleString()"></span></span>
+                        <div class="absolute inset-0 bg-gray-50 opacity-20"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="px-16 py-12 text-[10px] text-gray-400 text-center leading-relaxed font-semibold italic">
-                Cancellations are not allowed once the order is placed. The 30% pre-order deposit will be forfeited if payment for the balance is not settled within 3 days of allocation confirmation. All pre-orders are subject to country allocation cuts.
+            <div class="bg-slate-50 mt-auto border-t border-gray-100">
+                <div class="px-16 py-10 text-[10px] text-gray-500 text-center leading-relaxed font-semibold italic">
+                    "All pre-orders are subject to country allocation cuts. Cancellations are not allowed once the order is placed. The 30% pre-order deposit will be forfeited if payment for the remaining balance is not settled within 3 days of allocation confirmation. Crate Drop Collective functions in good faith to obtain items at pre-order pricing for our community."
+                </div>
             </div>
         </div>
     </div>
@@ -275,14 +280,12 @@
 <script>
 function orderGenerator() {
     return {
-        inventory: PREORDER_INVENTORY, // Pulls from your existing inventory
+        inventory: PREORDER_INVENTORY, 
         customerName: 'HANS FAUSTO',
         orderDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase(),
         
-        // Items currently on the list
         orderItems: [],
 
-        // State for the item currently being added
         tempItem: {
             id: 0,
             qty: 1,
@@ -297,7 +300,6 @@ function orderGenerator() {
             if (p) {
                 this.tempItem.name = p.name;
                 this.tempItem.eta = p.eta;
-                // Default price is Unit Price
                 this.tempItem.price = p.price;
                 this.tempItem.unitsPerCase = p.unitsPerCase;
             }
@@ -306,7 +308,6 @@ function orderGenerator() {
         addItem() {
             if (this.tempItem.id == 0) return;
             
-            // Calculate actual price based on Unit or Case
             const finalPrice = this.tempItem.isCase 
                 ? (this.tempItem.price * this.tempItem.unitsPerCase) 
                 : this.tempItem.price;
@@ -319,7 +320,6 @@ function orderGenerator() {
                 eta: this.tempItem.eta
             });
 
-            // Reset for next item
             this.tempItem.id = 0;
             this.tempItem.qty = 1;
             this.tempItem.isCase = false;
@@ -343,12 +343,22 @@ function orderGenerator() {
 
         downloadReceipt() {
             const canvas = document.getElementById('receipt-canvas');
-            html2canvas(canvas, { scale: 2, useCORS: true, backgroundColor: "#ffffff" }).then(canvasElement => {
-                const link = document.createElement('a');
-                link.download = `Multi_Order_${this.customerName.replace(/\s+/g, '_')}.png`;
-                link.href = canvasElement.toDataURL('image/png');
-                link.click();
-            });
+            const customerFname = this.customerName.replace(/\s+/g, '_');
+            
+            // Wait slightly for image assets to be fully ready before drawing
+            setTimeout(() => {
+                html2canvas(canvas, { 
+                    scale: 3, // Higher scale for ultra-sharp mobile viewing
+                    useCORS: true, // Crucial for loading the external logo image
+                    backgroundColor: "#ffffff",
+                    logging: false
+                }).then(canvasElement => {
+                    const link = document.createElement('a');
+                    link.download = `CrateDrop_Order_${customerFname}.png`;
+                    link.href = canvasElement.toDataURL('image/png');
+                    link.click();
+                });
+            }, 100);
         }
     }
 }
