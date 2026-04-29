@@ -39,87 +39,101 @@
     </nav>
 
     <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto">
-            <div class="relative">
+        <div class="py-4 px-4 container mx-auto flex flex-col md:flex-row gap-4">
+            <div class="relative flex-1">
                 <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                 <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
             </div>
+            <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 transition-colors flex items-center justify-center">
+                <i class="fas fa-calculator mr-2"></i>
+                <span x-text="showPlanner ? 'Close Planner' : 'Allocation Planner'"></span>
+            </button>
         </div>
     </div>
-<section x-data="allocationCalc(PREORDER_INVENTORY)" class="container mx-auto px-2 md:px-4 mb-8">
-    <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-        <div class="bg-slate-900 p-4 flex justify-between items-center">
-            <div>
-                <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Planner</h2>
-                <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Simulator Tool</p>
-            </div>
-            <i class="fas fa-calculator text-blue-500"></i>
-        </div>
-        
-        <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="space-y-4">
+
+    <section x-show="showPlanner" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             x-data="allocationCalc(PREORDER_INVENTORY)" 
+             class="container mx-auto px-2 md:px-4 mt-4 mb-8">
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
+            <div class="bg-slate-900 p-4 flex justify-between items-center">
                 <div>
-                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Select Sample Product</label>
-                    <select x-model="selectedid" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
-                        <template x-for="item in samples" :key="item.id">
-                            <option :value="item.id" x-text="item.name"></option>
-                        </template>
-                    </select>
+                    <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Planner</h2>
+                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Simulator Tool</p>
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Target Qty</label>
-                        <input type="number" x-model.number="inputQty" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Unit Price (₱)</label>
-                        <div class="w-full p-2.5 bg-gray-50 text-gray-400 rounded-xl text-xs font-bold" x-text="currentProduct.price.toLocaleString()"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <label class="text-[10px] font-black uppercase text-gray-500">Expected Fill Rate</label>
-                        <span class="text-[10px] font-black text-blue-600" x-text="fillRate + '%'"></span>
-                    </div>
-                    <input type="range" min="5" max="100" step="5" x-model="fillRate" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
-                </div>
+                <i class="fas fa-calculator text-blue-500"></i>
             </div>
+            
+            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Select Sample Product</label>
+                        <select x-model.number="selectedid" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
+                            <template x-for="item in samples" :key="item.id">
+                                <option :value="item.id" x-text="item.name"></option>
+                            </template>
+                        </select>
+                    </div>
 
-            <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100">
-                <div class="flex flex-col h-full justify-between">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <p class="text-[9px] font-bold text-gray-400 uppercase">Estimated Units</p>
-                            <p class="text-2xl font-black text-slate-900"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40">PCS</small></p>
+                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Target Qty</label>
+                            <input type="number" x-model.number="inputQty" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
-                        <div class="text-right">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase">Total Value</p>
-                            <p class="text-lg font-black text-slate-900">₱<span x-text="totalValue"></span></p>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Unit Price (₱)</label>
+                            <div class="w-full p-2.5 bg-gray-50 text-gray-400 rounded-xl text-xs font-bold" x-text="currentProduct.price.toLocaleString()"></div>
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-4 border-t border-blue-200">
-                        <div class="flex justify-between items-end">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-[10px] font-black uppercase text-gray-500">Expected Fill Rate</label>
+                            <span class="text-[10px] font-black text-blue-600" x-text="fillRate + '%'"></span>
+                        </div>
+                        <input type="range" min="5" max="100" step="5" x-model="fillRate" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                    <div class="flex flex-col h-full justify-between">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <p class="text-[9px] font-bold text-blue-600 uppercase">30% Downpayment Due</p>
-                                <p class="text-3xl font-black text-blue-600 tracking-tighter">₱<span x-text="downpayment"></span></p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Estimated Units</p>
+                                <p class="text-2xl font-black text-slate-900"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40">PCS</small></p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase">Final Balance</p>
-                                <p class="text-xs font-bold text-slate-600">₱<span x-text="balance"></span></p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Total Value</p>
+                                <p class="text-lg font-black text-slate-900">₱<span x-text="totalValue"></span></p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-4 border-t border-blue-200">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-[9px] font-bold text-blue-600 uppercase">30% Downpayment Due</p>
+                                    <p class="text-3xl font-black text-blue-600 tracking-tighter">₱<span x-text="downpayment"></span></p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[9px] font-bold text-gray-400 uppercase">Final Balance</p>
+                                    <p class="text-xs font-bold text-slate-600">₱<span x-text="balance"></span></p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="bg-gray-50 px-4 py-2 border-t border-gray-100">
+                <p class="text-[8px] text-gray-400 italic">** This is a simulator only. Actual allocations are determined by regional distributors at launch.</p>
+            </div>
         </div>
-        <div class="bg-gray-50 px-4 py-2 border-t border-gray-100">
-            <p class="text-[8px] text-gray-400 italic">** This is a simulator only. Actual allocations are determined by regional distributors at launch.</p>
-        </div>
-    </div>
-</section>
+    </section>
+
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
@@ -169,7 +183,6 @@
                 <h2 class="text-xl font-black text-slate-900 uppercase">Your Crate</h2>
                 <button @click="cartOpen = false" class="text-3xl">&times;</button>
             </div>
-
             <div class="flex-1 space-y-6">
                 <template x-for="(item, index) in cart" :key="index">
                     <div class="flex items-start border-b border-gray-100 pb-4">
@@ -192,19 +205,17 @@
                     </div>
                 </template>
             </div>
-
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
                 <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
                     <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
                     <div class="flex justify-between text-sm font-black text-blue-600 uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
                 </div>
-
                 <div class="grid grid-cols-1 gap-2">
                     <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-slate-800 transition-all">
-                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout (Paste Order in Messenger)
+                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout
                     </button>
                     <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-blue-700 transition-all border-2 border-blue-400">
-                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
+                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout
                     </button>
                 </div>
             </div>
@@ -218,7 +229,6 @@
                 <h2 class="text-xl font-black text-slate-900 uppercase">Order Breakdown</h2>
                 <button @click="paymentModalOpen = false" class="text-3xl">&times;</button>
             </div>
-
             <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <template x-for="item in cart">
@@ -230,63 +240,76 @@
                             <div class="flex justify-between text-[9px] font-bold text-blue-500 uppercase mt-1">
                                 <span class="text-blue-600 text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span>
                                 <span>ETA: <span x-text="item.eta"></span></span>
-                                <span>Balance: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
+                                <span>Bal: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
                             </div>
                         </div>
                     </template>
                 </div>
-
-                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-inner space-y-1">
-                    <div class="flex justify-between text-[10px] font-bold uppercase opacity-80"><span>Total Downpayment Due (30%)</span></div>
-                    <div class="flex justify-between items-baseline">
-                        <span class="text-2xl font-black tracking-tighter">₱<span x-text="cartDepositTotal"></span></span>
-                        <span class="text-[10px] font-black uppercase">To be paid now</span>
-                    </div>
-                    <div class="pt-2 mt-2 border-t border-white/20 flex justify-between text-[10px] font-bold uppercase">
-                        <span>Balance Remaining Later:</span>
-                        <span>₱<span x-text="cartBalanceTotal"></span></span>
-                    </div>
+                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-inner">
+                    <p class="text-[10px] font-bold uppercase opacity-80">Total DP Due (30%)</p>
+                    <p class="text-2xl font-black">₱<span x-text="cartDepositTotal"></span></p>
                 </div>
-
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 px-4 font-medium">Pay via Instapay. <strong class="text-slate-800">SCREENSHOT THIS</strong> & payment receipt.</p>
                     <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Orders amounting to <strong class="text-slate-800">₱50,000</strong> and above may settle via <strong class="text-slate-800">Private Message</strong>.</p>
-                    <p class="text-[11px] text-black-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
-
-            <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4 shadow-lg">
-                Send Proof to Messenger
-            </button>
+            <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4">Send Proof to Messenger</button>
         </div>
     </div>
 
     <script>
-        // --- EASY EDIT INVENTORY ---
         const PREORDER_INVENTORY = [
-            { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, eta:"July 2026", image: "https://i.ibb.co/zV4R9N3z/booster-box.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, eta:"July 2026", image: "https://i.ibb.co/Ndd06Gp7/etb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, eta:"July 2026", image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, eta:"July 2026", image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, eta:"July 2026", image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 6, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, eta:"July 2026", image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 7, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, eta:"July 2026", image: "https://i.ibb.co/F4jx7w5z/3packblister.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 8, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://i.ibb.co/z0DbPsV/checklane.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 9, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", eta:"June 2026", price: 1400, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 10, name: "[ME04] Mega Greninja Ex Premium Collection", type: "Premium Collection", set: "ME04 Chaos Rising", price: 3600, unitsPerCase: 6, eta:"July 2026", image: "https://antiquestore.com.mx/wp-content/uploads/2026/04/producto-28.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 11, name: "ST11 Starter Deck ENG [Aquatic Assault]", type: "Gundam Starter Deck EN", set: "ST11", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/RpzgwW1Q/ST11.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 12, name: "ST12 Starter Deck ENG [Raging Onslaught]", type: "Gundam Starter Deck EN", set: "ST12", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/zhhdgRsY/ST12.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 13, name: "ST13 Starter Deck ENG [Silent Barrage]", type: "Gundam Starter Deck EN", set: "ST13", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/jP5Btfx6/ST13.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 14, name: "ST14 Starter Deck ENG [Heavy Dominion]", type: "Gundam Starter Deck EN", set: "ST14", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/j0H539B/ST14.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 15, name: "Dragon Ball Super Card Game Fusion World (JP) Booster Pack [FB11]", type: "Dragon Ball Fusion World Booster JP", set: "FB11", price: 3500, unitsPerCase: 12, eta:"September 2026", image: "https://i.ibb.co/v6GQqC4J/DBFWJAPTEMPLATE.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 16, name: "Dragon Ball Super Card Game Masters (ENG) Booster Pack Ultra Bout #5 [B32]", type: "Dragon Ball Master Booster Box EN ", set: "B32", price: 9200, unitsPerCase: 12, eta:"November 2026", image: "https://i.ibb.co/7tFkdkzH/DBMB32.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
+            { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, eta:"July 2026", image: "https://i.ibb.co/zV4R9N3z/booster-box.png", soldOut: true },
+            { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, eta:"July 2026", image: "https://i.ibb.co/Ndd06Gp7/etb.png", soldOut: true },
+            { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, eta:"July 2026", image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", soldOut: true },
+            { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, eta:"July 2026", image: "https://i.ibb.co/vtK4b8B/sleeved.png", soldOut: true },
+            { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, eta:"July 2026", image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", soldOut: true },
+            { id: 6, name: "Build and Battle", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, eta:"July 2026", image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", soldOut: true },
+            { id: 7, name: "3 Pack Blister Assorted", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, eta:"July 2026", image: "https://i.ibb.co/F4jx7w5z/3packblister.png", soldOut: true },
+            { id: 8, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://i.ibb.co/z0DbPsV/checklane.png", soldOut: true },
+            { id: 9, name: "First Partner Illustration Collection", type: "Illustration Collection", set: "Series 2", eta:"June 2026", price: 1400, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", soldOut: false },
+            { id: 10, name: "[ME04] Mega Greninja Ex Premium", type: "Premium Collection", set: "ME04 Chaos Rising", price: 3600, unitsPerCase: 6, eta:"July 2026", image: "https://antiquestore.com.mx/wp-content/uploads/2026/04/producto-28.png", soldOut: false },
+            { id: 11, name: "ST11 Starter Deck ENG", type: "Gundam Deck", set: "ST11", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/RpzgwW1Q/ST11.png", soldOut: true },
+            { id: 12, name: "ST12 Starter Deck ENG", type: "Gundam Deck", set: "ST12", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/zhhdgRsY/ST12.png", soldOut: true },
+            { id: 13, name: "ST13 Starter Deck ENG", type: "Gundam Deck", set: "ST13", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/jP5Btfx6/ST13.png", soldOut: true },
+            { id: 14, name: "ST14 Starter Deck ENG", type: "Gundam Deck", set: "ST14", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/j0H539B/ST14.png", soldOut: true },
+            { id: 15, name: "Fusion World (JP) Booster Pack [FB11]", type: "DB Booster JP", set: "FB11", price: 3500, unitsPerCase: 12, eta:"September 2026", image: "https://i.ibb.co/v6GQqC4J/DBFWJAPTEMPLATE.png", soldOut: false },
+            { id: 16, name: "Masters (ENG) Ultra Bout #5 [B32]", type: "DB Booster Box EN", set: "B32", price: 9200, unitsPerCase: 12, eta:"November 2026", image: "https://i.ibb.co/7tFkdkzH/DBMB32.png", soldOut: false },
         ];
 
+        // --- ALLOCATION CALCULATOR LOGIC ---
+        function allocationCalc(inventory) {
+            return {
+                samples: inventory,
+                selectedid: inventory[0].id,
+                inputQty: 1,
+                fillRate: 100,
+                get currentProduct() {
+                    return this.samples.find(p => p.id == this.selectedid) || { price: 0 };
+                },
+                get calculatedUnits() {
+                    return Math.floor(this.inputQty * (this.fillRate / 100));
+                },
+                get totalValue() {
+                    return (this.calculatedUnits * this.currentProduct.price).toLocaleString();
+                },
+                get downpayment() {
+                    return (this.calculatedUnits * this.currentProduct.price * 0.3).toLocaleString();
+                },
+                get balance() {
+                    const total = this.calculatedUnits * this.currentProduct.price;
+                    return (total - (total * 0.3)).toLocaleString();
+                }
+            }
+        }
+
+        // --- MAIN SHOP LOGIC ---
         function shop() {
             return {
                 cartOpen: false,
                 paymentModalOpen: false,
+                showPlanner: false, // Control the visibility of the calculator
                 searchQuery: '',
                 cart: [],
                 products: PREORDER_INVENTORY.map(p => ({ ...p, selectedQty: 1, isCase: false, justAdded: false })),
@@ -294,8 +317,6 @@
                 get filteredProducts() {
                     return this.products
                         .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
-                        // The magic happens here: 
-                        // false (0) comes before true (1), so opened preorders stay on top.
                         .sort((a, b) => a.soldOut - b.soldOut);
                 },
                 get totalItems() {
@@ -343,12 +364,10 @@
                     this.cart.forEach(i => {
                         summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
                     });
-                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
-                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
+                    summary += `TOTAL DP: ₱${this.cartDepositTotal}\nBALANCE: ₱${this.cartBalanceTotal}\n`;
                     summary += `STATUS: Payment Pending\n`;
-                    summary += `**Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.**`;
                     await navigator.clipboard.writeText(summary);
-                    alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
+                    alert("Order copied! Opening Messenger...");
                     window.open("https://m.me/cratedropcollective", "_blank");
                 }
             }
