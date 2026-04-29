@@ -133,6 +133,126 @@
         </div>
     </section>
 
+    <div x-data="orderGenerator()" class="bg-gray-100 min-h-screen p-4 md:p-10 font-sans">
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 self-start">
+            <h2 class="text-xl font-black uppercase tracking-tighter mb-6">Order Slip Generator</h2>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Customer Name</label>
+                        <input type="text" x-model="order.customer" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Order Date</label>
+                        <input type="text" x-model="order.date" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-500">Product Name</label>
+                    <input type="text" x-model="order.productName" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Qty</label>
+                        <input type="number" x-model.number="order.qty" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">Price per Unit</label>
+                        <input type="number" x-model.number="order.price" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-gray-500">ETA</label>
+                        <input type="text" x-model="order.eta" class="w-full p-2 bg-gray-50 border rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <button @click="downloadReceipt" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all mt-4">
+                    Download Image for Customer
+                </button>
+            </div>
+        </div>
+
+        <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto overflow-hidden" style="width: 800px; min-height: 640px;">
+            <div class="p-8 flex justify-between items-start">
+                <div class="flex flex-col">
+                    <div class="flex items-center space-x-1">
+                        <div class="w-8 h-8 bg-blue-700 rounded-sm flex items-center justify-center text-white font-black italic">C</div>
+                        <div class="w-8 h-8 bg-red-500 rounded-sm flex items-center justify-center text-white font-black italic">C</div>
+                    </div>
+                    <span class="text-[12px] font-black text-slate-800 tracking-tighter mt-1">CRATEDROP<span class="text-yellow-500">COLLECTIVE</span></span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-4xl font-black text-blue-800 italic tracking-tighter">ORDER CONFIRMATION</h1>
+                    <div class="bg-blue-600 text-white px-4 py-2 font-bold text-sm">DATE: <span x-text="order.date"></span></div>
+                </div>
+            </div>
+
+            <div class="bg-blue-700 text-white px-8 py-2 flex justify-between font-bold text-sm uppercase tracking-wider">
+                <span>Customer Name: <span x-text="order.customer" class="ml-2 font-black"></span></span>
+                <span>Product ETA: <span x-text="order.eta" class="ml-2 font-black"></span></span>
+            </div>
+
+            <div class="px-8 mt-4 grid grid-cols-12 gap-2 text-blue-800 font-black text-[10px] uppercase border-b-4 border-blue-800 pb-2">
+                <div class="col-span-1">Qty.</div>
+                <div class="col-span-1">Units</div>
+                <div class="col-span-6">Product Name</div>
+                <div class="col-span-2 text-right">Price Per Unit</div>
+                <div class="col-span-2 text-right">Total</div>
+            </div>
+
+            <div class="px-8 py-4 grid grid-cols-12 gap-2 text-slate-800 font-bold text-sm items-center min-h-[100px]">
+                <div class="col-span-1" x-text="order.qty"></div>
+                <div class="col-span-1 text-[10px]">UNITS</div>
+                <div class="col-span-6 text-xs" x-text="order.productName"></div>
+                <div class="col-span-2 text-right">₱<span x-text="order.price.toLocaleString()"></span></div>
+                <div class="col-span-2 text-right">₱<span x-text="(order.qty * order.price).toLocaleString()"></span></div>
+            </div>
+
+            <div class="px-8 flex flex-col items-end space-y-2 mt-4">
+                <div class="w-full max-w-[400px] bg-blue-700 text-white text-center py-1 font-bold text-[10px] uppercase">Total DP Paid</div>
+                <div class="w-full max-w-[400px] text-center font-black text-xl text-slate-800 pb-2">₱<span x-text="(order.qty * order.price * 0.3).toLocaleString()"></span></div>
+                
+                <div class="w-full max-w-[400px] bg-blue-700 text-white text-center py-1 font-bold text-[10px] uppercase">Total Balance</div>
+                <div class="w-full max-w-[400px] text-center font-black text-xl text-slate-800">₱<span x-text="(order.qty * order.price * 0.7).toLocaleString()"></span></div>
+            </div>
+
+            <div class="px-12 py-8 text-[9px] text-gray-500 text-center leading-tight font-medium">
+                By placing a pre-order, you confirm that you have understood all the information provided below, including the risks associated with your order. You also acknowledge and accept the possibility of pre-order country allocation cuts or reduction. Cancellations are not allowed, and the 30% pre-order deposit will be forfeited if the payment cannot be made.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function orderGenerator() {
+    return {
+        order: {
+            customer: 'HANS FAUSTO',
+            date: 'APR. 15, 2026',
+            productName: 'Gundam Card Game (English) Booster Pack Stardust Trails [GD06]',
+            qty: 2,
+            price: 7140,
+            eta: 'EST. NOV. 30, 2026'
+        },
+        downloadReceipt() {
+            const canvas = document.getElementById('receipt-canvas');
+            html2canvas(canvas, { scale: 2 }).then(canvasElement => {
+                const link = document.createElement('a');
+                link.download = `Order_${this.order.customer.replace(/\s+/g, '_')}.png`;
+                link.href = canvasElement.toDataURL('image/png');
+                link.click();
+            });
+        }
+    }
+}
+</script>
+
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             <template x-for="product in filteredProducts" :key="product.id">
