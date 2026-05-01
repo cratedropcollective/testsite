@@ -361,7 +361,12 @@ function orderGenerator() {
 </script>
 
     <main class="container mx-auto py-6 px-2 md:px-4">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
+        <!-- Loading State (Shows while fetching from Google Sheets) -->
+        <div x-show="isLoading" class="text-center py-12">
+            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
             <template x-for="product in filteredProducts" :key="product.id">
                 <div :class="product.soldOut ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
                     <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
@@ -503,62 +508,102 @@ function orderGenerator() {
     </div>
 
     <script>
-        const PREORDER_INVENTORY = [
-            { id: 1, name: "Booster Box [36 packs]", type: "Full BB", set: "ME05", price: 8500, unitsPerCase: 6, eta:"July 2026", image: "https://i.ibb.co/zV4R9N3z/booster-box.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 2, name: "Elite Trainer Box", type: "ETB", set: "ME05", price: 3600, unitsPerCase: 10, eta:"July 2026", image: "https://i.ibb.co/Ndd06Gp7/etb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 3, name: "Half Booster Box [18 packs]", type: "Half BB", set: "ME05", price: 4300, unitsPerCase: 12, eta:"July 2026", image: "https://i.ibb.co/LhRRkZ5Y/halfbb.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 4, name: "Sleeved Booster Pack", type: "Sleeved Pack", set: "ME05", price: 290, unitsPerCase: 144, eta:"July 2026", image: "https://i.ibb.co/vtK4b8B/sleeved.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 5, name: "Booster Bundle [6 packs]", type: "Booster Bundle", set: "ME05", price: 2000, unitsPerCase: 25, eta:"July 2026", image: "https://i.ibb.co/NgxHb5G5/booster-bundle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 6, name: "Build and Battle [4 packs + Deck + Promo Card)", type: "Build and Battle", set: "ME05", price: 1700, unitsPerCase: 60, eta:"July 2026", image: "https://i.ibb.co/k2NTSbX4/build-and-battle.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 7, name: "3 Pack Blister Assorted [3 packs]", type: "3 Pack Blister", set: "ME05", price: 950, unitsPerCase: 24, eta:"July 2026", image: "https://i.ibb.co/F4jx7w5z/3packblister.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 8, name: "Checklane Blister [1 pack]", type: "Checklane Blister", set: "ME05", price: 350, unitsPerCase: 288, eta:"July 2026", image: "https://i.ibb.co/z0DbPsV/checklane.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 9, name: "First Partner Illustration Collection [Series 2]", type: "Illustration Collection", set: "Series 2", eta:"June 2026", price: 1400, unitsPerCase: 6, image: "https://cdn11.bigcommerce.com/s-vz3etek0gv/images/stencil/1200w/products/80302/110952/PKU10395_web_Box_3D_L__22499.1775155834.jpg", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 10, name: "[ME04] Mega Greninja Ex Premium Collection", type: "Premium Collection", set: "ME04 Chaos Rising", price: 3600, unitsPerCase: 6, eta:"July 2026", image: "https://antiquestore.com.mx/wp-content/uploads/2026/04/producto-28.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 11, name: "ST11 Starter Deck ENG [Aquatic Assault]", type: "Gundam Starter Deck EN", set: "ST11", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/RpzgwW1Q/ST11.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 12, name: "ST12 Starter Deck ENG [Raging Onslaught]", type: "Gundam Starter Deck EN", set: "ST12", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/zhhdgRsY/ST12.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 13, name: "ST13 Starter Deck ENG [Silent Barrage]", type: "Gundam Starter Deck EN", set: "ST13", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/jP5Btfx6/ST13.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 14, name: "ST14 Starter Deck ENG [Heavy Dominion]", type: "Gundam Starter Deck EN", set: "ST14", price: 1500, unitsPerCase: 6, eta:"September 2026", image: "https://i.ibb.co/j0H539B/ST14.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: true },
-            { id: 15, name: "Dragon Ball Super Card Game Fusion World (JP) Booster Pack [FB11]", type: "Dragon Ball Fusion World Booster JP", set: "FB11", price: 3500, unitsPerCase: 12, eta:"September 2026", image: "https://i.ibb.co/v6GQqC4J/DBFWJAPTEMPLATE.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-            { id: 16, name: "Dragon Ball Super Card Game Masters (ENG) Booster Pack Ultra Bout #5 [B32]", type: "Dragon Ball Master Booster Box EN ", set: "B32", price: 9200, unitsPerCase: 12, eta:"November 2026", image: "https://i.ibb.co/7tFkdkzH/DBMB32.png", selectedQty: 1, isCase: false, justAdded: false, soldOut: false },
-        ];
-
         function shop() {
             return {
+                isLoading: true,
                 cartOpen: false,
                 paymentModalOpen: false,
                 searchQuery: '',
                 cart: [],
-                products: PREORDER_INVENTORY.map(p => ({ ...p, selectedQty: 1, isCase: false, justAdded: false })),
+                products: [], // Starts empty, filled by Google Sheets
                 
                 // --- Allocation Planner State ---
-               showPlanner: false,
-            calcSelectedId: PREORDER_INVENTORY[0].id,
-            calcInputQty: 1,
-            calcFillRate: 100,
-            calcIsCase: false,
+                showPlanner: false,
+                calcSelectedId: null,
+                calcInputQty: 1,
+                calcFillRate: 100,
+                calcIsCase: false,
+
+                // --- NEW: Fetch Data from Google Sheets ---
+                async init() {
+                    // PASTE YOUR PUBLISHED TSV LINK HERE
+                    const sheetUrl = https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv; 
+                    
+                    try {
+                        const response = await fetch(sheetUrl);
+                        const data = await response.text();
+                        this.parseTSV(data);
+                    } catch (error) {
+                        console.error('Error fetching inventory:', error);
+                        alert("Could not load inventory. Please refresh the page.");
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                // --- NEW: Convert TSV text to JavaScript Objects ---
+                parseTSV(tsvText) {
+                    const lines = tsvText.split(/\r?\n/); // Splits by row
+                    const headers = lines[0].split('\t').map(h => h.trim());
+                    const items = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue; // Skip blank rows
+                        const values = lines[i].split('\t');
+                        let product = {};
+                        
+                        headers.forEach((header, index) => {
+                            let val = values[index] ? values[index].trim() : '';
+                            
+                            // Convert text to numbers/booleans where needed
+                            if (['id', 'price', 'unitsPerCase'].includes(header)) {
+                                product[header] = Number(val);
+                            } else if (header === 'soldOut') {
+                                product[header] = (val.toUpperCase() === 'TRUE');
+                            } else {
+                                product[header] = val;
+                            }
+                        });
+
+                        // Add the variables Alpine needs to run the cart
+                        product.selectedQty = 1;
+                        product.isCase = false;
+                        product.justAdded = false;
+
+                        items.push(product);
+                    }
+                    
+                    this.products = items;
+                    // Set the default ID for the Allocation Planner once loaded
+                    if (this.products.length > 0) {
+                        this.calcSelectedId = this.products[0].id;
+                    }
+                },
                 
                 get calculatedUnits() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                if (!product) return 0;
-                const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
-                return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
-            },
-            
-            get calculatedTotalValue() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
-            },
-            
-            get calculatedDownpayment() {
-                const product = this.products.find(p => p.id == this.calcSelectedId);
-                if (!product) return "0";
+                    if (!this.calcSelectedId) return 0;
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return 0;
+                    const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
+                    return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
+                },
                 
-                // DP is always calculated on the INITIAL TARGET (how much money they must put out)
-                const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
-                const totalTargetValue = basePrice * this.calcInputQty;
+                get calculatedTotalValue() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
+                },
                 
-                return (totalTargetValue * 0.3).toLocaleString();
-            },
+                get calculatedDownpayment() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return "0";
+                    
+                    const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
+                    const totalTargetValue = basePrice * this.calcInputQty;
+                    
+                    return (totalTargetValue * 0.3).toLocaleString();
+                },
 
                 // --- Original Shop Methods ---
                 get filteredProducts() {
