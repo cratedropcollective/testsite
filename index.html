@@ -140,44 +140,63 @@
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="product.soldOut ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
-                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
-                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded shadow-sm uppercase tracking-wider z-10" x-text="product.type"></span>
-                        <img :src="product.image" class="max-h-full max-w-full object-contain">
-                        <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded shadow-sm" x-text="'ETA: ' + product.eta"></span>
+    <template x-for="product in filteredProducts" :key="product.id">
+        <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
+            
+            <!-- Type Badge & Image -->
+            <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
+                <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded shadow-sm uppercase tracking-wider z-10" x-text="product.type"></span>
+                <img :src="product.image" class="max-h-full max-w-full object-contain">
+                <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded shadow-sm" x-text="'ETA: ' + product.eta"></span>
+            </div>
+            
+            <div class="p-3 md:p-5 flex-1 flex flex-col">
+                <!-- Set & Name -->
+                <p class="text-[12px] md:text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
+                <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
+                
+                <!-- Unit/Case Toggle -->
+                <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
+                    <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
+                    <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
+                </div>
+
+                <!-- INSERTED: Countdown Timer UI -->
+                <template x-if="product.deadline">
+                    <div class="mb-3 text-[9px] font-bold p-2 rounded-lg border flex items-center justify-center gap-2 uppercase tracking-tight"
+                         :class="isExpired(product.deadline) ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-700 border-blue-100'">
+                        <span x-text="isExpired(product.deadline) ? '🛑 Pre-Order Closed' : '⏳ Closes: ' + getCountdown(product.deadline)"></span>
                     </div>
-                    
-                    <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <p class="text-[12px] md:text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
-                        
-                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
-                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
-                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
-                        </div>
+                </template>
 
-                        <div class="space-y-2 mb-4">
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDepositx(product).toLocaleString()"></span></div>
-                            <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
-                        </div>
+                <!-- Pricing Section -->
+                <div class="space-y-2 mb-4">
+                    <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDepositx(product).toLocaleString()"></span></div>
+                    <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
+                    <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
+                </div>
 
-                        <div class="flex items-center space-x-2 mb-3">
-                            <div class="flex items-center border border-gray-300 rounded-lg h-7 bg-gray-50">
-                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold">-</button>
-                                <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
-                                <button @click="product.selectedQty++" class="px-2 font-bold">+</button>
-                            </div>
-                        </div>
-
-                        <button @click="addToCart(product)" :disabled="product.soldOut" :class="product.soldOut ? 'bg-gray-400' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
-                            <span x-text="product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate')"></span>
-                        </button>
+                <!-- Quantity Selector -->
+                <div class="flex items-center space-x-2 mb-3">
+                    <div class="flex items-center border border-gray-300 rounded-lg h-7 bg-gray-50">
+                        <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold">-</button>
+                        <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
+                        <button @click="product.selectedQty++" class="px-2 font-bold">+</button>
                     </div>
                 </div>
-            </template>
+
+                <!-- Updated Add to Crate Button -->
+                <button 
+                    @click="addToCart(product)" 
+                    :disabled="product.soldOut || isExpired(product.deadline)" 
+                    :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" 
+                    class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
+                    <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
+                </button>
+            </div>
         </div>
+    </template>
+</div>
     </main>
 
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
@@ -288,49 +307,57 @@
                 paymentModalOpen: false,
                 searchQuery: '',
                 cart: [],
-                products: [], // Starts empty, filled by Google Sheets
+                products: [], 
+                now: new Date().getTime(), // Track current time for countdowns
                 
-                // --- Allocation Planner State ---
                 showPlanner: false,
                 calcSelectedId: null,
                 calcInputQty: 1,
                 calcFillRate: 100,
                 calcIsCase: false,
 
-                // --- NEW: Fetch Data from Google Sheets ---
                 async init() {
-                    // PASTE YOUR PUBLISHED TSV LINK HERE
                     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
                     
+                    // Update the clock every second
+                    setInterval(() => {
+                        this.now = new Date().getTime();
+                    }, 1000);
+
                     try {
                         const response = await fetch(sheetUrl);
+                        if (!response.ok) throw new Error('Network response was not ok');
                         const data = await response.text();
                         this.parseTSV(data);
                     } catch (error) {
                         console.error('Error fetching inventory:', error);
-                        alert("Could not load inventory. Please refresh the page.");
                     } finally {
                         this.isLoading = false;
                     }
                 },
 
-                // --- NEW: Convert TSV text to JavaScript Objects ---
                 parseTSV(tsvText) {
-                    const lines = tsvText.split(/\r?\n/); // Splits by row
+                    const lines = tsvText.split(/\r?\n/);
+                    if (lines.length < 2) return;
+
                     const headers = lines[0].split('\t').map(h => h.trim());
                     const items = [];
 
                     for (let i = 1; i < lines.length; i++) {
-                        if (!lines[i].trim()) continue; // Skip blank rows
-                        const values = lines[i].split('\t');
+                        const line = lines[i].trim();
+                        if (!line) continue; 
+
+                        const values = line.split('\t');
                         let product = {};
                         
                         headers.forEach((header, index) => {
                             let val = values[index] ? values[index].trim() : '';
                             
-                            // Convert text to numbers/booleans where needed
-                            if (['id', 'price', 'unitsPerCase'].includes(header)) {
-                                product[header] = Number(val);
+                            if (header === 'preorderDeadline') {
+                                // Convert date string (YYYY-MM-DD HH:MM) to timestamp
+                                product.deadline = val ? new Date(val).getTime() : null;
+                            } else if (['id', 'price', 'unitsPerCase'].includes(header)) {
+                                product[header] = Number(val) || 0;
                             } else if (header === 'soldOut') {
                                 product[header] = (val.toUpperCase() === 'TRUE');
                             } else {
@@ -338,19 +365,33 @@
                             }
                         });
 
-                        // Add the variables Alpine needs to run the cart
                         product.selectedQty = 1;
                         product.isCase = false;
                         product.justAdded = false;
-
                         items.push(product);
                     }
                     
                     this.products = items;
-                    // Set the default ID for the Allocation Planner once loaded
                     if (this.products.length > 0) {
                         this.calcSelectedId = this.products[0].id;
                     }
+                },
+
+                getCountdown(deadline) {
+                    if (!deadline) return null;
+                    const distance = deadline - this.now;
+                    if (distance < 0) return "CLOSED";
+
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                },
+
+                isExpired(deadline) {
+                    return deadline && (deadline - this.now < 0);
                 },
                 
                 get calculatedUnits() {
@@ -364,21 +405,18 @@
                 get calculatedTotalValue() {
                     if (!this.calcSelectedId) return "0";
                     const product = this.products.find(p => p.id == this.calcSelectedId);
-                    return (this.calculatedUnits * (product ? product.price : 0)).toLocaleString();
+                    const units = this.calculatedUnits;
+                    return (units * (product ? product.price : 0)).toLocaleString();
                 },
                 
                 get calculatedDownpayment() {
                     if (!this.calcSelectedId) return "0";
                     const product = this.products.find(p => p.id == this.calcSelectedId);
                     if (!product) return "0";
-                    
                     const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
-                    const totalTargetValue = basePrice * this.calcInputQty;
-                    
-                    return (totalTargetValue * 0.3).toLocaleString();
+                    return (basePrice * this.calcInputQty * 0.3).toLocaleString();
                 },
 
-                // --- Original Shop Methods ---
                 get filteredProducts() {
                     return this.products
                         .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
@@ -402,16 +440,19 @@
                     const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     return base * 0.3 * (product.selectedQty || 1);
                 },
-                calculateLiveDepositx(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 1 * (product.selectedQty || 1);
-                },
                 addToCart(product) {
                     const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
-                    if (existing) { existing.quantity += product.selectedQty; } 
-                    else {
-                        this.cart.push({ ...product, productId: product.id, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
+                    if (existing) { 
+                        existing.quantity += product.selectedQty; 
+                    } else {
+                        this.cart.push({ 
+                            ...product, 
+                            productId: product.id, 
+                            fullPrice: price, 
+                            depositPrice: price * 0.3, 
+                            quantity: product.selectedQty 
+                        });
                     }
                     product.justAdded = true;
                     setTimeout(() => product.justAdded = false, 1000);
@@ -431,14 +472,12 @@
                     });
                     summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
                     summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
-                    summary += `STATUS: Payment Pending\n`;
-                    summary += `**Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.**`;
+                    summary += `STATUS: Payment Pending\n\n`;
+                    summary += `Pre-Orders are subject to country allocation. By placing this order, I acknowledge the possibility of allocation cuts.`;
+                    
                     await navigator.clipboard.writeText(summary);
-                    alert("Opening Messenger! [Fast Checkout]: Simply Paste your order. [Self Checkout]: Send Screenshot of Order Breakdown and Proof of Payment.");
+                    alert("Order copied! Opening Messenger...");
                     window.open("https://m.me/cratedropcollective", "_blank");
                 }
             }
         }
-    </script>
-</body>
-</html>
