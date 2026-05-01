@@ -470,20 +470,35 @@
                     this.paymentModalOpen = true;
                 },
                 async confirmAndRedirect() {
-                    let summary = "🛒 PRE ORDER SUMMARY\n-----------------\n";
-                    this.cart.forEach(i => {
-                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
-                    });
-                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
-                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
-                    summary += `STATUS: Payment Pending\n\n`;
-                    summary += `Pre-Orders are subject to country allocation.`;
-                    
-                    await navigator.clipboard.writeText(summary);
-                    alert("Order copied! Opening Messenger...");
-                    window.open("fb-messenger://user-thread/745474078647634", "_blank");
-                }
-            }
+    // 1. Generate and Copy the Order Summary
+    let summary = "🛒 PRE ORDER SUMMARY\n-----------------\n";
+    this.cart.forEach(i => {
+        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+    });
+    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
+    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
+    summary += `STATUS: Payment Pending\n\n`;
+    summary += `Pre-Orders are subject to country allocation.`;
+
+    try {
+        await navigator.clipboard.writeText(summary);
+    } catch (err) {
+        console.error('Clipboard failed', err);
+    }
+
+    // 2. Platform Detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // 3. Conditional Redirection
+    if (isIOS) {
+        // Use the direct Messenger ID for iOS to trigger the app immediately
+        window.location.href = "fb-messenger://user-thread/745474078647634";
+    } else {
+        // Use the standard URL for Desktop/Android
+        window.open("https://m.me/cratedropcollective", "_blank");
+    }
+}
         }
     </script>
 </body>
