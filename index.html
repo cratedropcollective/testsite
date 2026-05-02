@@ -11,7 +11,6 @@
         [x-cloak] { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .font-brand { font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-init="init()" x-cloak>
@@ -20,22 +19,21 @@
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
             <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
-                <span class="text-lg md:text-xl font-black tracking-tighter leading-none uppercase">Crate Drop</span>
-                <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em] uppercase">Collective</span>
+                <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
+                <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
             
             <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
+                 <a href="/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
+                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
                  <a href="/preorder" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Preorder</a>
             </div>
             
-            <div class="flex items-center space-x-2 md:space-x-4">
-                <!-- User/Account Button -->
-                <button @click="profileModalOpen = true" class="p-2 hover:bg-white/10 rounded-full transition-colors relative">
-                    <i class="fas fa-user-circle text-lg" :class="user.name ? 'text-blue-400' : 'text-gray-400'"></i>
+            <div class="flex items-center space-x-4">
+                <!-- User Profile Trigger -->
+                <button @click="profileModalOpen = true" class="text-gray-400 hover:text-white transition-colors relative">
+                    <i class="fas fa-user-circle text-xl" :class="user.name ? 'text-blue-500' : ''"></i>
                 </button>
-
                 <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
                     <i class="fas fa-shopping-cart mr-2 text-xs"></i>
                     <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
@@ -55,19 +53,19 @@
                 </div>
                 <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors flex items-center justify-center shrink-0 shadow-sm">
                     <i class="fas fa-calculator md:mr-2"></i>
-                    <span x-text="showPlanner ? 'Hide Planner' : 'Planner'" class="ml-1"></span>
+                    <span x-text="showPlanner ? 'Hide Planner' : 'Allocation Planner'" class="hidden md:inline"></span>
+                    <span x-text="showPlanner ? 'Hide' : 'Planner'" class="md:hidden ml-1"></span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Allocation Planner Section -->
+    <!-- Allocation Planner Section (RETAINED FROM OLD DESIGN) -->
     <section x-show="showPlanner" x-transition class="container mx-auto px-2 md:px-4 mt-4 mb-4">
         <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
-            <div class="bg-slate-900 p-4 flex justify-between items-center text-white">
+            <div class="bg-slate-900 p-4 flex justify-between items-center">
                 <div>
-                    <h2 class="text-sm font-black uppercase">Allocation & DP Simulator</h2>
-                    <p class="text-[9px] text-blue-400 font-bold uppercase">Simulate order volume vs possible cuts</p>
+                    <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Simulator</h2>
                 </div>
                 <i class="fas fa-chart-pie text-blue-500"></i>
             </div>
@@ -79,18 +77,13 @@
                         </template>
                     </select>
                     <div class="flex bg-gray-100 p-1 rounded-xl">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all">UNIT</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all">CASE</button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="number" x-model.number="calcInputQty" class="p-2.5 bg-gray-100 rounded-xl text-xs font-bold" placeholder="Qty">
-                        <input type="number" x-model.number="calcFillRate" class="p-2.5 bg-gray-100 rounded-xl text-xs font-bold" placeholder="Fill Rate %">
+                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg">UNIT</button>
+                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg">CASE</button>
                     </div>
                 </div>
-                <div class="bg-blue-600 text-white p-5 rounded-2xl shadow-lg">
-                    <p class="text-[10px] font-bold uppercase opacity-80">30% Downpayment Required</p>
+                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-lg">
+                    <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Downpayment Needed (30%)</p>
                     <p class="text-3xl font-black">₱<span x-text="calculatedDownpayment"></span></p>
-                    <p class="text-[9px] mt-2 italic">Based on total order before allocation cuts.</p>
                 </div>
             </div>
         </div>
@@ -99,21 +92,21 @@
     <!-- Product Grid -->
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div x-show="isLoading" class="text-center py-12">
-            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Fetching Latest Drops...</p>
+            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col">
-                    <div class="relative aspect-square bg-white flex items-center justify-center p-4">
-                        <span class="absolute top-2 left-2 text-[8px] font-black bg-black text-white px-2 py-1 rounded z-10 uppercase" x-text="product.type"></span>
+                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
+                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
+                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded z-10 uppercase tracking-wider" x-text="product.type"></span>
                         <img :src="product.image" class="max-h-full max-w-full object-contain">
                         <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded" x-text="'ETA: ' + product.eta"></span>
                     </div>
                     
                     <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <p class="text-[10px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs md:text-sm font-bold leading-tight mb-2 h-10 overflow-hidden" x-text="product.name"></h2>
+                        <p class="text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
+                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
                         
                         <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
                             <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
@@ -121,26 +114,22 @@
                         </div>
 
                         <div class="mb-3 text-[9px] font-bold p-2 rounded-lg border text-center uppercase" :class="isExpired(product.deadline) ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'">
-                            <span x-text="isExpired(product.deadline) ? '🛑 Closed' : '⏳ ' + getCountdown(product.deadline)"></span>
+                            <span x-text="isExpired(product.deadline) ? '🛑 Closed' : '⏳ Closes: ' + getCountdown(product.deadline)"></span>
                         </div>
 
-                        <div class="space-y-1 mb-4">
-                            <div class="text-[10px] font-bold text-gray-400 uppercase">30% Downpayment</div>
-                            <div class="text-lg font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
+                        <div class="space-y-2 mb-4">
+                            <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
+                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
                         </div>
 
-                        <div class="flex items-center space-x-2 mb-3">
-                            <div class="flex items-center border border-gray-300 rounded-lg h-8 w-full justify-between px-2">
-                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="font-bold text-blue-600">-</button>
-                                <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent text-xs font-bold outline-none">
-                                <button @click="product.selectedQty++" class="font-bold text-blue-600">+</button>
-                            </div>
+                        <div class="flex items-center border border-gray-300 rounded-lg h-7 bg-gray-50 mb-3">
+                            <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold">-</button>
+                            <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
+                            <button @click="product.selectedQty++" class="px-2 font-bold">+</button>
                         </div>
 
-                        <button @click="addToCart(product)" :disabled="product.soldOut || isExpired(product.deadline)" 
-                            :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400' : (product.justAdded ? 'bg-green-500' : 'bg-black hover:bg-blue-600')" 
-                            class="w-full h-10 rounded-lg text-white text-[10px] font-bold uppercase transition-all">
-                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Out of Stock' : (product.justAdded ? 'Added!' : 'Add to Crate'))"></span>
+                        <button @click="addToCart(product)" :disabled="product.soldOut || isExpired(product.deadline)" :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
+                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
                         </button>
                     </div>
                 </div>
@@ -148,26 +137,21 @@
         </div>
     </main>
 
-    <!-- User Profile Modal -->
+    <!-- Account Modal -->
     <div x-show="profileModalOpen" class="fixed inset-0 z-[100]" x-cloak>
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="profileModalOpen = false"></div>
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl">
-            <h2 class="text-lg font-black uppercase mb-4">Customer Account</h2>
+            <h2 class="text-lg font-black uppercase mb-4">Customer Details</h2>
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] font-bold uppercase text-gray-400">Full Name</label>
-                    <input type="text" x-model="user.name" class="w-full p-2 bg-gray-100 rounded-lg text-sm border-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" x-model="user.name" class="w-full p-2 bg-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold uppercase text-gray-400">Contact Number</label>
-                    <input type="text" x-model="user.contact" class="w-full p-2 bg-gray-100 rounded-lg text-sm border-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" x-model="user.contact" class="w-full p-2 bg-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-gray-400">FB Profile Link (Optional)</label>
-                    <input type="text" x-model="user.fb" class="w-full p-2 bg-gray-100 rounded-lg text-sm border-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button @click="saveProfile()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase">Save Information</button>
-                <p class="text-[9px] text-gray-400 text-center uppercase">Details are saved locally on your device.</p>
+                <button @click="saveProfile()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase">Save Profile</button>
             </div>
         </div>
     </div>
@@ -178,23 +162,23 @@
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 shadow-2xl flex flex-col">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-xl font-black text-slate-900 uppercase">Your Crate</h2>
-                <button @click="cartOpen = false" class="text-2xl">&times;</button>
+                <button @click="cartOpen = false" class="text-3xl">&times;</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto space-y-4 no-scrollbar">
+            <div class="flex-1 space-y-6 overflow-y-auto no-scrollbar">
                 <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex items-center border-b border-gray-50 pb-4">
+                    <div class="flex items-start border-b border-gray-100 pb-4">
                         <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-gray-50 p-1 rounded-lg">
                         <div class="flex-1">
                             <p class="font-bold text-xs" x-text="item.name"></p>
-                            <p class="text-[9px] text-blue-600 font-bold uppercase" x-text="item.isCase ? 'Case Selection' : 'Unit Selection'"></p>
-                            <div class="flex justify-between items-center mt-1">
+                            <p class="text-[9px] text-blue-600 font-bold uppercase" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></p>
+                            <div class="flex justify-between items-center mt-2">
                                 <div class="flex items-center border rounded h-6 bg-gray-50">
                                     <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
                                     <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
                                     <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
                                 </div>
-                                <span class="font-black text-xs text-blue-600">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                                <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
                             </div>
                         </div>
                     </div>
@@ -202,19 +186,43 @@
             </div>
 
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                <div class="bg-gray-100 p-4 rounded-xl">
-                    <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Full Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
-                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase mt-1"><span>Downpayment (30%):</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
+                <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase"><span>Total Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
                 </div>
-
-                <div x-show="!user.name" class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[10px] font-bold text-amber-700 uppercase text-center">
-                    Please <button @click="profileModalOpen = true" class="underline">Set Profile</button> before checking out.
+                <div x-show="!user.name" class="text-center p-2 bg-amber-50 text-amber-700 text-[10px] font-bold rounded uppercase">
+                    Please <button @click="profileModalOpen = true" class="underline">Set Profile</button> to continue.
                 </div>
-
-                <button @click="confirmAndRedirect()" :disabled="!user.name" :class="!user.name ? 'opacity-50 cursor-not-allowed' : ''" class="w-full bg-black text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg hover:bg-blue-600 transition-all">
-                    <i class="fab fa-facebook-messenger mr-2"></i> Submit Order & Pay
-                </button>
+                <div class="grid grid-cols-1 gap-2">
+                    <button @click="confirmAndRedirect()" :disabled="!user.name" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase hover:bg-slate-800 disabled:opacity-50">
+                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout
+                    </button>
+                    <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase hover:bg-blue-700">
+                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout
+                    </button>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (RETAINED FROM OLD DESIGN) -->
+    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" x-cloak>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b pb-4">
+                <h2 class="text-xl font-black text-slate-900 uppercase">Order Summary</h2>
+                <button @click="paymentModalOpen = false" class="text-3xl">&times;</button>
+            </div>
+            <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
+                <div class="bg-blue-600 text-white p-4 rounded-xl shadow-inner">
+                    <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Total DP Due Now</p>
+                    <p class="text-2xl font-black">₱<span x-text="cartDepositTotal"></span></p>
+                </div>
+                <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
+                    <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
+                    <p class="text-[11px] text-gray-500 mt-4 px-4 font-medium italic">Pay via GCash/Instapay. Provide receipt in Messenger.</p>
+                </div>
+            </div>
+            <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4">Send Proof to Messenger</button>
         </div>
     </div>
 
@@ -224,12 +232,13 @@
                 isLoading: true,
                 cartOpen: false,
                 profileModalOpen: false,
+                paymentModalOpen: false,
                 showPlanner: false,
                 searchQuery: '',
                 cart: [],
-                products: [],
+                products: [], 
                 now: new Date().getTime(),
-                user: { name: '', contact: '', fb: '' },
+                user: { name: '', contact: '' },
                 
                 calcSelectedId: null,
                 calcInputQty: 1,
@@ -237,12 +246,11 @@
                 calcIsCase: false,
 
                 async init() {
-                    // Restoring user data
-                    const savedUser = localStorage.getItem('cdc_user');
-                    if (savedUser) this.user = JSON.parse(savedUser);
+                    const saved = localStorage.getItem('cdc_profile');
+                    if (saved) this.user = JSON.parse(saved);
 
-                    // New TSV Link from prompt
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0ppVCxJ3iyRtvhuVSbONCzFFx6g4nU-dpEHWx_FiSSCMJA6rdK0r5C1AeEP_13f_-Q77VL-6ggybF/pub?gid=0&single=true&output=tsv'; 
+                    // FIX: Using the correct Preorder TSV link
+                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
                     
                     setInterval(() => { this.now = new Date().getTime(); }, 1000);
 
@@ -251,7 +259,7 @@
                         const data = await response.text();
                         this.parseTSV(data);
                     } catch (error) {
-                        console.error('Inventory Error:', error);
+                        console.error('Fetch error:', error);
                     } finally {
                         this.isLoading = false;
                     }
@@ -259,6 +267,7 @@
 
                 parseTSV(tsvText) {
                     const lines = tsvText.split(/\r?\n/);
+                    if (lines.length < 2) return;
                     const headers = lines[0].split('\t').map(h => h.trim());
                     const items = [];
 
@@ -268,10 +277,12 @@
                         let product = {};
                         headers.forEach((header, index) => {
                             let val = values[index] ? values[index].trim() : '';
-                            if (header === 'preorderDeadline') product.deadline = val ? new Date(val).getTime() : null;
-                            else if (['id', 'price', 'unitsPerCase'].includes(header)) product[header] = Number(val) || 0;
-                            else if (header === 'soldOut') product[header] = (val.toUpperCase() === 'TRUE');
-                            else product[header] = val;
+                            let lower = header.toLowerCase();
+                            // Handle variations in header naming
+                            if (lower.includes('deadline')) product.deadline = val ? new Date(val).getTime() : null;
+                            else if (lower === 'id' || lower === 'price' || lower.includes('case')) product[lower.includes('case') ? 'unitsPerCase' : lower] = Number(val) || 0;
+                            else if (lower === 'soldout') product.soldOut = (val.toUpperCase() === 'TRUE');
+                            else product[header] = val; // Default map name, set, image, eta, type
                         });
                         product.selectedQty = 1;
                         product.isCase = false;
@@ -283,17 +294,22 @@
                 },
 
                 saveProfile() {
-                    localStorage.setItem('cdc_user', JSON.stringify(this.user));
+                    localStorage.setItem('cdc_profile', JSON.stringify(this.user));
                     this.profileModalOpen = false;
+                },
+
+                calculateFullPrice(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * (product.selectedQty || 1);
                 },
 
                 calculateLiveDeposit(product) {
                     const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 0.3 * product.selectedQty;
+                    return base * 0.3 * (product.selectedQty || 1);
                 },
 
                 getCountdown(deadline) {
-                    if (!deadline) return "NO DEADLINE";
+                    if (!deadline) return null;
                     const diff = deadline - this.now;
                     if (diff < 0) return "CLOSED";
                     const d = Math.floor(diff / 86400000);
@@ -305,9 +321,9 @@
                 isExpired(deadline) { return deadline && (deadline - this.now < 0); },
 
                 get calculatedDownpayment() {
-                    const p = this.products.find(x => x.id == this.calcSelectedId);
-                    if (!p) return 0;
-                    const base = this.calcIsCase ? (p.price * p.unitsPerCase) : p.price;
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return "0";
+                    const base = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
                     return (base * this.calcInputQty * 0.3).toLocaleString();
                 },
 
@@ -316,26 +332,15 @@
                 },
 
                 get totalItems() { return this.cart.reduce((s, i) => s + i.quantity, 0); },
-                get cartDepositTotal() { return this.cart.reduce((s, i) => s + (i.depositPrice * i.quantity), 0).toLocaleString(); },
-                get cartFullTotal() { return this.cart.reduce((s, i) => s + (i.fullPrice * i.quantity), 0).toLocaleString(); },
-                get cartBalanceTotal() {
-                    const full = this.cart.reduce((s, i) => s + (i.fullPrice * i.quantity), 0);
-                    const dp = this.cart.reduce((s, i) => s + (i.depositPrice * i.quantity), 0);
-                    return (full - dp).toLocaleString();
-                },
+                get cartDepositTotal() { return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString(); },
+                get cartFullTotal() { return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString(); },
 
                 addToCart(product) {
                     const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
                     if (existing) existing.quantity += product.selectedQty;
                     else {
-                        this.cart.push({
-                            ...product,
-                            productId: product.id,
-                            fullPrice: price,
-                            depositPrice: price * 0.3,
-                            quantity: product.selectedQty
-                        });
+                        this.cart.push({ ...product, productId: product.id, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
                     }
                     product.justAdded = true;
                     setTimeout(() => product.justAdded = false, 1000);
@@ -346,21 +351,17 @@
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
 
-                async confirmAndRedirect() {
-                    let summary = `📦 NEW ORDER: ${this.user.name}\n`;
-                    summary += `📞 Contact: ${this.user.contact}\n`;
-                    summary += `🔗 Profile: ${this.user.fb || 'N/A'}\n`;
-                    summary += `--------------------------\n`;
-                    this.cart.forEach(i => {
-                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
-                    });
-                    summary += `--------------------------\n`;
-                    summary += `TOTAL DP DUE: ₱${this.cartDepositTotal}\n`;
-                    summary += `REMAINING: ₱${this.cartBalanceTotal}\n`;
+                checkoutSelf() { this.cartOpen = false; this.paymentModalOpen = true; },
 
-                    await navigator.clipboard.writeText(summary);
-                    alert("Order Summary copied to clipboard! Redirecting to Messenger...");
-                    
+                async confirmAndRedirect() {
+                    let summary = `🚨 NEW PRE-ORDER: ${this.user.name}\nContact: ${this.user.contact}\n-----------------\n`;
+                    this.cart.forEach(i => {
+                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  DP: ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    });
+                    summary += `TOTAL DP: ₱${this.cartDepositTotal}\n\nPre-orders are subject to country allocation.`;
+
+                    try { await navigator.clipboard.writeText(summary); } catch (err) {}
+
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     if (isMobile) window.location.href = "fb-messenger://user-thread/745474078647634";
                     else window.open("https://m.me/cratedropcollective", "_blank");
