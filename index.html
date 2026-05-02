@@ -7,195 +7,80 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
 <body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-cloak>
 
     <!-- Navigation -->
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="https://cratedropcollective.github.io/" class="flex flex-col">
                 <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
                 <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
             
-            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Preorder</a>
-            </div>
-            
             <div class="flex items-center space-x-4">
-                <!-- AUTH STATUS -->
                 <template x-if="!user">
-                    <button @click="login()" class="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition">Login</button>
+                    <button @click="login()" class="text-[10px] font-black uppercase bg-white/10 px-3 py-2 rounded-lg">Login</button>
                 </template>
                 <template x-if="user">
                     <div class="flex items-center space-x-2">
-                        <button @click="historyOpen = true" class="text-[10px] font-black uppercase text-blue-400 hover:text-blue-300">History</button>
-                        <img @click="logout()" :src="user.photoURL" class="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer hover:opacity-50 shadow-sm" :title="'Logout ' + user.displayName">
+                        <button @click="historyOpen = true" class="text-[10px] font-black uppercase text-blue-400">History</button>
+                        <img @click="logout()" :src="user.photoURL" class="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer">
                     </div>
                 </template>
-
-                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
-                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
-                    <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
+                <button @click="cartOpen = true" class="bg-blue-600 px-4 py-2 rounded-full relative">
+                    <i class="fas fa-shopping-cart text-xs"></i>
                     <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="totalItems"></span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Search & Planner Toggle -->
-    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto">
-            <div class="flex gap-2">
-                <div class="relative flex-1">
-                    <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-                </div>
-                <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors flex items-center justify-center shrink-0 shadow-sm">
-                    <i class="fas fa-calculator md:mr-2"></i>
-                    <span x-text="showPlanner ? 'Hide Planner' : 'Allocation Planner'" class="hidden md:inline"></span>
-                    <span x-text="showPlanner ? 'Hide' : 'Planner'" class="md:hidden ml-1"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Allocation Planner Section -->
-    <section x-show="showPlanner" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-4"
-             class="container mx-auto px-2 md:px-4 mt-4 mb-4" style="display: none;">
-        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
-            <div class="bg-slate-900 p-4 flex justify-between items-center">
-                <div>
-                    <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Simulator</h2>
-                    <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Plan your order volume vs. expected cuts</p>
-                </div>
-                <i class="fas fa-chart-pie text-blue-500"></i>
-            </div>
-            
-            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">1. Select Product</label>
-                        <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
-                            <template x-for="item in products" :key="item.id">
-                                <option :value="item.id" x-text="item.name + ' (' + item.set + ')'"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <div class="flex bg-gray-100 p-1 rounded-xl">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">By Unit</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg transition-all uppercase">By Case</button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1" x-text="calcIsCase ? 'Target Cases' : 'Target Units'"></label>
-                            <input type="number" x-model.number="calcInputQty" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Expected Allocation (%)</label>
-                            <input type="number" x-model.number="calcFillRate" class="w-full p-2.5 bg-gray-100 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 rounded-2xl p-5 border border-gray-200 flex flex-col justify-center space-y-4">
-                    <div class="p-4 bg-blue-600 text-white rounded-xl shadow-lg relative overflow-hidden">
-                        <div class="relative z-10">
-                            <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Total Downpayment Required (30% DP)</p>
-                            <p class="text-3xl font-black tracking-tighter">₱<span x-text="calculatedDownpayment"></span></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Product Grid -->
-    <main class="container mx-auto py-6 px-2 md:px-4">
-        <div x-show="isLoading" class="text-center py-12">
-            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
+    <main class="container mx-auto py-6 px-4">
+        <div class="flex mb-6 gap-2">
+            <input type="text" x-model="searchQuery" placeholder="Search drops..." class="flex-1 p-2 bg-white border rounded-xl text-sm">
+            <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider">
+                Planner
+            </button>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" x-show="!isLoading">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
-                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
-                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded shadow-sm uppercase tracking-wider z-10" x-text="product.type"></span>
-                        <img :src="product.image" class="max-h-full max-w-full object-contain">
-                        <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded shadow-sm" x-text="'ETA: ' + product.eta"></span>
+                <div class="bg-white rounded-xl border p-4 flex flex-col relative">
+                    <img :src="product.image" class="h-32 object-contain mb-2">
+                    <h2 class="text-xs font-bold mb-2 h-8" x-text="product.name"></h2>
+                    <div class="flex bg-gray-100 p-1 rounded-lg mb-2">
+                        <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
+                        <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">CASE</button>
                     </div>
-                    
-                    <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <p class="text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
-                        
-                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
-                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
-                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">CASE</button>
-                        </div>
-
-                        <div class="space-y-2 mb-4">
-                            <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
-                        </div>
-
-                        <button 
-                            @click="addToCart(product)" 
-                            :disabled="product.soldOut || isExpired(product.deadline)" 
-                            :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" 
-                            class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
-                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
-                        </button>
-                    </div>
+                    <p class="text-sm font-black mb-4">DP: ₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></p>
+                    <button @click="addToCart(product)" class="w-full bg-slate-900 text-white py-2 rounded-lg text-[10px] font-bold uppercase">Add to Crate</button>
                 </div>
             </template>
         </div>
     </main>
 
-    <!-- History Dashboard Sidebar -->
+    <!-- History Sidebar -->
     <div x-show="historyOpen" class="fixed inset-0 z-[70]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="historyOpen = false"></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 shadow-2xl flex flex-col">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Order History</h2>
-                <button @click="historyOpen = false" class="text-3xl">&times;</button>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 shadow-2xl overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-black uppercase">Order History</h2>
+                <button @click="historyOpen = false" class="text-2xl">&times;</button>
             </div>
-            <div class="flex-1 overflow-y-auto space-y-4">
-                <template x-if="orderHistory.length === 0">
-                    <div class="text-center py-12">
-                        <i class="fas fa-box-open text-gray-200 text-4xl mb-4"></i>
-                        <p class="text-xs font-bold text-gray-400 uppercase">No confirmed orders found.</p>
-                    </div>
-                </template>
+            <div class="space-y-4">
                 <template x-for="order in orderHistory">
-                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm">
-                        <div class="flex justify-between text-[10px] font-black uppercase mb-2">
-                            <span class="text-gray-400" x-text="'Ref: #' + order.id"></span>
-                            <span x-text="order.status" :class="order.status.toLowerCase() === 'confirmed' ? 'text-green-600 bg-green-50 px-2 py-0.5 rounded' : 'text-blue-600 bg-blue-50 px-2 py-0.5 rounded'"></span>
+                    <div class="bg-gray-50 p-4 rounded-xl border">
+                        <div class="flex justify-between text-[10px] font-black uppercase mb-1">
+                            <span class="text-gray-400" x-text="'Ref: ' + order.id"></span>
+                            <span x-text="order.status" class="text-blue-600"></span>
                         </div>
-                        <p class="text-xs font-bold text-slate-800" x-text="order.productName"></p>
-                        <div class="flex justify-between items-end mt-2">
-                             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">DP Paid: <span class="text-slate-900 font-black">₱<span x-text="order.paidAmount"></span></span></p>
-                             <p class="text-[9px] font-bold text-blue-500 uppercase italic" x-text="order.date"></p>
-                        </div>
+                        <p class="text-xs font-bold" x-text="order.productName"></p>
+                        <p class="text-[10px] mt-2">Paid: ₱<span x-text="order.paidAmount"></span></p>
                     </div>
                 </template>
             </div>
@@ -204,58 +89,35 @@
 
     <!-- Cart Sidebar -->
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false"></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Your Crate</h2>
-                <button @click="cartOpen = false" class="text-3xl">&times;</button>
-            </div>
-
-            <div class="flex-1 space-y-6">
-                <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex items-start border-b border-gray-100 pb-4">
-                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-gray-50 p-1 rounded-lg">
-                        <div class="flex-1">
-                            <p class="font-bold text-xs"><span x-text="item.name"></span> <span class="text-blue-600 text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span></p>
-                            <div class="flex justify-between items-center mt-2">
-                                <div class="flex items-center border rounded h-6 bg-gray-50">
-                                    <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
-                                    <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
-                                    <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-[10px] text-blue-600 font-bold block">30% DP:</span>
-                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
-                                </div>
-                            </div>
+        <div class="absolute inset-0 bg-black/60" @click="cartOpen = false"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 flex flex-col shadow-2xl">
+            <h2 class="text-xl font-black mb-6 uppercase">Your Crate</h2>
+            <div class="flex-1 space-y-4 overflow-y-auto">
+                <template x-for="(item, index) in cart">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div class="text-xs">
+                            <p class="font-bold" x-text="item.name"></p>
+                            <p class="text-blue-600" x-text="item.quantity + 'x ' + (item.isCase ? 'CASE' : 'UNIT')"></p>
                         </div>
+                        <p class="font-black">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></p>
                     </div>
                 </template>
             </div>
-
-            <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
-                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase"><span>Total DP:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
-                </div>
-                <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow-lg">Checkout</button>
+            <div class="mt-4 pt-4 border-t">
+                <div class="flex justify-between font-black text-blue-600 mb-4"><span>Total DP:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
+                <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black uppercase">Checkout</button>
             </div>
         </div>
     </div>
 
     <!-- Payment Modal -->
     <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl">
-            <h2 class="text-xl font-black mb-4 uppercase">Payment Details</h2>
-            <div class="p-4 bg-blue-600 text-white rounded-xl mb-4">
-                <p class="text-[10px] font-bold uppercase opacity-80">Total DP Due</p>
-                <p class="text-3xl font-black">₱<span x-text="cartDepositTotal"></span></p>
-            </div>
-            <div class="text-center py-4 border-2 border-dashed rounded-xl mb-4">
-                <p class="text-xs font-bold text-gray-500 mb-2 uppercase">Scan to Pay (Instapay)</p>
-                <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto">
-            </div>
-            <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase text-xs">Send Proof to Messenger</button>
+        <div class="absolute inset-0 bg-black/80" @click="paymentModalOpen = false"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 text-center">
+            <h2 class="text-xl font-black mb-4 uppercase">Instapay Payment</h2>
+            <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-48 h-48 mx-auto mb-4">
+            <p class="text-lg font-black text-blue-600 mb-6">Total: ₱<span x-text="cartDepositTotal"></span></p>
+            <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase">I've Paid - Confirm Order</button>
         </div>
     </div>
 
@@ -270,6 +132,9 @@
         };
         firebase.initializeApp(firebaseConfig);
 
+        // --- PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ---
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwtF2ahJYvV8QPEGcCVgT2Nof29BTCk1jW47HoAV2qhANYO0Ig6F63BWh9Ycq21xs6Q/exec'; 
+
         function shop() {
             return {
                 isLoading: true,
@@ -281,55 +146,41 @@
                 products: [], 
                 user: null,
                 orderHistory: [],
-                now: new Date().getTime(), 
-                showPlanner: false,
-                calcSelectedId: null,
-                calcInputQty: 1,
-                calcFillRate: 100,
-                calcIsCase: false,
+                now: new Date().getTime(),
 
                 async init() {
-                    const inventoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
-                    
+                    const inventoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
                     firebase.auth().onAuthStateChanged(user => {
                         this.user = user;
                         if(user) this.fetchUserHistory();
-                        else this.orderHistory = [];
                     });
-
-                    setInterval(() => { this.now = new Date().getTime(); }, 1000);
-
                     try {
-                        const response = await fetch(inventoryUrl);
-                        const data = await response.text();
+                        const res = await fetch(inventoryUrl);
+                        const data = await res.text();
                         this.parseTSV(data);
-                    } catch (e) { console.error('Inventory Error:', e); }
+                    } catch (e) { console.error(e); }
                     finally { this.isLoading = false; }
                 },
 
-                parseTSV(tsvText) {
-                    const lines = tsvText.split(/\r?\n/).filter(l => l.trim());
-                    if (lines.length < 2) return;
+                parseTSV(text) {
+                    const lines = text.split(/\r?\n/).filter(l => l.trim());
                     const headers = lines[0].split('\t').map(h => h.trim());
                     this.products = lines.slice(1).map(line => {
                         const values = line.split('\t');
-                        let p = { selectedQty: 1, isCase: false, justAdded: false };
+                        let p = { selectedQty: 1, isCase: false };
                         headers.forEach((h, i) => {
                             let val = values[i] ? values[i].trim() : '';
-                            if (h === 'preorderDeadline') p.deadline = val ? new Date(val).getTime() : null;
-                            else if (['id', 'price', 'unitsPerCase'].includes(h)) p[h] = Number(val) || 0;
-                            else if (h === 'soldOut') p[h] = (val.toUpperCase() === 'TRUE');
+                            if (['id', 'price', 'unitsPerCase'].includes(h)) p[h] = Number(val) || 0;
                             else p[h] = val;
                         });
                         return p;
                     });
-                    if (this.products.length > 0) this.calcSelectedId = this.products[0].id;
                 },
 
                 async fetchUserHistory() {
                     const historyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0ppVCxJ3iyRtvhuVSbONCzFFx6g4nU-dpEHWx_FiSSCMJA6rdK0r5C1AeEP_13f_-Q77VL-6ggybF/pub?gid=0&single=true&output=tsv';
                     try {
-                        const res = await fetch(historyUrl);
+                        const res = await fetch(historyUrl + '&cachebust=' + Date.now());
                         const text = await res.text();
                         const lines = text.split(/\r?\n/).filter(l => l.trim());
                         const headers = lines[0].split('\t').map(h => h.trim());
@@ -338,67 +189,68 @@
                         this.orderHistory = lines.slice(1).map(line => {
                             const values = line.split('\t');
                             let row = {};
-                            headers.forEach((h, i) => row[h] = values[i]?.trim());
+                            headers.forEach((h, i) => row[h] = values[i]);
                             return row;
                         }).filter(row => row.email?.toLowerCase() === userEmail)
                           .map(row => ({
-                              id: row.orderId || 'N/A',
-                              productName: row.productName || 'Unknown Item',
-                              status: row.status || 'Pending',
-                              paidAmount: row.depositPaid || '0',
-                              date: row.timestamp || ''
+                              id: row.orderId,
+                              productName: row.productName,
+                              status: row.status,
+                              paidAmount: row.depositPaid
                           }));
-                    } catch (e) { console.error("History Error:", e); }
+                    } catch (e) { console.error(e); }
+                },
+
+                async confirmAndRedirect() {
+                    if (!this.user) return alert("Please login first!");
+                    
+                    // 1. Prepare data for Google Sheet
+                    const orderData = this.cart.map(item => ({
+                        email: this.user.email,
+                        orderId: 'CD-' + Date.now().toString().slice(-6),
+                        productName: `${item.name} (${item.isCase ? 'CASE' : 'UNIT'})`,
+                        depositPaid: (item.depositPrice * item.quantity).toString(),
+                        status: 'Pending Verification'
+                    }));
+
+                    // 2. SEND TO GOOGLE APPS SCRIPT
+                    try {
+                        await fetch(scriptURL, {
+                            method: 'POST',
+                            mode: 'no-cors', // Essential for Apps Script
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(orderData)
+                        });
+                    } catch (e) { console.warn("Background sync delay, opening Messenger..."); }
+
+                    // 3. COPY SUMMARY & REDIRECT
+                    let summary = "📦 NEW ORDER CONFIRMED\n";
+                    this.cart.forEach(i => summary += `• ${i.quantity}x ${i.name}\n`);
+                    summary += `Total DP: ₱${this.cartDepositTotal}`;
+                    await navigator.clipboard.writeText(summary);
+                    
+                    this.paymentModalOpen = false;
+                    this.cart = [];
+                    alert("Order logged! Redirecting to Messenger to send your proof of payment.");
+                    window.open("https://m.me/cratedropcollective", "_blank");
                 },
 
                 login() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); },
                 logout() { firebase.auth().signOut(); },
-
                 calculateLiveDeposit(p) {
                     const base = p.isCase ? (p.price * p.unitsPerCase) : p.price;
-                    return base * 0.3 * (p.selectedQty || 1);
+                    return base * 0.3;
                 },
-
-                getCountdown(deadline) {
-                    if (!deadline) return null;
-                    const dist = deadline - this.now;
-                    if (dist < 0) return "CLOSED";
-                    return `${Math.floor(dist / (1000*60*60*24))}d ${Math.floor((dist % (1000*60*60*24)) / (1000*60*60))}h`;
-                },
-
-                isExpired(deadline) { return deadline && (deadline - this.now < 0); },
-                get calculatedDownpayment() {
-                    const p = this.products.find(p => p.id == this.calcSelectedId);
-                    if (!p) return "0";
-                    return ((this.calcIsCase ? p.price * p.unitsPerCase : p.price) * this.calcInputQty * 0.3).toLocaleString();
-                },
-
                 get filteredProducts() {
-                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase())).sort((a,b) => a.soldOut - b.soldOut);
+                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
                 },
                 get totalItems() { return this.cart.reduce((s, i) => s + i.quantity, 0); },
                 get cartDepositTotal() { return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString(); },
-
-                addToCart(product) {
-                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    const existing = this.cart.find(i => i.id === product.id && i.isCase === product.isCase);
-                    if (existing) existing.quantity += product.selectedQty;
-                    else this.cart.push({ ...product, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
-                    product.justAdded = true;
-                    setTimeout(() => product.justAdded = false, 1000);
+                addToCart(p) {
+                    const price = p.isCase ? (p.price * p.unitsPerCase) : p.price;
+                    this.cart.push({ ...p, depositPrice: price * 0.3, quantity: 1 });
                 },
-                updateCartQty(idx, delta) {
-                    this.cart[idx].quantity += delta;
-                    if (this.cart[idx].quantity <= 0) this.cart.splice(idx, 1);
-                },
-                checkoutSelf() { this.cartOpen = false; this.paymentModalOpen = true; },
-                async confirmAndRedirect() {
-                    let summary = "🛒 ORDER SUMMARY\n";
-                    this.cart.forEach(i => summary += `• ${i.quantity}x ${i.name} (${i.isCase?'CASE':'UNIT'})\n DP: ₱${(i.depositPrice*i.quantity).toLocaleString()}\n`);
-                    summary += `TOTAL DP: ₱${this.cartDepositTotal}`;
-                    await navigator.clipboard.writeText(summary);
-                    window.open("https://m.me/cratedropcollective", "_blank");
-                }
+                checkoutSelf() { this.cartOpen = false; this.paymentModalOpen = true; }
             }
         }
     </script>
