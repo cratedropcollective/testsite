@@ -4,204 +4,177 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crate Drop Collective | Pre-Order Portal</title>
-    <!-- Styles & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
-        .receipt-font { font-family: 'Inter', sans-serif; }
+        .receipt-container { width: 850px; }
+        /* Scales the receipt to fit the parent width on mobile */
+        .receipt-scaler {
+            transform-origin: top left;
+            width: 850px;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased">
+<body class="bg-slate-50 text-slate-900 font-sans" x-data="shop()" x-init="init()">
 
-<div x-data="preorderPortal()" x-init="init()" class="min-h-screen pb-20">
-    
-    <!-- Navigation / Header -->
-    <nav class="bg-white border-b border-slate-200 py-6 px-4 mb-8">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex flex-col">
-                <span class="text-2xl font-black tracking-tighter leading-none">CRATE DROP</span>
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+                <span class="text-2xl font-black tracking-tighter leading-none block">CRATE DROP</span>
                 <span class="text-[10px] font-bold text-blue-600 tracking-[0.4em] uppercase">COLLECTIVE</span>
             </div>
-            <div class="text-right">
-                <span class="text-[10px] font-black uppercase text-slate-400">Pre-Order Portal v2.0</span>
-            </div>
+            <button @click="showCart = true" class="relative p-2 text-slate-700 hover:text-blue-600 transition-colors">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <template x-if="cart.length > 0">
+                    <span class="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full" x-text="cart.length"></span>
+                </template>
+            </button>
         </div>
-    </nav>
+    </header>
 
-    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- Left: Customer & Product Entry (8 Cols) -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Step 1: Customer Info -->
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                <h2 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center">
-                    <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center mr-3">01</span>
-                    Customer Information
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-slate-500 ml-1">Full Name</label>
-                        <input type="text" x-model="customerName" placeholder="Juan Dela Cruz" 
-                               class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-slate-500 ml-1">Order Date</label>
-                        <input type="text" x-model="orderDate" readonly 
-                               class="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-500">
-                    </div>
-                </div>
-            </div>
+    <main class="max-w-7xl mx-auto px-6 py-12">
+        <div class="mb-12">
+            <h1 class="text-4xl font-black tracking-tighter uppercase italic">Current Drops</h1>
+            <p class="text-slate-500 font-medium mt-2">Secure your allocations for upcoming sets.</p>
+        </div>
 
-            <!-- Step 2: Product Selection -->
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                <h2 class="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center">
-                    <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] flex items-center justify-center mr-3">02</span>
-                    Add Products to Cart
-                </h2>
-                
-                <div class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-black uppercase text-slate-500 ml-1">Select Item from Inventory</label>
-                        <select x-model="tempItem.id" @change="syncTempItem" 
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
-                            <option value="">-- Choose a Product --</option>
-                            <template x-for="item in inventory" :key="item.id">
-                                <option :value="item.id" x-text="item.name"></option>
-                            </template>
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-[10px] font-black uppercase text-slate-500 ml-1">Quantity</label>
-                            <input type="number" x-model.number="tempItem.qty" min="1" 
-                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none">
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <template x-for="product in inventory" :key="product.id">
+                <div class="bg-white rounded-[2rem] border border-slate-200 overflow-hidden hover:shadow-xl transition-all group">
+                    <div class="aspect-square bg-slate-100 relative overflow-hidden">
+                        <img :src="product.image || 'https://via.placeholder.com/400x400?text=No+Image'" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                        <div class="absolute top-4 left-4 flex flex-col gap-2">
+                             <span class="bg-white/90 backdrop-blur-sm text-[10px] font-black px-3 py-1 rounded-full uppercase text-blue-600" x-text="product.set"></span>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] font-black uppercase text-slate-500 ml-1">Format</label>
-                            <select x-model="tempItem.isCase" 
-                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none">
-                                <option :value="false">Single Unit</option>
-                                <option :value="true">Full Case</option>
-                            </select>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-black uppercase leading-tight pr-4" x-text="product.name"></h3>
+                            <span class="text-sm font-black text-slate-400" x-text="product.type"></span>
                         </div>
-                        <div class="flex items-end">
-                            <button @click="addItem" :disabled="!tempItem.id" 
-                                    class="w-full bg-blue-600 text-white font-black py-3.5 rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-900 disabled:bg-slate-200 transition-all shadow-md">
-                                Add to Cart
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">ETA: <span class="text-slate-900" x-text="product.eta"></span></p>
+                        
+                        <div class="flex items-center justify-between mt-6">
+                            <div>
+                                <span class="text-[10px] font-black uppercase text-slate-400 block leading-none">Price starts at</span>
+                                <span class="text-2xl font-black">₱<span x-text="product.unitPrice.toLocaleString()"></span></span>
+                            </div>
+                            <button @click="openProductModal(product)" class="bg-slate-900 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all">
+                                Pre-Order
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </div>
+    </main>
 
-        <!-- Right: Order Summary (4 Cols) -->
-        <div class="lg:col-span-5">
-            <div class="bg-slate-900 rounded-3xl p-8 text-white sticky top-8 shadow-xl">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-xs font-black uppercase tracking-[0.2em]">Live Summary</h2>
-                    <span class="text-[10px] bg-white/10 px-3 py-1 rounded-full font-bold" x-text="orderItems.length + ' Items'"></span>
-                </div>
-
-                <div class="space-y-4 mb-8 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                    <template x-for="(item, index) in orderItems" :key="index">
-                        <div class="flex justify-between items-start border-b border-white/10 pb-4">
-                            <div class="flex-1 pr-4">
-                                <p class="text-[11px] font-black uppercase leading-tight" x-text="item.name"></p>
-                                <p class="text-[9px] text-slate-400 mt-1 uppercase font-bold">
-                                    <span x-text="item.qty"></span>x <span x-text="item.isCase ? 'Case' : 'Unit'"></span> @ ₱<span x-text="item.price.toLocaleString()"></span>
-                                </p>
-                            </div>
-                            <div class="text-right flex flex-col items-end">
-                                <p class="text-xs font-black">₱<span x-text="(item.price * item.qty).toLocaleString()"></span></p>
-                                <button @click="removeItem(index)" class="text-red-400 hover:text-red-300 text-[10px] mt-2 uppercase font-black tracking-tighter">
-                                    Remove
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="orderItems.length === 0">
-                        <div class="py-10 text-center opacity-30 italic text-sm">Your cart is empty.</div>
-                    </template>
-                </div>
-
-                <div class="space-y-3 pt-4 border-t border-white/20">
-                    <div class="flex justify-between text-xs font-bold uppercase text-slate-400">
-                        <span>Total Items Value:</span>
-                        <span>₱<span x-text="fullOrderTotal.toLocaleString()"></span></span>
+    <!-- Product Selection Modal -->
+    <div x-show="selectedProduct" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm" x-cloak>
+        <div @click.away="selectedProduct = null" class="bg-white rounded-3xl w-full max-w-lg p-8 relative">
+            <h2 class="text-2xl font-black uppercase tracking-tighter mb-2" x-text="selectedProduct?.name"></h2>
+            <p class="text-sm text-slate-500 font-bold mb-6">Select your purchase format for this drop.</p>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-slate-400">Format</label>
+                        <select x-model="tempFormat" class="w-full p-3 bg-slate-50 border rounded-xl font-bold outline-none">
+                            <option value="unit">Single Unit</option>
+                            <option value="case">Full Case</option>
+                        </select>
                     </div>
-                    <div class="flex justify-between items-center pt-2">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] font-black uppercase text-blue-400 leading-none mb-1">Downpayment (30%)</span>
-                            <span class="text-3xl font-black">₱<span x-text="totalDP.toLocaleString()"></span></span>
-                        </div>
-                        <button @click="triggerCheckout" :disabled="orderItems.length === 0 || !customerName"
-                                class="bg-blue-500 hover:bg-blue-400 text-white px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-lg disabled:bg-slate-700 disabled:text-slate-500">
-                            Place Order
-                        </button>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black uppercase text-slate-400">Quantity</label>
+                        <input type="number" x-model="tempQty" min="1" class="w-full p-3 bg-slate-50 border rounded-xl font-bold outline-none">
                     </div>
                 </div>
+                <button @click="addToCart" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-900 transition-all mt-4">
+                    Add to Cart
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- SUCCESS MODAL & RECEIPT PREVIEW -->
-    <div x-show="showModal" x-transition x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-5xl max-h-[95vh] overflow-y-auto rounded-[2rem] p-8 md:p-12 relative shadow-2xl">
-            
-            <button @click="showModal = false" class="absolute top-8 right-8 text-slate-300 hover:text-slate-900 transition-colors">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                
-                <!-- Modal Message -->
-                <div class="space-y-6 order-2 lg:order-1">
-                    <div class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest">
-                        <i class="fas fa-check-circle mr-2"></i> Order Prepared Successfully
+    <!-- Sidebar Cart -->
+    <div x-show="showCart" class="fixed inset-0 z-50 overflow-hidden" x-cloak>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showCart = false"></div>
+        <div class="absolute inset-y-0 right-0 w-full max-w-md bg-white shadow-2xl flex flex-col">
+            <div class="p-8 border-b flex justify-between items-center">
+                <h2 class="text-xl font-black uppercase">Your Cart</h2>
+                <button @click="showCart = false"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="flex-grow p-8 overflow-y-auto space-y-6">
+                <template x-for="(item, index) in cart" :key="index">
+                    <div class="flex justify-between items-start pb-6 border-b border-slate-100">
+                        <div>
+                            <p class="text-xs font-black uppercase" x-text="item.name"></p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                                <span x-text="item.qty"></span>x <span x-text="item.isCase ? 'Case' : 'Unit'"></span> @ ₱<span x-text="item.price.toLocaleString()"></span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-black">₱<span x-text="(item.price * item.qty).toLocaleString()"></span></p>
+                            <button @click="removeItem(index)" class="text-red-500 text-[10px] font-black uppercase mt-2">Remove</button>
+                        </div>
                     </div>
-                    <h2 class="text-4xl font-black uppercase tracking-tighter leading-none">Your Order Confirmation is Ready.</h2>
-                    <p class="text-slate-500 font-medium">Please download the official confirmation slip below and send it to our Messenger to finalize your order.</p>
-                    
-                    <div class="flex flex-col space-y-3 pt-4">
-                        <button @click="downloadReceipt" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center hover:scale-[1.02] transition-transform">
-                            <i class="fas fa-file-download mr-3 text-lg"></i> Download Slip (PNG)
-                        </button>
-                        <button @click="redirectToMessenger" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center hover:scale-[1.02] transition-transform">
-                            <i class="fab fa-facebook-messenger mr-3 text-lg"></i> Send to Messenger
-                        </button>
-                    </div>
+                </template>
+                <template x-if="cart.length === 0">
+                    <p class="text-center text-slate-400 italic py-10">Cart is empty</p>
+                </template>
+            </div>
+            <div class="p-8 bg-slate-50 border-t space-y-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400">Customer Name</label>
+                    <input type="text" x-model="customerName" class="w-full p-3 bg-white border rounded-xl font-bold outline-none" placeholder="Required for slip">
                 </div>
+                <div class="flex justify-between items-center pt-4">
+                    <span class="text-xs font-black uppercase">30% DP Due:</span>
+                    <span class="text-2xl font-black">₱<span x-text="totalDP.toLocaleString()"></span></span>
+                </div>
+                <button @click="checkout" :disabled="!customerName || cart.length === 0" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-600 disabled:bg-slate-300 transition-all">
+                    Checkout Order
+                </button>
+            </div>
+        </div>
+    </div>
 
-                <!-- Receipt Rendering Area (Scaled down visually in modal) -->
-                <div class="order-1 lg:order-2 bg-slate-100 p-4 rounded-3xl overflow-hidden border border-slate-200">
-                    <div id="receipt-canvas" class="bg-white receipt-font mx-auto" style="width: 800px; min-height: 800px;">
-                        <!-- Receipt Header -->
+    <!-- FINAL CONFIRMATION SLIP MODAL -->
+    <div x-show="showSlipModal" class="fixed inset-0 z-[60] flex flex-col items-center justify-center p-4 bg-slate-900/95 overflow-y-auto" x-cloak>
+        <div class="max-w-4xl w-full">
+            <div class="flex justify-between items-center mb-6 text-white">
+                <h2 class="text-2xl font-black uppercase italic tracking-tighter">Confirmation Ready</h2>
+                <button @click="showSlipModal = false" class="text-white/50 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+
+            <!-- RESPONSIVE SLIP PREVIEW -->
+            <div class="bg-white/10 p-4 rounded-3xl overflow-hidden border border-white/10 flex justify-center mb-8 relative">
+                <div class="overflow-x-auto w-full flex justify-center" id="slip-scroll-container">
+                    <div id="receipt-canvas" class="bg-white receipt-container origin-top scale-[0.4] md:scale-[0.7] lg:scale-[1] transition-transform shadow-2xl">
+                        <!-- Header -->
                         <div class="p-10 border-b-2 border-slate-50">
                             <div class="flex items-center justify-center space-x-6">
                                 <div class="flex flex-col items-center border-r-2 border-slate-100 pr-8">
                                     <span class="text-4xl font-black tracking-tighter leading-none text-slate-900">CRATE DROP</span>
                                     <span class="block text-[15px] font-bold text-blue-500 tracking-[0.4em] uppercase -mt-1">COLLECTIVE</span>
                                 </div>
-                                <div class="text-left">
-                                    <h1 class="text-3xl font-black text-blue-800 italic tracking-tighter uppercase leading-none">Order <br> Confirmation</h1>
-                                </div>
+                                <div class="text-left"><h1 class="text-3xl font-black text-blue-800 italic uppercase">Order Confirmation</h1></div>
                             </div>
                         </div>
 
-                        <!-- Meta Info Bar -->
+                        <!-- Meta -->
                         <div class="bg-blue-700 text-white px-10 py-3 flex justify-between font-bold text-[10px] uppercase tracking-widest">
                             <span>Customer: <span x-text="customerName" class="ml-2 font-black border-b border-white/40"></span></span>
                             <span>Date: <span x-text="orderDate"></span></span>
                         </div>
 
-                        <!-- Line Items -->
-                        <div class="mx-10 mt-8">
+                        <!-- Table -->
+                        <div class="mx-10 mt-8 min-h-[400px]">
                             <div class="grid grid-cols-12 gap-2 text-blue-800 font-black text-[10px] uppercase border-b-4 border-blue-800 pb-3">
                                 <div class="col-span-1">Qty.</div>
                                 <div class="col-span-1 text-center">Format</div>
@@ -210,9 +183,8 @@
                                 <div class="col-span-2 text-right text-blue-500">DP (30%)</div>
                                 <div class="col-span-2 text-right">Line Total</div>
                             </div>
-
-                            <template x-for="(item, index) in orderItems" :key="index">
-                                <div class="grid grid-cols-12 gap-2 text-slate-800 font-bold text-[11px] py-4 border-b border-slate-100 items-center">
+                            <template x-for="item in cart">
+                                <div class="grid grid-cols-12 gap-2 text-slate-800 font-bold text-[11px] py-4 border-b items-center">
                                     <div class="col-span-1 font-black text-lg" x-text="item.qty"></div>
                                     <div class="col-span-1 uppercase text-[8px] text-center text-blue-600 font-black" x-text="item.isCase ? 'CASE' : 'UNIT'"></div>
                                     <div class="col-span-4 uppercase leading-tight">
@@ -226,153 +198,117 @@
                             </template>
                         </div>
 
-                        <!-- Grand Totals -->
-                        <div class="mx-10 flex flex-col items-end space-y-4 mt-8">
+                        <!-- Totals -->
+                        <div class="mx-10 flex flex-col items-end space-y-4 mt-8 pb-10">
                             <div class="w-full max-w-[380px]">
-                                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-2 px-2">
-                                    <span>Total Combined Order:</span>
-                                    <span>₱<span x-text="fullOrderTotal.toLocaleString()"></span></span>
-                                </div>
                                 <div class="bg-blue-700 text-white text-center py-2 font-black text-[11px] uppercase tracking-widest">Total Combined DP Paid (30%)</div>
-                                <div class="text-center font-black text-4xl text-slate-900 py-3 border-x border-b border-slate-100 shadow-sm">
-                                    ₱<span x-text="totalDP.toLocaleString()"></span>
-                                </div>
+                                <div class="text-center font-black text-4xl text-slate-900 py-3 border-x border-b shadow-sm">₱<span x-text="totalDP.toLocaleString()"></span></div>
                             </div>
-                            <div class="w-full max-w-[380px] mb-8">
-                                <div class="bg-slate-800 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Combined Balance Remaining</div>
-                                <div class="text-center font-black text-2xl text-slate-700 py-2 border-x border-b border-slate-100 shadow-sm">
-                                    ₱<span x-text="totalBalance.toLocaleString()"></span>
-                                </div>
+                            <div class="w-full max-w-[380px]">
+                                <div class="bg-slate-800 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Balance Remaining</div>
+                                <div class="text-center font-black text-2xl text-slate-700 py-2 border-x border-b shadow-sm">₱<span x-text="totalBalance.toLocaleString()"></span></div>
                             </div>
-                        </div>
-
-                        <div class="px-16 py-10 bg-slate-50 border-t border-slate-100 text-[10px] text-slate-400 text-center leading-relaxed font-semibold italic">
-                            By placing a pre-order, you confirm that you have understood the risks of country allocation cuts. Payment for the remaining balance is due within 3 days of allocation confirmation. Cancellations are not allowed, and the 30% deposit is non-refundable.
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button @click="downloadSlip" class="bg-white text-slate-900 py-5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all">
+                    <i class="fas fa-download mr-3"></i> Download Slip (PNG)
+                </button>
+                <button @click="redirectToMessenger" class="bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center hover:scale-105 transition-all">
+                    <i class="fab fa-facebook-messenger mr-3"></i> Send to Messenger
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    function preorderPortal() {
-        return {
-            inventory: [],
-            orderItems: [],
-            customerName: '',
-            orderDate: new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }),
-            tempItem: { id: '', qty: 1, isCase: false, name: '', eta: '', unitPrice: 0, casePrice: 0 },
-            showModal: false,
-            
-            async init() {
-                // Link to your specific TSV published from Google Sheets
-                const tsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
-                
-                try {
-                    const response = await fetch(tsvUrl);
-                    const text = await response.text();
-                    const rows = text.trim().split('\n').filter(row => row.trim() !== '').slice(1); 
-                    
-                    this.inventory = rows.map((row) => {
-                        const cols = row.split('\t').map(c => c.trim());
-                        
-                        // Mapping based on: id(0), name(1), type(2), set(3), price(4), unitsPerCase(5), eta(6)
-                        const rawPrice = cols[4] ? cols[4].replace(/[^0-9.]/g, '') : "0";
-                        const unitPrice = parseFloat(rawPrice) || 0;
-                        const unitsPerCase = parseInt(cols[5]) || 1;
+    <script>
+        function shop() {
+            return {
+                inventory: [],
+                cart: [],
+                customerName: '',
+                orderDate: new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }),
+                selectedProduct: null,
+                tempFormat: 'unit',
+                tempQty: 1,
+                showCart: false,
+                showSlipModal: false,
 
-                        return {
-                            id: cols[0] || Math.random().toString(36).substr(2, 9), 
-                            name: cols[1] || 'Unknown Product',
-                            unitPrice: unitPrice,
-                            casePrice: unitPrice * unitsPerCase,
-                            eta: cols[6] || 'TBA'
-                        };
+                async init() {
+                    const tsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
+                    try {
+                        const response = await fetch(tsvUrl);
+                        const text = await response.text();
+                        const rows = text.trim().split('\n').slice(1);
+                        this.inventory = rows.map(row => {
+                            const cols = row.split('\t').map(c => c.trim());
+                            const unitPrice = parseFloat(cols[4]?.replace(/[^0-9.]/g, '')) || 0;
+                            return {
+                                id: cols[0], name: cols[1], type: cols[2], set: cols[3],
+                                unitPrice: unitPrice, unitsPerCase: parseInt(cols[5]) || 1,
+                                eta: cols[6], image: cols[7], soldOut: cols[8] === 'TRUE',
+                                deadline: cols[9]
+                            };
+                        }).filter(p => !p.soldOut);
+                    } catch (e) { console.error("TSV Error", e); }
+                },
+
+                openProductModal(p) {
+                    this.selectedProduct = p;
+                    this.tempFormat = 'unit';
+                    this.tempQty = 1;
+                },
+
+                addToCart() {
+                    const isCase = this.tempFormat === 'case';
+                    const price = isCase ? (this.selectedProduct.unitPrice * this.selectedProduct.unitsPerCase) : this.selectedProduct.unitPrice;
+                    this.cart.push({
+                        name: this.selectedProduct.name,
+                        qty: parseInt(this.tempQty),
+                        isCase: isCase,
+                        price: price,
+                        eta: this.selectedProduct.eta
                     });
-                } catch (err) {
-                    console.error("Critical: Failed to load inventory TSV.", err);
+                    this.selectedProduct = null;
+                    this.showCart = true;
+                },
+
+                removeItem(index) { this.cart.splice(index, 1); },
+
+                get fullOrderTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
+                get totalDP() { return Math.ceil(this.fullOrderTotal * 0.3); },
+                get totalBalance() { return this.fullOrderTotal - this.totalDP; },
+
+                checkout() {
+                    this.showCart = false;
+                    this.showSlipModal = true;
+                    // Reset scaling logic can be handled by CSS media queries or JS if needed
+                },
+
+                async downloadSlip() {
+                    const el = document.getElementById('receipt-canvas');
+                    // Reset transform temporarily for capture to ensure high quality
+                    el.style.transform = "none";
+                    const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+                    // Re-apply responsive scaling if on mobile after capture
+                    if(window.innerWidth < 768) el.style.transform = "scale(0.4)";
+                    else if(window.innerWidth < 1024) el.style.transform = "scale(0.7)";
+
+                    const link = document.createElement('a');
+                    link.download = `CrateDrop_${this.customerName.replace(/\s+/g, '_')}.png`;
+                    link.href = canvas.toDataURL();
+                    link.click();
+                },
+
+                redirectToMessenger() {
+                    window.open("https://m.me/cratedropcollective", "_blank");
                 }
-            },
-
-            syncTempItem() {
-                const selected = this.inventory.find(i => String(i.id) === String(this.tempItem.id));
-                if (selected) {
-                    this.tempItem.name = selected.name;
-                    this.tempItem.eta = selected.eta;
-                    this.tempItem.unitPrice = selected.unitPrice;
-                    this.tempItem.casePrice = selected.casePrice;
-                }
-            },
-
-            addItem() {
-                const price = this.tempItem.isCase ? this.tempItem.casePrice : this.tempItem.unitPrice;
-                this.orderItems.push({
-                    name: this.tempItem.name,
-                    qty: this.tempItem.qty,
-                    isCase: this.tempItem.isCase,
-                    price: price,
-                    eta: this.tempItem.eta
-                });
-                // Reset select
-                this.tempItem.id = '';
-                this.tempItem.qty = 1;
-                this.tempItem.isCase = false;
-            },
-
-            removeItem(index) {
-                this.orderItems.splice(index, 1);
-            },
-
-            get fullOrderTotal() {
-                return this.orderItems.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            },
-            get totalDP() {
-                return Math.ceil(this.fullOrderTotal * 0.3);
-            },
-            get totalBalance() {
-                return this.fullOrderTotal - this.totalDP;
-            },
-
-            triggerCheckout() {
-                // Scroll to top and show modal
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                this.showModal = true;
-            },
-
-            async downloadReceipt() {
-                const element = document.getElementById('receipt-canvas');
-                // Temporarily unhide or ensure visible for capture
-                const canvas = await html2canvas(element, { 
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-                
-                const link = document.createElement('a');
-                link.download = `CrateDrop_Order_${this.customerName.replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            },
-
-            async redirectToMessenger() {
-                // Auto-copy summary for customer convenience
-                let summary = `🛒 *PRE-ORDER SUMMARY: ${this.customerName.toUpperCase()}*\n`;
-                this.orderItems.forEach(i => {
-                    summary += `• ${i.qty}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n`;
-                });
-                summary += `\n*TOTAL DP DUE: ₱${this.totalDP.toLocaleString()}*\n`;
-                
-                try {
-                    await navigator.clipboard.writeText(summary);
-                } catch (e) {}
-
-                window.open("https://m.me/cratedropcollective", "_blank");
             }
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
