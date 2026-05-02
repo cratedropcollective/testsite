@@ -17,33 +17,43 @@
 </head>
 <body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-cloak>
 
-    <!-- Navigation -->
-    <div class="flex items-center space-x-2 md:space-x-4">
-    <!-- Firebase Auth Button -->
-    <template x-if="!user">
-        <button @click="loginWithGoogle()" class="text-white hover:text-gray-300 px-3 py-2 text-xs font-bold uppercase transition-colors flex items-center gap-2">
-            <i class="fab fa-google"></i> Login
-        </button>
-    </template>
-    
-    <template x-if="user">
-        <button @click="profileOpen = true" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all">
-            <img :src="user.photoURL" class="w-5 h-5 rounded-full border border-gray-400">
-            <span class="text-[10px] font-bold text-white uppercase hidden md:inline" x-text="user.displayName.split(' ')[0]"></span>
-        </button>
-    </template>
+    <!-- FIXED: Rebuilt Main Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-box-open text-blue-500 text-xl"></i>
+                <h1 class="font-black text-lg md:text-xl tracking-tighter uppercase">Crate Drop<span class="text-blue-500">.</span></h1>
+            </div>
+            
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <!-- Firebase Auth Login Button -->
+                <template x-if="!user">
+                    <button @click="loginWithGoogle()" class="text-white hover:text-blue-400 px-2 py-2 text-[10px] md:text-xs font-bold uppercase transition-colors flex items-center gap-2">
+                        <i class="fab fa-google text-sm"></i> <span class="hidden md:inline">Login</span>
+                    </button>
+                </template>
+                
+                <!-- Firebase Auth Profile Profile Button -->
+                <template x-if="user">
+                    <button @click="profileOpen = true" class="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-all cursor-pointer">
+                        <img :src="user.photoURL" class="w-5 h-5 md:w-6 md:h-6 rounded-full border border-gray-400">
+                        <span class="text-[10px] font-bold text-white uppercase hidden md:inline" x-text="user.displayName.split(' ')[0]"></span>
+                    </button>
+                </template>
 
-    <!-- Existing Cart Button -->
-    <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
-        <i class="fas fa-shopping-cart mr-2 text-xs"></i>
-        <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
-        <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="totalItems"></span>
-    </button>
-</div>
+                <!-- Cart Button -->
+                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
+                    <i class="fas fa-shopping-cart md:mr-2 text-xs"></i>
+                    <span class="font-bold text-xs hidden md:inline">₱<span x-text="cartDepositTotal"></span></span>
+                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[9px] md:text-[10px] w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full border-2 border-slate-900 font-bold" x-text="totalItems"></span>
+                </button>
+            </div>
+        </div>
+    </header>
 
     <!-- Search & Planner Toggle -->
-    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto">
+    <div class="bg-white border-b border-gray-200 sticky top-[60px] md:top-[68px] z-40 shadow-sm">
+        <div class="py-3 md:py-4 px-4 container mx-auto">
             <div class="flex gap-2">
                 <div class="relative flex-1">
                     <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -170,7 +180,6 @@
                         </template>
 
                         <div class="space-y-2 mb-4">
-                            <!-- FIXED: Changed calculateLiveDepositx to calculateFullPrice -->
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateFullPrice(product).toLocaleString()"></span></div>
                             <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
@@ -197,7 +206,7 @@
         </div>
     </main>
 
-    <!-- Cart Sidebar & Payment Modals remain same, functionality updated in script -->
+    <!-- Cart Modal -->
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
@@ -237,10 +246,10 @@
 
                 <div class="grid grid-cols-1 gap-2">
                     <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-slate-800 transition-all">
-                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout (Paste Order)
+                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout
                     </button>
                     <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow hover:bg-blue-700 transition-all border-2 border-blue-400">
-                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
+                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout
                     </button>
                 </div>
             </div>
@@ -288,7 +297,7 @@
                 <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pay via Instapay. <strong class="text-slate-800">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
                     <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
-                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
+                    <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation cuts.</p>
                 </div>
             </div>
 
@@ -299,62 +308,61 @@
     </div>
 
     <!-- User Profile & Orders Modal -->
-<div x-show="profileOpen" class="fixed inset-0 z-[70]" style="display: none;">
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="profileOpen = false" x-transition.opacity></div>
-    <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
-        
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <div class="flex items-center gap-3">
-                <img :src="user?.photoURL" class="w-10 h-10 rounded-full border-2 border-slate-900">
-                <div>
-                    <h2 class="text-sm font-black text-slate-900 uppercase leading-none" x-text="user?.displayName"></h2>
-                    <p class="text-[10px] text-gray-500 font-bold" x-text="user?.email"></p>
-                </div>
-            </div>
-            <button @click="profileOpen = false" class="text-3xl">&times;</button>
-        </div>
-
-        <h3 class="text-xs font-black uppercase text-blue-600 mb-4"><i class="fas fa-box-open mr-2"></i>My Pre-Orders</h3>
-        
-        <div class="flex-1 overflow-y-auto no-scrollbar space-y-3">
-            <template x-if="isLoadingOrders">
-                <div class="text-center py-8 text-[10px] text-gray-500 font-bold uppercase animate-pulse">Fetching records...</div>
-            </template>
+    <div x-show="profileOpen" class="fixed inset-0 z-[70]" style="display: none;">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="profileOpen = false" x-transition.opacity></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
             
-            <template x-if="!isLoadingOrders && myOrders.length === 0">
-                <div class="text-center py-8 text-[10px] text-gray-500 font-bold uppercase border-2 border-dashed border-gray-200 rounded-xl">No pre-orders found for this email.</div>
-            </template>
-
-            <template x-for="order in myOrders" :key="order.orderId">
-                <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl flex flex-col gap-2">
-                    <div class="flex justify-between items-start">
-                        <span class="text-[10px] font-black text-gray-500 uppercase">Order #<span x-text="order.orderId"></span></span>
-                        <!-- Status Badge Colors -->
-                        <span class="text-[9px] font-black uppercase px-2 py-1 rounded shadow-sm"
-                              :class="{
-                                  'bg-yellow-100 text-yellow-700': order.status === 'Pending DP',
-                                  'bg-blue-100 text-blue-700': order.status === 'DP Paid',
-                                  'bg-purple-100 text-purple-700': order.status === 'Allocated',
-                                  'bg-green-100 text-green-700': order.status === 'Ready for Pickup/Ship'
-                              }" x-text="order.status"></span>
-                    </div>
-                    <div class="text-xs font-bold text-slate-900" x-text="order.itemName"></div>
-                    <div class="flex justify-between text-[10px] font-medium text-gray-600 mt-2 border-t pt-2">
-                        <span>Qty: <span class="font-bold text-slate-900" x-text="order.qty"></span></span>
-                        <span>Total: ₱<span class="font-bold text-slate-900" x-text="order.totalPrice"></span></span>
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div class="flex items-center gap-3">
+                    <img :src="user?.photoURL" class="w-10 h-10 rounded-full border-2 border-slate-900">
+                    <div>
+                        <h2 class="text-sm font-black text-slate-900 uppercase leading-none" x-text="user?.displayName"></h2>
+                        <p class="text-[10px] text-gray-500 font-bold" x-text="user?.email"></p>
                     </div>
                 </div>
-            </template>
+                <button @click="profileOpen = false" class="text-3xl">&times;</button>
+            </div>
+
+            <h3 class="text-xs font-black uppercase text-blue-600 mb-4"><i class="fas fa-box-open mr-2"></i>My Pre-Orders</h3>
+            
+            <div class="flex-1 overflow-y-auto no-scrollbar space-y-3">
+                <template x-if="isLoadingOrders">
+                    <div class="text-center py-8 text-[10px] text-gray-500 font-bold uppercase animate-pulse">Fetching records...</div>
+                </template>
+                
+                <template x-if="!isLoadingOrders && myOrders.length === 0">
+                    <div class="text-center py-8 text-[10px] text-gray-500 font-bold uppercase border-2 border-dashed border-gray-200 rounded-xl">No pre-orders found for this email.</div>
+                </template>
+
+                <template x-for="order in myOrders" :key="order.orderId">
+                    <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[10px] font-black text-gray-500 uppercase">Order #<span x-text="order.orderId"></span></span>
+                            <span class="text-[9px] font-black uppercase px-2 py-1 rounded shadow-sm"
+                                  :class="{
+                                      'bg-yellow-100 text-yellow-700': order.status === 'Pending DP',
+                                      'bg-blue-100 text-blue-700': order.status === 'DP Paid',
+                                      'bg-purple-100 text-purple-700': order.status === 'Allocated',
+                                      'bg-green-100 text-green-700': order.status === 'Ready for Pickup/Ship'
+                                  }" x-text="order.status"></span>
+                        </div>
+                        <div class="text-xs font-bold text-slate-900" x-text="order.itemName"></div>
+                        <div class="flex justify-between text-[10px] font-medium text-gray-600 mt-2 border-t pt-2">
+                            <span>Qty: <span class="font-bold text-slate-900" x-text="order.qty"></span></span>
+                            <span>Total: ₱<span class="font-bold text-slate-900" x-text="order.totalPrice"></span></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <button @click="logout()" class="w-full bg-red-50 text-red-600 py-3 rounded-xl font-black text-xs uppercase mt-6 border border-red-200 hover:bg-red-100 transition-all">
+                Sign Out
+            </button>
         </div>
-
-        <button @click="logout()" class="w-full bg-red-50 text-red-600 py-3 rounded-xl font-black text-xs uppercase mt-6 border border-red-200 hover:bg-red-100 transition-all">
-            Sign Out
-        </button>
     </div>
-</div>
 
+    <!-- Script Block -->
     <script>
-    // --- 1. INITIALIZE FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDgULz07vRUdWPKj-BNNmSNd3tJ-AoO3zE",
         authDomain: "crate-drop-portal.firebaseapp.com",
@@ -365,13 +373,11 @@
         measurementId: "G-KF6ZPXYBKT"
     };
     
-    // Initialize Firebase Compatibility Mode
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
     function shop() {
         return {
-            // --- CORE STATE ---
             isLoading: true,
             cartOpen: false,
             paymentModalOpen: false,
@@ -380,28 +386,24 @@
             products: [], 
             now: new Date().getTime(), 
             
-            // --- PLANNER STATE ---
             showPlanner: false,
             calcSelectedId: null,
             calcInputQty: 1,
             calcFillRate: 100,
             calcIsCase: false,
 
-            // --- AUTH & ORDERS STATE ---
             user: null,
             profileOpen: false,
             myOrders: [],
             isLoadingOrders: false,
 
             async init() {
-                // Your existing inventory sheet[cite: 1]
                 const inventorySheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
                 
                 setInterval(() => {
                     this.now = new Date().getTime();
                 }, 1000);
 
-                // Firebase Auth Listener
                 auth.onAuthStateChanged(user => {
                     this.user = user;
                     if (user) {
@@ -423,11 +425,11 @@
                 }
             },
 
-            // --- AUTH METHODS ---
             loginWithGoogle() {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 auth.signInWithPopup(provider).catch(error => {
                     console.error("Login failed", error);
+                    alert("Login failed. Make sure your GitHub Pages URL is added to the Authorized Domains in Firebase Authentication Settings.");
                 });
             },
 
@@ -440,7 +442,6 @@
 
             async fetchUserOrders(userEmail) {
                 this.isLoadingOrders = true;
-                // !!! REPLACE THE LINK BELOW WITH YOUR ORDERS SHEET TSV LINK !!!
                 const ordersSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0ppVCxJ3iyRtvhuVSbONCzFFx6g4nU-dpEHWx_FiSSCMJA6rdK0r5C1AeEP_13f_-Q77VL-6ggybF/pub?gid=0&single=true&output=tsv'; 
                 
                 try {
@@ -463,8 +464,7 @@
                         allOrders.push(order);
                     }
 
-                    // Filter to only show orders belonging to the logged-in email
-                    this.myOrders = allOrders.filter(order => order.email.toLowerCase() === userEmail.toLowerCase());
+                    this.myOrders = allOrders.filter(order => order.email && order.email.toLowerCase() === userEmail.toLowerCase());
                 } catch (error) {
                     console.error('Error fetching orders:', error);
                 } finally {
@@ -472,7 +472,6 @@
                 }
             },
 
-            // --- TSV PARSER[cite: 1] ---
             parseTSV(tsvText) {
                 const lines = tsvText.split(/\r?\n/);
                 if (lines.length < 2) return;
@@ -513,7 +512,6 @@
                 }
             },
 
-            // --- PRICING LOGIC[cite: 1] ---
             calculateFullPrice(product) {
                 const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                 return base * (product.selectedQty || 1);
@@ -524,7 +522,6 @@
                 return base * 0.3 * (product.selectedQty || 1);
             },
 
-            // --- COUNTDOWN LOGIC[cite: 1] ---
             getCountdown(deadline) {
                 if (!deadline) return null;
                 const distance = deadline - this.now;
@@ -540,7 +537,6 @@
                 return deadline && (deadline - this.now < 0);
             },
             
-            // --- PLANNER LOGIC[cite: 1] ---
             get calculatedUnits() {
                 if (!this.calcSelectedId) return 0;
                 const product = this.products.find(p => p.id == this.calcSelectedId);
@@ -564,7 +560,6 @@
                 return (basePrice * this.calcInputQty * 0.3).toLocaleString();
             },
 
-            // --- CART CORE[cite: 1] ---
             get filteredProducts() {
                 return this.products
                     .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
@@ -637,6 +632,6 @@
             }
         }
     }
-</script>
+    </script>
 </body>
 </html>
