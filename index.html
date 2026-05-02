@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -17,354 +20,204 @@
 
     <!-- Navigation -->
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
+        <div class="container mx-auto flex flex-wrap justify-between items-center">
+            <a href="https://cratedropcollective.github.io/" class="flex flex-col">
                 <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
                 <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
             
-            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Preorder</a>
-            </div>
-            
             <div class="flex items-center space-x-4">
-                <!-- User Profile Trigger -->
-                <button @click="profileModalOpen = true" class="text-gray-400 hover:text-white transition-colors relative">
-                    <i class="fas fa-user-circle text-xl" :class="user.name ? 'text-blue-500' : ''"></i>
-                </button>
-                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
-                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
+                <template x-if="!user">
+                    <button @click="login()" class="text-[10px] font-bold uppercase bg-white/10 px-4 py-2 rounded-full hover:bg-white/20 transition">Login</button>
+                </template>
+                <template x-if="user">
+                    <div class="flex items-center space-x-3">
+                        <img :src="user.photoURL" class="w-8 h-8 rounded-full border-2 border-blue-500">
+                        <button @click="logout()" class="text-[10px] font-bold uppercase text-gray-400">Sign Out</button>
+                    </div>
+                </template>
+                <button @click="cartOpen = true" class="bg-blue-600 px-4 py-2 rounded-full flex items-center relative">
+                    <i class="fas fa-shopping-cart text-xs mr-2"></i>
                     <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
-                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="totalItems"></span>
+                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full" x-text="cart.length"></span>
                 </button>
             </div>
         </div>
     </nav>
 
     <!-- Search & Planner Toggle -->
-    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto">
-            <div class="flex gap-2">
-                <div class="relative flex-1">
-                    <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-                </div>
-                <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors flex items-center justify-center shrink-0 shadow-sm">
-                    <i class="fas fa-calculator md:mr-2"></i>
-                    <span x-text="showPlanner ? 'Hide Planner' : 'Allocation Planner'" class="hidden md:inline"></span>
-                    <span x-text="showPlanner ? 'Hide' : 'Planner'" class="md:hidden ml-1"></span>
-                </button>
-            </div>
+    <div class="bg-white border-b sticky top-[68px] z-40 p-4">
+        <div class="container mx-auto flex gap-2">
+            <input type="text" x-model="searchQuery" placeholder="Search product sets..." class="flex-1 px-4 py-2 bg-gray-100 rounded-xl text-sm outline-none">
+            <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider">
+                <i class="fas fa-calculator mr-2"></i> Planner
+            </button>
         </div>
     </div>
 
-    <!-- Allocation Planner Section (RETAINED FROM OLD DESIGN) -->
-    <section x-show="showPlanner" x-transition class="container mx-auto px-2 md:px-4 mt-4 mb-4">
-        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
-            <div class="bg-slate-900 p-4 flex justify-between items-center">
-                <div>
-                    <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation & DP Simulator</h2>
+    <!-- Allocation Planner -->
+    <section x-show="showPlanner" x-transition class="container mx-auto px-4 mt-4">
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-xl grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <h3 class="font-black uppercase text-xs text-blue-600">Allocation Simulator</h3>
+                <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-gray-100 rounded-xl text-xs font-bold">
+                    <template x-for="item in products" :key="item.id">
+                        <option :value="item.id" x-text="item.name"></option>
+                    </template>
+                </select>
+                <div class="flex gap-2">
+                    <input type="number" x-model.number="calcQty" class="w-1/2 p-2.5 bg-gray-100 rounded-xl text-xs font-bold">
+                    <button @click="calcIsCase = !calcIsCase" class="w-1/2 bg-gray-100 rounded-xl text-[10px] font-black uppercase" :class="calcIsCase ? 'text-blue-600' : ''" x-text="calcIsCase ? 'Case Mode' : 'Unit Mode'"></button>
                 </div>
-                <i class="fas fa-chart-pie text-blue-500"></i>
             </div>
-            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-gray-100 rounded-xl text-xs font-bold outline-none">
-                        <template x-for="item in products" :key="item.id">
-                            <option :value="item.id" x-text="item.name"></option>
-                        </template>
-                    </select>
-                    <div class="flex bg-gray-100 p-1 rounded-xl">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg">UNIT</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg">CASE</button>
-                    </div>
-                </div>
-                <div class="p-4 bg-blue-600 text-white rounded-xl shadow-lg">
-                    <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Downpayment Needed (30%)</p>
-                    <p class="text-3xl font-black">₱<span x-text="calculatedDownpayment"></span></p>
-                </div>
+            <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-center">
+                <p class="text-[10px] font-bold uppercase opacity-60">Estimated 30% Downpayment</p>
+                <p class="text-3xl font-black">₱<span x-text="calculatedDownpayment"></span></p>
             </div>
         </div>
     </section>
 
     <!-- Product Grid -->
-    <main class="container mx-auto py-6 px-2 md:px-4">
-        <div x-show="isLoading" class="text-center py-12">
-            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 grayscale' : 'hover:shadow-lg'" class="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all flex flex-col relative">
-                    <div class="relative aspect-square bg-[#fdfdfd] flex items-center justify-center p-4">
-                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded z-10 uppercase tracking-wider" x-text="product.type"></span>
-                        <img :src="product.image" class="max-h-full max-w-full object-contain">
-                        <span class="absolute bottom-2 right-2 text-[8px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded" x-text="'ETA: ' + product.eta"></span>
-                    </div>
-                    
-                    <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <p class="text-[12px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs md:text-base font-bold leading-tight mb-2 h-8 md:h-12" x-text="product.name"></h2>
-                        
-                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
-                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">UNIT</button>
-                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md">CASE</button>
-                        </div>
-
-                        <div class="mb-3 text-[9px] font-bold p-2 rounded-lg border text-center uppercase" :class="isExpired(product.deadline) ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'">
-                            <span x-text="isExpired(product.deadline) ? '🛑 Closed' : '⏳ Closes: ' + getCountdown(product.deadline)"></span>
-                        </div>
-
-                        <div class="space-y-2 mb-4">
-                            <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
-                            <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
-                        </div>
-
-                        <div class="flex items-center border border-gray-300 rounded-lg h-7 bg-gray-50 mb-3">
-                            <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold">-</button>
-                            <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
-                            <button @click="product.selectedQty++" class="px-2 font-bold">+</button>
-                        </div>
-
-                        <button @click="addToCart(product)" :disabled="product.soldOut || isExpired(product.deadline)" :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-400 cursor-not-allowed' : (product.justAdded ? 'bg-green-500' : 'bg-slate-900 hover:bg-slate-800')" class="w-full h-9 rounded-lg text-white text-[10px] font-bold uppercase transition-all mt-auto">
-                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
-                        </button>
-                    </div>
+    <main class="container mx-auto py-8 px-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <template x-for="product in filteredProducts" :key="product.id">
+            <div class="bg-white border rounded-xl overflow-hidden flex flex-col">
+                <div class="aspect-square bg-gray-50 flex items-center justify-center p-4 relative">
+                    <img :src="product.image" class="max-h-full object-contain">
+                    <span class="absolute top-2 left-2 text-[8px] bg-black text-white px-2 py-1 rounded font-black uppercase" x-text="product.type"></span>
                 </div>
-            </template>
-        </div>
+                <div class="p-4 flex-1 flex flex-col">
+                    <p class="text-[10px] font-black text-blue-600 uppercase" x-text="product.set"></p>
+                    <h2 class="text-sm font-bold h-10 overflow-hidden leading-tight mb-4" x-text="product.name"></h2>
+                    
+                    <div class="mb-4">
+                        <p class="text-[9px] font-bold text-gray-400 uppercase">Downpayment (30%)</p>
+                        <p class="text-xl font-black">₱<span x-text="Math.floor(product.price * 0.3).toLocaleString()"></span></p>
+                    </div>
+
+                    <button @click="addToCart(product)" class="w-full bg-slate-900 text-white py-2 rounded-lg text-[10px] font-bold uppercase hover:bg-blue-600 transition">
+                        Add to Crate
+                    </button>
+                </div>
+            </div>
+        </template>
     </main>
 
-    <!-- Account Modal -->
-    <div x-show="profileModalOpen" class="fixed inset-0 z-[100]" x-cloak>
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="profileModalOpen = false"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-white rounded-2xl p-6 shadow-2xl">
-            <h2 class="text-lg font-black uppercase mb-4">Customer Details</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-gray-400">Full Name</label>
-                    <input type="text" x-model="user.name" class="w-full p-2 bg-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold uppercase text-gray-400">Contact Number</label>
-                    <input type="text" x-model="user.contact" class="w-full p-2 bg-gray-100 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <button @click="saveProfile()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase">Save Profile</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cart Sidebar -->
+    <!-- Cart Modal -->
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" x-cloak>
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false"></div>
+        <div class="absolute inset-0 bg-black/60" @click="cartOpen = false"></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 shadow-2xl flex flex-col">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Your Crate</h2>
-                <button @click="cartOpen = false" class="text-3xl">&times;</button>
-            </div>
-
-            <div class="flex-1 space-y-6 overflow-y-auto no-scrollbar">
+            <h2 class="text-xl font-black uppercase mb-6">Your Crate</h2>
+            <div class="flex-1 overflow-y-auto space-y-4">
                 <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex items-start border-b border-gray-100 pb-4">
-                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-gray-50 p-1 rounded-lg">
-                        <div class="flex-1">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
                             <p class="font-bold text-xs" x-text="item.name"></p>
-                            <p class="text-[9px] text-blue-600 font-bold uppercase" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></p>
-                            <div class="flex justify-between items-center mt-2">
-                                <div class="flex items-center border rounded h-6 bg-gray-50">
-                                    <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
-                                    <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
-                                    <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
-                                </div>
-                                <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
-                            </div>
+                            <p class="text-[10px] text-blue-600 font-bold uppercase">DP: ₱<span x-text="item.dp.toLocaleString()"></span></p>
                         </div>
+                        <button @click="cart.splice(index, 1)" class="text-red-500 text-xs font-bold">Remove</button>
                     </div>
                 </template>
             </div>
-
-            <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
-                    <div class="flex justify-between text-sm font-black text-blue-600 uppercase"><span>Total Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
+            <div class="mt-6 pt-6 border-t">
+                <div class="flex justify-between mb-4 font-black">
+                    <span>Total DP Due:</span>
+                    <span class="text-blue-600">₱<span x-text="cartDepositTotal"></span></span>
                 </div>
-                <div x-show="!user.name" class="text-center p-2 bg-amber-50 text-amber-700 text-[10px] font-bold rounded uppercase">
-                    Please <button @click="profileModalOpen = true" class="underline">Set Profile</button> to continue.
-                </div>
-                <div class="grid grid-cols-1 gap-2">
-                    <button @click="confirmAndRedirect()" :disabled="!user.name" class="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-xs uppercase hover:bg-slate-800 disabled:opacity-50">
-                        <i class="fab fa-facebook-messenger mr-2"></i> Assisted Checkout
-                    </button>
-                    <button @click="checkoutSelf()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black text-xs uppercase hover:bg-blue-700">
-                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout
-                    </button>
-                </div>
+                <button @click="checkout()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black uppercase text-sm">Checkout Order</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Payment Modal (RETAINED FROM OLD DESIGN) -->
-    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" x-cloak>
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="flex justify-between items-center mb-4 border-b pb-4">
-                <h2 class="text-xl font-black text-slate-900 uppercase">Order Summary</h2>
-                <button @click="paymentModalOpen = false" class="text-3xl">&times;</button>
-            </div>
-            <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
-                <div class="bg-blue-600 text-white p-4 rounded-xl shadow-inner">
-                    <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Total DP Due Now</p>
-                    <p class="text-2xl font-black">₱<span x-text="cartDepositTotal"></span></p>
-                </div>
-                <div class="text-center py-4 border-2 border-dashed border-gray-200 rounded-2xl">
-                    <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto rounded-lg">
-                    <p class="text-[11px] text-gray-500 mt-4 px-4 font-medium italic">Pay via GCash/Instapay. Provide receipt in Messenger.</p>
-                </div>
-            </div>
-            <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4">Send Proof to Messenger</button>
         </div>
     </div>
 
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgULz07vRUdWPKj-BNNmSNd3tJ-AoO3zE",
+            authDomain: "crate-drop-portal.firebaseapp.com",
+            projectId: "crate-drop-portal",
+            storageBucket: "crate-drop-portal.firebasestorage.app",
+            messagingSenderId: "828734198898",
+            appId: "1:828734198898:web:e1eed4e9dbfb71ddb29eeb",
+            measurementId: "G-KF6ZPXYBKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+
         function shop() {
             return {
-                isLoading: true,
-                cartOpen: false,
-                profileModalOpen: false,
-                paymentModalOpen: false,
-                showPlanner: false,
-                searchQuery: '',
+                products: [],
                 cart: [],
-                products: [], 
-                now: new Date().getTime(),
-                user: { name: '', contact: '' },
-                
+                user: null,
+                searchQuery: '',
+                showPlanner: false,
+                cartOpen: false,
                 calcSelectedId: null,
-                calcInputQty: 1,
-                calcFillRate: 100,
+                calcQty: 1,
                 calcIsCase: false,
 
                 async init() {
-                    const saved = localStorage.getItem('cdc_profile');
-                    if (saved) this.user = JSON.parse(saved);
+                    firebase.auth().onAuthStateChanged(user => { this.user = user; });
 
-                    // FIX: Using the correct Preorder TSV link
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
+                    const productTsv = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
                     
-                    setInterval(() => { this.now = new Date().getTime(); }, 1000);
-
                     try {
-                        const response = await fetch(sheetUrl);
-                        const data = await response.text();
-                        this.parseTSV(data);
-                    } catch (error) {
-                        console.error('Fetch error:', error);
-                    } finally {
-                        this.isLoading = false;
-                    }
+                        const res = await fetch(productTsv);
+                        const text = await res.text();
+                        this.parseTSV(text);
+                    } catch (e) { console.error("TSV Load Error", e); }
                 },
 
-                parseTSV(tsvText) {
-                    const lines = tsvText.split(/\r?\n/);
-                    if (lines.length < 2) return;
-                    const headers = lines[0].split('\t').map(h => h.trim());
-                    const items = [];
-
-                    for (let i = 1; i < lines.length; i++) {
-                        const values = lines[i].split('\t');
-                        if (values.length < 2) continue;
-                        let product = {};
-                        headers.forEach((header, index) => {
-                            let val = values[index] ? values[index].trim() : '';
-                            let lower = header.toLowerCase();
-                            // Handle variations in header naming
-                            if (lower.includes('deadline')) product.deadline = val ? new Date(val).getTime() : null;
-                            else if (lower === 'id' || lower === 'price' || lower.includes('case')) product[lower.includes('case') ? 'unitsPerCase' : lower] = Number(val) || 0;
-                            else if (lower === 'soldout') product.soldOut = (val.toUpperCase() === 'TRUE');
-                            else product[header] = val; // Default map name, set, image, eta, type
-                        });
-                        product.selectedQty = 1;
-                        product.isCase = false;
-                        product.justAdded = false;
-                        items.push(product);
-                    }
-                    this.products = items;
-                    if (this.products.length > 0) this.calcSelectedId = this.products[0].id;
-                },
-
-                saveProfile() {
-                    localStorage.setItem('cdc_profile', JSON.stringify(this.user));
-                    this.profileModalOpen = false;
-                },
-
-                calculateFullPrice(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * (product.selectedQty || 1);
-                },
-
-                calculateLiveDeposit(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 0.3 * (product.selectedQty || 1);
-                },
-
-                getCountdown(deadline) {
-                    if (!deadline) return null;
-                    const diff = deadline - this.now;
-                    if (diff < 0) return "CLOSED";
-                    const d = Math.floor(diff / 86400000);
-                    const h = Math.floor((diff % 86400000) / 3600000);
-                    const m = Math.floor((diff % 3600000) / 60000);
-                    return `${d}d ${h}h ${m}m`;
-                },
-
-                isExpired(deadline) { return deadline && (deadline - this.now < 0); },
-
-                get calculatedDownpayment() {
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    if (!product) return "0";
-                    const base = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
-                    return (base * this.calcInputQty * 0.3).toLocaleString();
+                parseTSV(text) {
+                    const lines = text.split('\n').filter(l => l.trim());
+                    const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
+                    this.products = lines.slice(1).map(line => {
+                        const cols = line.split('\t');
+                        let item = {};
+                        headers.forEach((h, i) => { item[h] = cols[i]?.trim(); });
+                        item.id = item.id || Math.random();
+                        item.price = Number(item.price) || 0;
+                        item.unitspercase = Number(item.unitspercase) || 1;
+                        return item;
+                    });
+                    if(this.products.length) this.calcSelectedId = this.products[0].id;
                 },
 
                 get filteredProducts() {
-                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.set.toLowerCase().includes(this.searchQuery.toLowerCase()));
                 },
 
-                get totalItems() { return this.cart.reduce((s, i) => s + i.quantity, 0); },
-                get cartDepositTotal() { return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString(); },
-                get cartFullTotal() { return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString(); },
+                get calculatedDownpayment() {
+                    const p = this.products.find(x => x.id == this.calcSelectedId);
+                    if(!p) return 0;
+                    const base = this.calcIsCase ? (p.price * p.unitspercase) : p.price;
+                    return (base * this.calcQty * 0.3).toLocaleString();
+                },
+
+                get cartDepositTotal() {
+                    return this.cart.reduce((sum, item) => sum + item.dp, 0).toLocaleString();
+                },
 
                 addToCart(product) {
-                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
-                    if (existing) existing.quantity += product.selectedQty;
-                    else {
-                        this.cart.push({ ...product, productId: product.id, fullPrice: price, depositPrice: price * 0.3, quantity: product.selectedQty });
-                    }
-                    product.justAdded = true;
-                    setTimeout(() => product.justAdded = false, 1000);
-                },
-
-                updateCartQty(index, change) {
-                    this.cart[index].quantity += change;
-                    if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
-                },
-
-                checkoutSelf() { this.cartOpen = false; this.paymentModalOpen = true; },
-
-                async confirmAndRedirect() {
-                    let summary = `🚨 NEW PRE-ORDER: ${this.user.name}\nContact: ${this.user.contact}\n-----------------\n`;
-                    this.cart.forEach(i => {
-                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  DP: ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    this.cart.push({
+                        name: product.name,
+                        dp: product.price * 0.3,
+                        full: product.price
                     });
-                    summary += `TOTAL DP: ₱${this.cartDepositTotal}\n\nPre-orders are subject to country allocation.`;
+                    this.cartOpen = true;
+                },
 
-                    try { await navigator.clipboard.writeText(summary); } catch (err) {}
+                login() {
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    firebase.auth().signInWithPopup(provider);
+                },
 
-                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    if (isMobile) window.location.href = "fb-messenger://user-thread/745474078647634";
-                    else window.open("https://m.me/cratedropcollective", "_blank");
+                logout() { firebase.auth().signOut(); },
+
+                checkout() {
+                    if(!this.user) {
+                        alert("Please login with Google to complete your order.");
+                        return this.login();
+                    }
+                    const summary = this.cart.map(i => `• ${i.name} (DP: ₱${i.dp})`).join('\n');
+                    const message = encodeURIComponent(`🚨 NEW PRE-ORDER\nCustomer: ${this.user.displayName}\n\n${summary}\n\nTotal DP: ₱${this.cartDepositTotal}`);
+                    window.open(`https://m.me/cratedropcollective?text=${message}`, '_blank');
                 }
             }
         }
