@@ -352,23 +352,58 @@
                 calcIsCase: false,
 
                 async init() {
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
+                    const inventoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
                     
                     firebase.auth().onAuthStateChanged(user => {
                         this.user = user;
-                        if(user) this.fetchUserHistory();
+                        if(user) {
+                            this.fetchUserHistory();
+                        } else {
+                            this.orderHistory = [];
+                        }
                     });
 
                     setInterval(() => { this.now = new Date().getTime(); }, 1000);
 
                     try {
-                        const response = await fetch(sheetUrl);
+                        const response = await fetch(inventoryUrl);
                         const data = await response.text();
                         this.parseTSV(data);
                     } catch (error) {
                         console.error('Error fetching inventory:', error);
                     } finally {
                         this.isLoading = false;
+                    }
+                },
+
+                async fetchUserHistory() {
+                    const historyUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS0ppVCxJ3iyRtvhuVSbONCzFFx6g4nU-dpEHWx_FiSSCMJA6rdK0r5C1AeEP_13f_-Q77VL-6ggybF/pub?gid=0&single=true&output=tsv';
+                    
+                    try {
+                        const response = await fetch(historyUrl);
+                        const text = await response.text();
+                        const lines = text.split(/\r?\n/);
+                        if (lines.length < 2) return;
+
+                        const headers = lines[0].split('\t').map(h => h.trim());
+                        const userEmail = this.user.email.toLowerCase();
+                        
+                        this.orderHistory = lines.slice(1)
+                            .map(line => {
+                                const values = line.split('\t');
+                                let row = {};
+                                headers.forEach((h, i) => row[h] = values[i]?.trim());
+                                return row;
+                            })
+                            .filter(row => row.email && row.email.toLowerCase() === userEmail)
+                            .map(row => ({
+                                id: row.orderId || 'N/A',
+                                productName: row.productName || 'Unknown Product',
+                                status: row.status || 'Pending',
+                                paidAmount: row.depositPaid || '0'
+                            }));
+                    } catch (e) {
+                        console.error("History sync error:", e);
                     }
                 },
 
@@ -407,13 +442,6 @@
                 },
 
                 logout() { firebase.auth().signOut(); },
-
-                async fetchUserHistory() {
-                    // Placeholder for future Status DB pull
-                    this.orderHistory = [
-                        { id: '1001', productName: 'Gundam GD05 Freedom Ascension Case', status: 'Confirmed', paidAmount: '12,500' }
-                    ];
-                },
 
                 calculateFullPrice(product) {
                     const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
@@ -499,6 +527,3 @@
                 }
             }
         }
-    </script>
-</body>
-</html>
