@@ -3,199 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Velocity Tool</title>
+    <title>Crate Drop Collective | Market Pulse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         [x-cloak] { display: none !important; }
-        .bar-transition { transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .pulse-red { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .bar-transition { transition: width 1.2s ease-in-out; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-slate-900" x-data="velocityTracker()" x-init="analyzeMarket()" x-cloak>
+<body class="bg-slate-50 font-sans text-slate-900" x-data="marketPulse()" x-init="analyzeTrends()" x-cloak>
 
-    <!-- Navigation -->
-    <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
-                <span class="text-lg md:text-xl font-black tracking-tighter leading-none">CRATE DROP</span>
-                <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
+    <!-- Simple Nav -->
+    <nav class="bg-black text-white p-5 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="flex flex-col">
+                <span class="text-xl font-black tracking-tighter">CRATE DROP</span>
+                <span class="text-[9px] font-bold text-blue-500 tracking-[0.3em]">MARKET PULSE</span>
             </a>
-            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider px-3 py-1.5 rounded-full hover:bg-white/10">Preorder</a>
-                 <a href="#" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Velocity</a>
-            </div>
-            <div class="hidden md:block">
-                <span class="text-[10px] font-black uppercase text-blue-600">2026 Live Market Intelligence</span>
+            <div class="hidden md:flex space-x-6 text-[11px] font-black uppercase tracking-widest text-gray-400">
+                <span>Real-Time Sales Data</span>
+                <span class="text-white">Active Sets: 2026</span>
             </div>
         </div>
     </nav>
 
-    <!-- Market Analysis Header -->
-    <header class="bg-white border-b border-gray-200 py-12 px-4">
-        <div class="container mx-auto max-w-4xl text-center">
-            <div class="inline-flex items-center space-x-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase mb-4 border border-red-100">
-                <div class="w-2 h-2 rounded-full bg-red-600 pulse-red"></div>
-                <span>Direct TCGPlayer Data Stream</span>
-            </div>
-            <h1 class="text-4xl md:text-6xl font-black uppercase tracking-tighter text-slate-900 mb-4 leading-none">Market <span class="text-blue-600">Liquidity</span> Index</h1>
-            <p class="text-sm md:text-base text-gray-500 font-bold uppercase tracking-wide max-w-2xl mx-auto">
-                Tracking movement based on **Market Spread**. We rank sets by the premium buyers are paying over floor prices—identifying real interest before it peaks.
+    <!-- Friendly Header -->
+    <header class="bg-white border-b border-slate-200 py-12 px-4">
+        <div class="container mx-auto max-w-3xl text-center">
+            <h1 class="text-4xl font-black uppercase tracking-tight text-slate-900 mb-4">Which sets are <span class="text-blue-600">moving</span>?</h1>
+            <p class="text-slate-500 font-medium leading-relaxed">
+                We track the top cards from every recent set. If several cards in a set are rising in price at the same time, that set moves up our list. This shows you where the real "hype" is happening.
             </p>
         </div>
     </header>
 
-    <!-- Dashboard Main -->
-    <main class="container mx-auto py-10 px-4">
-        <!-- Loading UI -->
-        <div x-show="loading" class="flex flex-col items-center justify-center py-32">
-            <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="font-black text-blue-600 uppercase tracking-widest text-xs">Scanning Set Values & Realized Sales...</p>
+    <!-- Main List -->
+    <main class="container mx-auto py-10 px-4 max-w-5xl">
+        
+        <!-- Loading State -->
+        <div x-show="loading" class="flex flex-col items-center py-20">
+            <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p class="text-xs font-black uppercase tracking-widest text-blue-600">Checking Latest Prices...</p>
         </div>
 
-        <!-- Ranking Table -->
-        <div class="space-y-8" x-show="!loading">
+        <div class="space-y-6" x-show="!loading">
             <template x-for="(set, index) in rankedSets" :key="set.id">
-                <div class="bg-white rounded-[2rem] border border-gray-200 shadow-sm overflow-hidden hover:shadow-2xl hover:border-blue-200 transition-all duration-500">
-                    <div class="flex flex-col lg:flex-row">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                    <div class="flex flex-col md:flex-row">
                         
-                        <!-- Set Identity & Rank -->
-                        <div class="p-8 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-gray-100 flex flex-col justify-center bg-white">
-                            <div class="flex items-center space-x-4 mb-4">
-                                <span class="text-5xl font-black text-slate-900 italic" x-text="'#' + (index + 1)"></span>
-                                <div :class="set.spreadPercent > 12 ? 'bg-red-600' : 'bg-slate-900'" class="text-[10px] font-black text-white px-4 py-1.5 rounded-full uppercase tracking-tighter" x-text="set.insight"></div>
+                        <!-- Rank & Set Info -->
+                        <div class="p-6 md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-100">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-3xl font-black italic text-slate-300" x-text="'#' + (index + 1)"></span>
+                                <span :class="set.heatLevel === 'High' ? 'bg-orange-500' : 'bg-blue-600'" 
+                                      class="text-[9px] font-black text-white px-2 py-1 rounded uppercase" 
+                                      x-text="set.heatLevel + ' Demand'"></span>
                             </div>
-                            <h2 class="text-2xl font-black uppercase leading-tight text-slate-900 mb-1" x-text="set.name"></h2>
-                            <p class="text-[11px] font-black text-blue-600 uppercase tracking-[0.25em]" x-text="set.series"></p>
+                            <h2 class="text-xl font-extrabold uppercase text-slate-900" x-text="set.name"></h2>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="set.series"></p>
                         </div>
 
                         <!-- Analysis Metrics -->
-                        <div class="flex-1 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 bg-gray-50/40">
+                        <div class="flex-1 p-6 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50">
                             
-                            <!-- Financial Stats -->
-                            <div class="space-y-6">
-                                <div>
-                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Market Premium Spread</p>
-                                    <div class="flex items-baseline space-x-2">
-                                        <p class="text-4xl font-black text-slate-900" x-text="set.spreadPercent + '%'"></p>
-                                        <p class="text-[10px] font-bold text-green-600 uppercase">Growth Rate</p>
+                            <!-- The Data -->
+                            <div>
+                                <p class="text-[10px] font-black text-slate-400 uppercase mb-3">What's Happening?</p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-chart-line text-green-500 text-xs"></i>
+                                        <p class="text-xs font-bold text-slate-700">
+                                            <span class="text-blue-600" x-text="set.risingCardsCount"></span> cards in this set are rising.
+                                        </p>
                                     </div>
-                                    <p class="text-[11px] text-gray-500 font-medium mt-2 leading-relaxed">
-                                        Sales are averaging <span class="font-bold text-slate-900" x-text="set.spreadPercent + '%'"></span> above the current lowest listing. High spread indicates a <span class="font-bold text-blue-600 uppercase">buy-out risk</span>.
-                                    </p>
-                                </div>
-                                
-                                <div class="space-y-2">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-[10px] font-black uppercase text-gray-400">Liquidity Score</span>
-                                        <span class="text-xs font-black text-slate-900" x-text="set.velocityScore + '/100'"></span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                        <div class="bg-blue-600 h-full bar-transition" :style="'width: ' + set.velocityScore + '%'"></div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-up text-blue-500 text-xs"></i>
+                                        <p class="text-xs font-bold text-slate-700">
+                                            Average Price Gap: <span class="text-blue-600" x-text="set.avgGap + '%'"></span>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Qualitative Reasoning -->
-                            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-                                <div class="flex items-center space-x-2 mb-3">
-                                    <i class="fas fa-chart-pie text-blue-500 text-xs"></i>
-                                    <p class="text-[10px] font-black uppercase text-slate-900 tracking-wider">Analysis Narrative</p>
-                                </div>
-                                <p class="text-xs text-gray-600 leading-relaxed font-bold flex-1" x-text="set.reasoning"></p>
-                                
-                                <div class="mt-6 pt-4 border-t border-gray-50 flex items-center space-x-4">
-                                    <img :src="set.topCardImg" class="w-12 h-16 object-contain rounded-md shadow-lg transform hover:scale-110 transition-transform">
-                                    <div>
-                                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">Key Movement Driver</p>
-                                        <p class="text-[11px] font-black text-slate-900 uppercase" x-text="set.topCardName"></p>
-                                        <p class="text-[11px] font-black text-blue-600" x-text="'$' + set.topCardPrice + ' MARKET'"></p>
+                            <!-- The "Why" -->
+                            <div class="flex flex-col justify-center">
+                                <p class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center sm:text-left">Buyer Interest Level</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                        <div class="bg-blue-600 h-full bar-transition" :style="'width: ' + set.interestScore + '%'"></div>
                                     </div>
+                                    <span class="text-xs font-black text-slate-900" x-text="set.interestScore + '%'"></span>
                                 </div>
+                                <p class="text-[10px] text-slate-500 font-medium mt-2 leading-tight" x-text="set.simpleReason"></p>
                             </div>
 
                         </div>
+
+                        <!-- Featured Card -->
+                        <div class="p-6 md:w-1/4 flex flex-col justify-center items-center bg-white border-t md:border-t-0 md:border-l border-slate-100">
+                            <p class="text-[9px] font-black text-slate-300 uppercase mb-3">Popular Chase Card</p>
+                            <img :src="set.topCardImg" class="w-16 h-22 object-contain mb-3 rounded shadow-sm">
+                            <div class="text-center">
+                                <p class="text-[10px] font-black text-slate-900 leading-tight uppercase" x-text="set.topCardName"></p>
+                                <p class="text-[10px] font-black text-blue-600" x-text="'$' + set.topCardPrice"></p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </template>
         </div>
-
-        <!-- Footer Note -->
-        <footer class="mt-20 text-center border-t border-gray-200 pt-10 pb-20">
-            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 italic">Analysis powered by Pokémon TCG Market API v2</p>
-            <p class="text-[9px] text-gray-400 max-w-xl mx-auto uppercase font-bold leading-loose">
-                Data is refreshed hourly. Liquidity Index is calculated by cross-referencing realized TCGPlayer sales against current floor listings.
-            </p>
-        </footer>
     </main>
 
     <script>
-        function velocityTracker() {
+        function marketPulse() {
             return {
                 loading: true,
                 rankedSets: [],
-                async analyzeMarket() {
+                async analyzeTrends() {
                     try {
-                        // Fetch the latest 8 sets
-                        const setRes = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=8');
+                        const setRes = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=7');
                         const setData = await setRes.json();
                         
-                        const processed = await Promise.all(setData.data.map(async (set) => {
-                            // Fetch top 5 cards for each set to analyze price movement
-                            const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=5`);
+                        const results = await Promise.all(setData.data.map(async (set) => {
+                            const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=8`);
                             const cardData = await cardRes.json();
                             
-                            let totalMarket = 0, totalLow = 0;
-                            let topCard = { name: 'N/A', price: 0, img: '' };
+                            let risingCount = 0;
+                            let totalGap = 0;
+                            let topCard = { name: '', price: 0, img: '' };
 
                             cardData.data.forEach((card, i) => {
                                 const p = card.tcgplayer?.prices?.holofoil || card.tcgplayer?.prices?.normal || { market: 0, low: 0 };
-                                totalMarket += p.market || 0;
-                                totalLow += p.low || (p.market * 0.85); // Fallback for missing floor price
-                                if(i === 0) topCard = { name: card.name, price: p.market || 0, img: card.images.small };
+                                if (p.market > p.low) {
+                                    risingCount++;
+                                    totalGap += ((p.market - p.low) / (p.low || 1)) * 100;
+                                }
+                                if(i === 0) topCard = { name: card.name, price: p.market.toFixed(2), img: card.images.small };
                             });
 
-                            // FACTUAL SPREAD CALCULATION
-                            const spread = totalLow > 0 ? ((totalMarket - totalLow) / totalLow) * 100 : 0;
+                            const avgGap = (totalGap / (cardData.data.length || 1)).toFixed(1);
                             
-                            // NARRATIVE ENGINE based on spreads and concentration
-                            let insight = "Stable Market";
-                            let reasoning = "Set value is currently holding firm. Supply listings are matching buyer demand, making this a safe, low-volatility acquisition.";
+                            // Ranking Logic: Sets with more rising cards rank higher
+                            // Interest Score: Blend of rising cards and price gap
+                            const interest = Math.min(100, Math.floor((risingCount * 10) + (avgGap * 1.5)));
                             
-                            if (spread > 18) {
-                                insight = "Supply Squeeze";
-                                reasoning = "Factual data shows realized sales are far higher than floor listings. Someone is clearing the cheap copies; expect a significant price spike soon.";
-                            } else if (topCard.price > 180) {
-                                insight = "Chase Rally";
-                                reasoning = "High-tier interest in specific chase cards is pulling the entire set's liquidity up. Volatility is concentrated in the Top 5 cards.";
-                            } else if (set.total < 100) {
-                                insight = "High Density";
-                                reasoning = "Small set size combined with high movement suggests cards are easier to pull but higher in turnover frequency.";
-                            }
+                            let reason = "People are buying cards at a steady pace.";
+                            if (risingCount > 5) reason = "Many cards are increasing in price at once. High interest!";
+                            else if (avgGap > 15) reason = "Prices are jumping quickly for the top cards.";
 
                             return {
                                 id: set.id,
                                 name: set.name,
                                 series: set.series,
-                                spreadPercent: spread.toFixed(1),
-                                velocityScore: Math.min(99, Math.floor(spread * 3.5 + 20)),
-                                insight: insight,
-                                reasoning: reasoning,
+                                risingCardsCount: risingCount,
+                                avgGap: avgGap,
+                                interestScore: interest,
+                                heatLevel: interest > 60 ? 'High' : 'Medium',
+                                simpleReason: reason,
                                 topCardName: topCard.name,
-                                topCardPrice: topCard.price.toFixed(2),
+                                topCardPrice: topCard.price,
                                 topCardImg: topCard.img
                             };
                         }));
 
-                        // Sort by highest spread (most movement)
-                        this.rankedSets = processed.sort((a, b) => b.spreadPercent - a.spreadPercent);
+                        // Sort by risingCount first, then by interest score
+                        this.rankedSets = results.sort((a, b) => b.risingCardsCount - a.risingCardsCount || b.interestScore - a.interestScore);
                         this.loading = false;
                     } catch (e) {
-                        console.error("Market scan failed", e);
+                        console.error("Failed to load trends", e);
                     }
                 }
             }
