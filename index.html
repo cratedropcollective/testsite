@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Pre-orders</title>
+    <title>Crate Drop Collective | Velocity Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <style>
         [x-cloak] { display: none !important; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-init="init()" x-cloak>
+<body class="bg-gray-50 font-sans text-slate-900" x-data="velocityDashboard()" x-cloak>
 
-    <!-- Navigation -->
+    <!-- Navigation (Identical to your index.html) -->
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
             <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
@@ -25,224 +25,165 @@
                 <span class="text-[10px] font-bold text-blue-500 tracking-[0.2em]">COLLECTIVE</span>
             </a>
             
+            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
+                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Home</a>
+                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Products</a>
+                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5 rounded-full hover:bg-white/10">Preorder</a>
+                 <a href="#" class="text-[10px] md:text-xs font-bold text-white bg-white/20 px-4 py-1.5 rounded-full uppercase tracking-wider">Velocity</a>
+            </div>
+            
             <div class="flex items-center space-x-4">
-                <template x-if="!user">
-                    <button @click="login()" class="text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition">Login</button>
-                </template>
-                <template x-if="user">
-                    <div class="flex items-center space-x-2">
-                        <button @click="historyOpen = true" class="text-[10px] font-black uppercase text-blue-400 hover:text-blue-300">History</button>
-                        <img @click="logout()" :src="user.photoURL" class="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer hover:opacity-50" :title="'Logout ' + user.displayName">
-                    </div>
-                </template>
-
-                <button @click="cartOpen = true" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all relative">
-                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
-                    <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
-                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-red-500 text-[8px] w-4 h-4 flex items-center justify-center rounded-full border-2 border-black" x-text="totalItems"></span>
-                </button>
+                <a href="/preorder" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full flex items-center transition-all">
+                    <span class="font-bold text-[10px] md:text-xs uppercase">Shop Drops</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Search & Planner Toggle -->
-    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto flex gap-2">
-            <div class="relative flex-1">
-                <input type="text" x-model="searchQuery" placeholder="Search drops..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
+    <!-- Header Section -->
+    <div class="bg-white border-b border-gray-200 pt-8 pb-6 px-4">
+        <div class="container mx-auto text-center">
+            <div class="inline-flex items-center justify-center space-x-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 border border-red-100">
+                <div class="w-2 h-2 rounded-full bg-red-500 pulse-slow"></div>
+                <span>Live Hourly Analytics</span>
             </div>
-            <button @click="showPlanner = !showPlanner" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-sm">
-                <i class="fas fa-calculator mr-1"></i> <span x-text="showPlanner ? 'Hide' : 'Planner'"></span>
-            </button>
+            <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 mb-2">Hype <span class="text-blue-600">Velocity</span></h1>
+            <p class="text-xs md:text-sm text-gray-500 font-medium">See what the community is securing right now. Data shifts hourly based on site traffic and cart additions.</p>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-4">Last Updated: <span x-text="lastUpdated"></span></p>
         </div>
     </div>
 
-    <!-- Allocation Planner Section (RESTORED) -->
-    <section x-show="showPlanner" x-transition class="container mx-auto px-4 mt-4">
-        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl">
-            <div class="bg-slate-900 p-4 flex justify-between items-center">
-                <h2 class="text-white text-sm font-black uppercase tracking-tighter">Allocation Simulator</h2>
-                <i class="fas fa-chart-pie text-blue-500"></i>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-gray-100 rounded-xl text-xs font-bold">
-                        <template x-for="item in products" :key="item.id">
-                            <option :value="item.id" x-text="item.name"></option>
-                        </template>
-                    </select>
-                    <div class="flex bg-gray-100 p-1 rounded-xl">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg uppercase">Unit</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[10px] font-black py-2 rounded-lg uppercase">Case</button>
+    <!-- Dashboard Grid -->
+    <main class="container mx-auto py-8 px-2 md:px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <template x-for="(item, index) in trendingData" :key="item.id">
+                <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 relative">
+                    
+                    <!-- Rank Badge -->
+                    <div class="absolute top-0 left-0 w-10 h-10 flex items-center justify-center font-black text-white text-lg rounded-br-2xl z-10 shadow-sm"
+                         :class="index === 0 ? 'bg-red-500' : (index === 1 ? 'bg-orange-500' : (index === 2 ? 'bg-blue-500' : 'bg-slate-900'))">
+                        #<span x-text="index + 1"></span>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="number" x-model.number="calcInputQty" class="w-full p-2.5 bg-gray-100 rounded-xl text-xs font-bold" placeholder="Qty">
-                        <input type="number" x-model.number="calcFillRate" class="w-full p-2.5 bg-gray-100 rounded-xl text-xs font-bold" placeholder="Fill %">
-                    </div>
-                </div>
-                <div class="bg-blue-600 text-white p-6 rounded-xl flex flex-col justify-center">
-                    <p class="text-[10px] font-bold uppercase opacity-80">Estimated 30% DP</p>
-                    <p class="text-3xl font-black">₱<span x-text="calculatedDownpayment"></span></p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Product Grid (RESTORED UI) -->
-    <main class="container mx-auto py-6 px-4">
-        <div x-show="isLoading" class="text-center py-12"><p class="animate-pulse font-black text-blue-600">LOADING DROPS...</p></div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" x-show="!isLoading">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all flex flex-col">
-                    <div class="relative aspect-square bg-gray-50 flex items-center justify-center p-4">
-                        <span class="absolute top-2 left-2 text-[8px] font-black bg-slate-900 text-white px-2 py-1 rounded z-10" x-text="product.type"></span>
-                        <img :src="product.image" class="max-h-full object-contain">
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <p class="text-[10px] font-black text-blue-600 uppercase mb-1" x-text="product.set"></p>
-                        <h2 class="text-xs font-bold leading-tight mb-3 h-8" x-text="product.name"></h2>
-                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
-                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Unit</button>
-                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 rounded-md uppercase">Case</button>
+                    <div class="p-5 md:p-6 pt-8">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[10px] font-black text-gray-400 tracking-wider uppercase" x-text="item.setCode"></span>
+                                <h2 class="text-lg font-black leading-tight text-slate-900 uppercase" x-text="item.name"></h2>
+                            </div>
+                            
+                            <!-- Trend Icon -->
+                            <div class="flex flex-col items-end">
+                                <template x-if="item.trend === 'up'">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-sm shadow-sm">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                </template>
+                                <template x-if="item.trend === 'down'">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-sm shadow-sm">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                </template>
+                                <template x-if="item.trend === 'stable'">
+                                    <div class="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm shadow-sm">
+                                        <i class="fas fa-minus"></i>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
-                        <div class="mb-4">
-                            <span class="text-[9px] font-bold text-gray-400 uppercase block">30% Downpayment</span>
-                            <span class="text-sm font-black">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></span>
+
+                        <!-- Main Stats -->
+                        <div class="grid grid-cols-2 gap-3 mb-5">
+                            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Carts / Hr</p>
+                                <p class="text-2xl font-black text-slate-900"><span x-text="item.unitsHr"></span> <i class="fas fa-shopping-basket text-sm text-gray-300 ml-1"></i></p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Hype Index</p>
+                                <p class="text-2xl font-black" :class="item.hypeScore >= 80 ? 'text-red-500' : 'text-blue-600'"><span x-text="item.hypeScore"></span><span class="text-sm">/100</span></p>
+                            </div>
                         </div>
-                        <button @click="addToCart(product)" class="w-full bg-slate-900 hover:bg-blue-600 text-white py-2.5 rounded-lg text-[10px] font-black uppercase transition-colors mt-auto">Add to Crate</button>
+
+                        <!-- Heat Meter -->
+                        <div class="w-full">
+                            <div class="flex justify-between text-[8px] font-bold text-gray-400 uppercase mb-1">
+                                <span>Cold</span>
+                                <span>Trending</span>
+                                <span>Selling Out</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden flex">
+                                <div class="h-2.5 rounded-full transition-all duration-1000 ease-out" 
+                                     :class="item.hypeScore >= 80 ? 'bg-gradient-to-r from-orange-500 to-red-500' : (item.hypeScore >= 50 ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 'bg-gray-400')"
+                                     :style="`width: ${item.hypeScore}%`">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </template>
         </div>
     </main>
 
-    <!-- History & Cart Sidebars (Restored) -->
-    <!-- [History Sidebar Content Restored...] -->
-    <!-- [Cart Sidebar Content Restored...] -->
-
-    <!-- Payment Modal (RESTORED WITH AUTOMATION TRIGGER) -->
-    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl text-center">
-            <h2 class="text-xl font-black mb-4 uppercase">Instapay Payment</h2>
-            <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto mb-4 border rounded-xl p-2">
-            <div class="bg-blue-50 p-4 rounded-xl mb-6">
-                <p class="text-[10px] font-bold text-blue-600 uppercase">Total Deposit Due</p>
-                <p class="text-2xl font-black">₱<span x-text="cartDepositTotal"></span></p>
-            </div>
-            <button @click="confirmAndRedirect()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black uppercase text-xs hover:bg-blue-600 transition-all">
-                <i class="fas fa-check-circle mr-2"></i> Confirm & Log Order
-            </button>
-        </div>
-    </div>
-
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDgULz07vRUdWPKj-BNNmSNd3tJ-AoO3zE",
-            authDomain: "crate-drop-portal.firebaseapp.com",
-            projectId: "crate-drop-portal",
-            storageBucket: "crate-drop-portal.firebasestorage.app",
-            messagingSenderId: "828734198898",
-            appId: "1:828734198898:web:e1eed4e9dbfb71ddb29eeb"
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        // --- PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ---
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwtF2ahJYvV8QPEGcCVgT2Nof29BTCk1jW47HoAV2qhANYO0Ig6F63BWh9Ycq21xs6Q/exec'; 
-
-        function shop() {
+        function velocityDashboard() {
             return {
-                isLoading: true, cartOpen: false, historyOpen: false, paymentModalOpen: false,
-                searchQuery: '', cart: [], products: [], user: null, orderHistory: [],
-                showPlanner: false, calcSelectedId: null, calcInputQty: 1, calcFillRate: 100, calcIsCase: false,
-
-                async init() {
-                    const inventoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
-                    firebase.auth().onAuthStateChanged(user => {
-                        this.user = user;
-                        if(user) this.fetchUserHistory();
-                    });
-                    try {
-                        const res = await fetch(inventoryUrl);
-                        const data = await res.text();
-                        this.parseTSV(data);
-                    } catch (e) { console.error(e); }
-                    finally { this.isLoading = false; }
+                lastUpdated: '',
+                // Add or remove sets here. 'baseHype' determines their average popularity.
+                sets: [
+                    { id: 1, name: 'Surging Sparks', setCode: 'SV08', baseHype: 88 },
+                    { id: 2, name: 'Stellar Crown', setCode: 'SV07', baseHype: 65 },
+                    { id: 3, name: 'Twilight Masquerade', setCode: 'SV06', baseHype: 70 },
+                    { id: 4, name: 'Temporal Forces', setCode: 'SV05', baseHype: 55 },
+                    { id: 5, name: 'Paldean Fates', setCode: 'PAF', baseHype: 78 },
+                    { id: 6, name: 'Pokémon 151', setCode: 'MEW', baseHype: 95 },
+                    { id: 7, name: 'Crown Zenith', setCode: 'CRZ', baseHype: 82 },
+                    { id: 8, name: 'Evolving Skies', setCode: 'EVS', baseHype: 98 },
+                    { id: 9, name: 'Obsidian Flames', setCode: 'SV03', baseHype: 45 }
+                ],
+                trendingData: [],
+                
+                init() {
+                    this.calculateVelocity();
+                    // Check every minute if the hour has changed to seamlessly update the UI
+                    setInterval(() => {
+                        this.calculateVelocity();
+                    }, 60000); 
                 },
 
-                parseTSV(text) {
-                    const lines = text.split(/\r?\n/).filter(l => l.trim());
-                    const headers = lines[0].split('\t').map(h => h.trim());
-                    this.products = lines.slice(1).map(line => {
-                        const values = line.split('\t');
-                        let p = { id: 0, price: 0, unitsPerCase: 1, selectedQty: 1, isCase: false };
-                        headers.forEach((h, i) => {
-                            let val = values[i] ? values[i].trim() : '';
-                            if (['id', 'price', 'unitsPerCase'].includes(h)) p[h] = Number(val) || 0;
-                            else p[h] = val;
-                        });
-                        return p;
-                    });
-                    if (this.products.length > 0) this.calcSelectedId = this.products[0].id;
-                },
-
-                async confirmAndRedirect() {
-                    if (!this.user) return alert("Login required!");
+                calculateVelocity() {
+                    const now = new Date();
+                    this.lastUpdated = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     
-                    const orderId = 'CD-' + Date.now().toString().slice(-6);
-                    const orderData = this.cart.map(item => ({
-                        email: this.user.email,
-                        orderId: orderId,
-                        productName: `${item.name} (${item.isCase ? 'CASE' : 'UNIT'})`,
-                        depositPaid: (item.depositPrice * item.quantity).toString(),
-                        status: 'Pending Verification'
-                    }));
+                    const currentHour = now.getHours();
+                    const currentDay = now.getDate();
 
-                    // Log to Google Sheet via Apps Script
-                    fetch(scriptURL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(orderData)
+                    this.trendingData = this.sets.map(set => {
+                        // MATH MAGIC: Creates fake but realistic "live" data without a database.
+                        // By seeding with the set ID, current day, and hour, the data shifts organically 
+                        // every hour, but looks consistent for all users visiting during that same hour.
+                        
+                        const timeSeed = set.id * currentHour * currentDay;
+                        
+                        // Creates an organic variance up or down (-15 to +15)
+                        const hourlyVariance = Math.floor(Math.sin(timeSeed) * 15); 
+                        
+                        // Ensure hype stays between 10 and 99
+                        let calculatedHype = Math.min(99, Math.max(10, set.baseHype + hourlyVariance));
+                        
+                        // Fake cart additions based on the hype score
+                        let units = Math.max(1, Math.floor((calculatedHype / 100) * 35 + (Math.cos(timeSeed) * 10)));
+
+                        return {
+                            ...set,
+                            hypeScore: calculatedHype,
+                            unitsHr: units,
+                            trend: hourlyVariance > 5 ? 'up' : (hourlyVariance < -5 ? 'down' : 'stable')
+                        };
                     });
 
-                    // Clipboard & Messenger
-                    let summary = `📦 ORDER: ${orderId}\n`;
-                    this.cart.forEach(i => summary += `• ${i.quantity}x ${i.name}\n`);
-                    summary += `Total DP: ₱${this.cartDepositTotal}`;
-                    await navigator.clipboard.writeText(summary);
-                    
-                    this.paymentModalOpen = false;
-                    this.cart = [];
-                    alert("Order logged in History! Redirecting to Messenger for proof of payment.");
-                    window.open("https://m.me/cratedropcollective", "_blank");
-                },
-
-                // Logic functions
-                get calculatedDownpayment() {
-                    const p = this.products.find(p => p.id == this.calcSelectedId);
-                    if (!p) return "0";
-                    const base = this.calcIsCase ? (p.price * p.unitsPerCase) : p.price;
-                    return (base * this.calcInputQty * (this.calcFillRate / 100) * 0.3).toLocaleString();
-                },
-                calculateLiveDeposit(p) {
-                    const base = p.isCase ? (p.price * p.unitsPerCase) : p.price;
-                    return base * 0.3;
-                },
-                get cartDepositTotal() {
-                    return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();
-                },
-                get filteredProducts() {
-                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-                },
-                addToCart(p) {
-                    const price = p.isCase ? (p.price * p.unitsPerCase) : p.price;
-                    this.cart.push({ ...p, depositPrice: price * 0.3, quantity: 1 });
-                    this.cartOpen = true;
-                },
-                login() { firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); },
-                logout() { firebase.auth().signOut(); }
+                    // Sort by highest hype score to put the hottest sets at the top
+                    this.trendingData.sort((a, b) => b.hypeScore - a.hypeScore);
+                }
             }
         }
     </script>
