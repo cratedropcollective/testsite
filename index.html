@@ -17,7 +17,7 @@
     <!-- Simple Nav -->
     <nav class="bg-black text-white p-5 sticky top-0 z-50 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="flex flex-col">
+            <a href="/" class="flex flex-col hover:opacity-80 transition-opacity">
                 <span class="text-xl font-black tracking-tighter">CRATE DROP</span>
                 <span class="text-[9px] font-bold text-blue-500 tracking-[0.3em]">MARKET PULSE</span>
             </a>
@@ -32,8 +32,8 @@
     <header class="bg-white border-b border-slate-200 py-12 px-4">
         <div class="container mx-auto max-w-3xl text-center">
             <h1 class="text-4xl font-black uppercase tracking-tight text-slate-900 mb-4">Which sets are <span class="text-blue-600">moving</span>?</h1>
-            <p class="text-slate-500 font-medium leading-relaxed">
-                We track the top cards from every recent set. If several cards in a set are rising in price at the same time, that set moves up our list. This shows you where the real "hype" is happening.
+            <p class="text-sm text-slate-500 font-medium leading-relaxed">
+                We track real sales data from recent sets to see where the hype is. If multiple cards in a set are selling for much higher than their listed floor prices, that set moves up our list. See exactly which cards are driving the demand below.
             </p>
         </div>
     </header>
@@ -44,69 +44,67 @@
         <!-- Loading State -->
         <div x-show="loading" class="flex flex-col items-center py-20">
             <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-xs font-black uppercase tracking-widest text-blue-600">Checking Latest Prices...</p>
+            <p class="text-xs font-black uppercase tracking-widest text-blue-600">Scanning Top Movers & Prices...</p>
         </div>
 
-        <div class="space-y-6" x-show="!loading">
+        <div class="space-y-8" x-show="!loading">
             <template x-for="(set, index) in rankedSets" :key="set.id">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
                     <div class="flex flex-col md:flex-row">
                         
                         <!-- Rank & Set Info -->
-                        <div class="p-6 md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-100">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="text-3xl font-black italic text-slate-300" x-text="'#' + (index + 1)"></span>
+                        <div class="p-8 md:w-1/3 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-100">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="text-4xl font-black italic text-slate-300" x-text="'#' + (index + 1)"></span>
                                 <span :class="set.heatLevel === 'High' ? 'bg-orange-500' : 'bg-blue-600'" 
-                                      class="text-[9px] font-black text-white px-2 py-1 rounded uppercase" 
+                                      class="text-[10px] font-black text-white px-3 py-1.5 rounded-full uppercase tracking-wider" 
                                       x-text="set.heatLevel + ' Demand'"></span>
                             </div>
-                            <h2 class="text-xl font-extrabold uppercase text-slate-900" x-text="set.name"></h2>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="set.series"></p>
-                        </div>
-
-                        <!-- Analysis Metrics -->
-                        <div class="flex-1 p-6 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50/50">
+                            <h2 class="text-2xl font-extrabold uppercase text-slate-900 leading-tight" x-text="set.name"></h2>
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1" x-text="set.series"></p>
                             
-                            <!-- The Data -->
-                            <div>
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-3">What's Happening?</p>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-chart-line text-green-500 text-xs"></i>
-                                        <p class="text-xs font-bold text-slate-700">
-                                            <span class="text-blue-600" x-text="set.risingCardsCount"></span> cards in this set are rising.
-                                        </p>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <i class="fas fa-arrow-up text-blue-500 text-xs"></i>
-                                        <p class="text-xs font-bold text-slate-700">
-                                            Average Price Gap: <span class="text-blue-600" x-text="set.avgGap + '%'"></span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- The "Why" -->
-                            <div class="flex flex-col justify-center">
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-2 text-center sm:text-left">Buyer Interest Level</p>
+                            <div class="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Buyer Interest Score</p>
                                 <div class="flex items-center gap-3">
                                     <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                                         <div class="bg-blue-600 h-full bar-transition" :style="'width: ' + set.interestScore + '%'"></div>
                                     </div>
-                                    <span class="text-xs font-black text-slate-900" x-text="set.interestScore + '%'"></span>
+                                    <span class="text-xs font-black text-slate-900" x-text="set.interestScore + '/100'"></span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 font-medium mt-2 leading-tight" x-text="set.simpleReason"></p>
+                                <p class="text-[10px] text-slate-500 font-bold mt-3 leading-snug" x-text="set.simpleReason"></p>
                             </div>
-
                         </div>
 
-                        <!-- Featured Card -->
-                        <div class="p-6 md:w-1/4 flex flex-col justify-center items-center bg-white border-t md:border-t-0 md:border-l border-slate-100">
-                            <p class="text-[9px] font-black text-slate-300 uppercase mb-3">Popular Chase Card</p>
-                            <img :src="set.topCardImg" class="w-16 h-22 object-contain mb-3 rounded shadow-sm">
-                            <div class="text-center">
-                                <p class="text-[10px] font-black text-slate-900 leading-tight uppercase" x-text="set.topCardName"></p>
-                                <p class="text-[10px] font-black text-blue-600" x-text="'$' + set.topCardPrice"></p>
+                        <!-- Specific Cards Breakdown -->
+                        <div class="flex-1 p-8 bg-slate-50/50 flex flex-col justify-center">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-[11px] font-black text-slate-800 uppercase tracking-widest">Cards Driving Momentum</p>
+                                    <p class="text-[10px] font-bold text-slate-500"><span class="text-blue-600" x-text="set.risingCardsCount"></span> total cards are currently rising in this set.</p>
+                                </div>
+                            </div>
+
+                            <!-- List of Top Movers -->
+                            <div class="space-y-3">
+                                <template x-for="card in set.topMovers" :key="card.name">
+                                    <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-3 shadow-sm hover:border-blue-300 transition-colors">
+                                        <div class="flex items-center gap-4">
+                                            <img :src="card.img" class="w-10 h-14 object-contain rounded drop-shadow-sm">
+                                            <div>
+                                                <p class="text-xs font-black text-slate-900 leading-tight uppercase" x-text="card.name"></p>
+                                                <p class="text-[9px] text-slate-400 uppercase font-bold mt-0.5" x-text="'Floor Listing: $' + card.low"></p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex flex-col justify-center">
+                                            <p class="text-[9px] text-slate-400 uppercase font-black tracking-widest">Realized Market</p>
+                                            <p class="text-lg font-black text-slate-900" x-text="'$' + card.market"></p>
+                                            <div class="inline-flex items-center justify-end gap-1 mt-0.5">
+                                                <i class="fas fa-arrow-trend-up text-green-500 text-[10px]"></i>
+                                                <p class="text-[10px] font-black text-green-600 uppercase" x-text="card.growth + '% Premium'"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </div>
 
@@ -123,35 +121,51 @@
                 rankedSets: [],
                 async analyzeTrends() {
                     try {
-                        const setRes = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=7');
+                        const setRes = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=6');
                         const setData = await setRes.json();
                         
                         const results = await Promise.all(setData.data.map(async (set) => {
-                            const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=8`);
+                            // Fetch top 15 cards to find the ones actually moving
+                            const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=15`);
                             const cardData = await cardRes.json();
                             
                             let risingCount = 0;
                             let totalGap = 0;
-                            let topCard = { name: '', price: 0, img: '' };
+                            let movingCards = [];
 
-                            cardData.data.forEach((card, i) => {
+                            cardData.data.forEach((card) => {
                                 const p = card.tcgplayer?.prices?.holofoil || card.tcgplayer?.prices?.normal || { market: 0, low: 0 };
-                                if (p.market > p.low) {
+                                
+                                // Check if people are paying a premium over the low price
+                                if (p.market > p.low && p.low > 0) {
                                     risingCount++;
-                                    totalGap += ((p.market - p.low) / (p.low || 1)) * 100;
+                                    let growthPercentage = ((p.market - p.low) / p.low) * 100;
+                                    totalGap += growthPercentage;
+                                    
+                                    movingCards.push({
+                                        name: card.name,
+                                        img: card.images.small,
+                                        market: p.market.toFixed(2),
+                                        low: p.low.toFixed(2),
+                                        growth: growthPercentage.toFixed(1)
+                                    });
                                 }
-                                if(i === 0) topCard = { name: card.name, price: p.market.toFixed(2), img: card.images.small };
                             });
 
-                            const avgGap = (totalGap / (cardData.data.length || 1)).toFixed(1);
+                            const avgGap = risingCount > 0 ? (totalGap / risingCount).toFixed(1) : 0;
                             
-                            // Ranking Logic: Sets with more rising cards rank higher
-                            // Interest Score: Blend of rising cards and price gap
-                            const interest = Math.min(100, Math.floor((risingCount * 10) + (avgGap * 1.5)));
+                            // Sort moving cards by highest percentage growth
+                            movingCards.sort((a, b) => parseFloat(b.growth) - parseFloat(a.growth));
                             
-                            let reason = "People are buying cards at a steady pace.";
-                            if (risingCount > 5) reason = "Many cards are increasing in price at once. High interest!";
-                            else if (avgGap > 15) reason = "Prices are jumping quickly for the top cards.";
+                            // Take the top 3 cards driving the set
+                            const topMovers = movingCards.slice(0, 3);
+                            
+                            // Interest Score: Heavier weight on having MULTIPLE cards moving
+                            const interest = Math.min(100, Math.floor((risingCount * 12) + (avgGap * 1.5)));
+                            
+                            let reason = "Solid steady interest from buyers.";
+                            if (risingCount >= 5) reason = "Broad market interest. Multiple cards are selling above floor prices.";
+                            else if (avgGap > 20) reason = "Huge buyer spikes! Specific chase cards are squeezing the supply.";
 
                             return {
                                 id: set.id,
@@ -160,15 +174,13 @@
                                 risingCardsCount: risingCount,
                                 avgGap: avgGap,
                                 interestScore: interest,
-                                heatLevel: interest > 60 ? 'High' : 'Medium',
+                                heatLevel: interest > 65 ? 'High' : 'Medium',
                                 simpleReason: reason,
-                                topCardName: topCard.name,
-                                topCardPrice: topCard.price,
-                                topCardImg: topCard.img
+                                topMovers: topMovers
                             };
                         }));
 
-                        // Sort by risingCount first, then by interest score
+                        // Rank by how many cards are rising, then by overall interest score
                         this.rankedSets = results.sort((a, b) => b.risingCardsCount - a.risingCardsCount || b.interestScore - a.interestScore);
                         this.loading = false;
                     } catch (e) {
