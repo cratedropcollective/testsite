@@ -2,150 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop | Trend Spotter</title>
+    <title>Crate Drop | Simple Pulse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        [x-cloak] { display: none !important; }
-        .trend-up { color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
-        .trend-down { color: #ef4444; }
-        .card-bg { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(51, 65, 85, 0.4); backdrop-filter: blur(10px); }
-    </style>
 </head>
-<body class="bg-[#050505] text-slate-300 font-sans selection:bg-blue-500/30" x-data="trendEngine()" x-init="scanMarkets()" x-cloak>
+<body class="bg-gray-950 text-white font-sans p-6" x-data="pulseApp()" x-init="getPokemon()">
 
-    <!-- Navigation -->
-    <nav class="border-b border-white/5 bg-black/50 sticky top-0 z-50 backdrop-blur-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-radar text-white text-xs animate-pulse"></i>
-                </div>
-                <h1 class="text-lg font-black tracking-tighter uppercase italic text-white">Market <span class="text-blue-500">Scanner</span></h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Global Heat Index</span>
-                <div class="h-1 w-24 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full bg-blue-500" :style="'width: ' + globalHeat + '%'"></div>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-10 border-b border-gray-800 pb-6">
+            <h1 class="text-2xl font-bold italic tracking-tighter">CRATE DROP <span class="text-blue-500 underline">PULSE</span></h1>
+            <p class="text-gray-400 text-sm mt-2">Real-time market movement. No simulation, just direct data.</p>
+        </header>
 
-    <main class="container mx-auto px-6 py-10">
-        
-        <!-- Controls -->
-        <div class="flex flex-wrap gap-4 mb-10">
-            <template x-for="tcg in ['Pokemon', 'One Piece', 'Gundam', 'Lorcana']">
-                <button @click="activeFilter = tcg" 
-                        :class="activeFilter === tcg ? 'bg-white text-black' : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'"
-                        class="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" 
-                        x-text="tcg"></button>
-            </template>
-        </div>
-
-        <!-- Trend Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <template x-for="item in filteredItems" :key="item.id">
-                <div class="card-bg rounded-3xl p-6 transition-all hover:border-blue-500/50 group">
-                    <div class="flex justify-between items-start mb-6">
-                        <div :class="item.momentum > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'" 
-                             class="text-[9px] font-black px-2 py-1 rounded uppercase border border-current/20">
-                            <i class="fas mr-1" :class="item.momentum > 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'"></i>
-                            <span x-text="item.momentum > 0 ? 'Accumulating' : 'Cooling'"></span>
-                        </div>
-                        <span class="text-[9px] font-bold text-slate-600 uppercase" x-text="item.lastScan"></span>
-                    </div>
-
-                    <h3 class="text-xl font-black text-white uppercase leading-tight mb-2 group-hover:text-blue-400 transition-colors" x-text="item.name"></h3>
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6" x-text="item.tcg + ' • ' + item.category"></p>
-
-                    <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-6">
+        <!-- TOP TRENDING (REAL DATA) -->
+        <section class="mb-12">
+            <h2 class="text-xs font-black uppercase tracking-widest text-blue-500 mb-4">Live Pokémon Momentum (SINGLES)</h2>
+            <div class="grid grid-cols-1 gap-3">
+                <template x-for="card in pokemonCards">
+                    <div class="bg-gray-900 p-4 rounded-lg flex justify-between items-center border border-gray-800">
                         <div>
-                            <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Realized Market</p>
-                            <p class="text-lg font-black text-white italic" x-text="'$' + item.soldPrice"></p>
+                            <p class="text-sm font-bold" x-text="card.name"></p>
+                            <p class="text-[10px] text-gray-500 uppercase" x-text="card.set"></p>
                         </div>
-                        <div>
-                            <p class="text-[9px] font-black text-slate-500 uppercase mb-1">Buy It Now Floor</p>
-                            <p class="text-lg font-black text-blue-400 italic" x-text="'$' + item.activePrice"></p>
+                        <div class="text-right">
+                            <p class="text-blue-400 font-mono font-bold" x-text="'$' + card.price"></p>
+                            <a :href="card.url" target="_blank" class="text-[9px] bg-blue-600 px-2 py-1 rounded uppercase font-black hover:bg-blue-500">Check eBay Sold</a>
                         </div>
                     </div>
+                </template>
+            </div>
+        </section>
 
-                    <!-- Velocity Meter -->
-                    <div class="mt-6 pt-6 border-t border-white/5">
-                        <div class="flex justify-between text-[9px] font-black uppercase mb-2">
-                            <span class="text-slate-500">Breakout Probability</span>
-                            <span :class="item.velocity > 70 ? 'text-green-400' : 'text-slate-400'" x-text="item.velocity + '%'"></span>
-                        </div>
-                        <div class="h-1 bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-blue-500 transition-all duration-1000" :style="'width: ' + item.velocity + '%'"></div>
-                        </div>
-                    </div>
+        <!-- SEALED MOMENTUM (ACTION LINKS) -->
+        <section>
+            <h2 class="text-xs font-black uppercase tracking-widest text-orange-500 mb-4">Sealed Momentum (FACT-CHECK)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- One Piece -->
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
+                    <h3 class="font-bold mb-1">One Piece: OP-07</h3>
+                    <p class="text-xs text-gray-500 mb-4">Filtering: TCG Category Only</p>
+                    <a href="https://www.ebay.com/sch/i.html?_nkw=one+piece+op-07+booster+box+sealed&LH_Sold=1&LH_Complete=1&_sacat=183454" target="_blank" class="block text-center bg-white text-black py-2 rounded font-bold text-xs uppercase">View Realized Sales</a>
                 </div>
-            </template>
-        </div>
 
-        <!-- Loader -->
-        <div x-show="loading" class="fixed bottom-10 right-10 flex items-center gap-3 bg-blue-600 text-white px-6 py-3 rounded-2xl shadow-2xl">
-            <i class="fas fa-circle-notch animate-spin"></i>
-            <span class="text-[10px] font-black uppercase tracking-widest">Scanning eBay Live...</span>
-        </div>
-    </nav>
+                <!-- Gundam -->
+                <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
+                    <h3 class="font-bold mb-1">Gundam Card Game</h3>
+                    <p class="text-xs text-gray-500 mb-4">Filtering: TCG Category Only</p>
+                    <a href="https://www.ebay.com/sch/i.html?_nkw=gundam+war+card+game+booster+box&LH_Sold=1&LH_Complete=1&_sacat=183454" target="_blank" class="block text-center bg-white text-black py-2 rounded font-bold text-xs uppercase">View Realized Sales</a>
+                </div>
+
+            </div>
+        </section>
+    </div>
 
     <script>
-        function trendEngine() {
+        function pulseApp() {
             return {
-                loading: false,
-                activeFilter: 'Pokemon',
-                globalHeat: 0,
-                items: [
-                    { id: 1, tcg: 'Pokemon', category: 'Sealed', name: '151 Booster Bundle', kw: 'pokemon 151 booster bundle sealed', soldPrice: '0', activePrice: '0', velocity: 0, momentum: 0, lastScan: '' },
-                    { id: 2, tcg: 'One Piece', category: 'Sealed', name: 'OP-05 Booster Box', kw: 'one piece op-05 booster box sealed', soldPrice: '0', activePrice: '0', velocity: 0, momentum: 0, lastScan: '' },
-                    { id: 3, tcg: 'Gundam', category: 'Sealed', name: 'Witch From Mercury Vol 1', kw: 'gundam card game witch from mercury booster box', soldPrice: '0', activePrice: '0', velocity: 0, momentum: 0, lastScan: '' },
-                    { id: 4, tcg: 'Lorcana', category: 'Sealed', name: 'The First Chapter Box', kw: 'lorcana first chapter booster box sealed', soldPrice: '0', activePrice: '0', velocity: 0, momentum: 0, lastScan: '' }
-                ],
-                get filteredItems() {
-                    return this.items.filter(i => i.tcg === this.activeFilter);
-                },
-                async scanMarkets() {
-                    this.loading = true;
-                    for (let item of this.items) {
-                        await this.fetchRealData(item);
-                    }
-                    this.loading = false;
-                    this.globalHeat = Math.floor(Math.random() * 40) + 60;
-                },
-                async fetchRealData(item) {
+                pokemonCards: [],
+                async getPokemon() {
                     try {
-                        // 1. Fetch Last Sold (The Market Reality)
-                        const soldUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(item.kw)}&LH_Sold=1&LH_Complete=1&_sacat=183454&_sop=13`;
-                        const activeUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(item.kw)}&LH_BIN=1&_sacat=183454&_sop=15`;
-                        
-                        const [soldHtml, activeHtml] = await Promise.all([
-                            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(soldUrl)}`).then(r => r.json()),
-                            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(activeUrl)}`).then(r => r.json())
-                        ]);
-
-                        const parser = new DOMParser();
-                        const sDoc = parser.parseFromString(soldHtml.contents, 'text/html');
-                        const aDoc = parser.parseFromString(activeHtml.contents, 'text/html');
-
-                        // Extraction
-                        const sPrice = sDoc.querySelector('.s-item__price')?.innerText.replace(/[^\d.]/g, '') || "0";
-                        const aPrice = aDoc.querySelector('.s-item__price')?.innerText.replace(/[^\d.]/g, '') || "0";
-
-                        item.soldPrice = parseFloat(sPrice).toFixed(2);
-                        item.activePrice = parseFloat(aPrice).toFixed(2);
-                        
-                        // BREAKOUT LOGIC: If Active Price > Sold Price, supply is drying up
-                        const spread = ((item.activePrice - item.soldPrice) / item.soldPrice) * 100;
-                        item.momentum = spread > 0 ? 1 : -1;
-                        item.velocity = Math.min(100, Math.max(10, 50 + (spread * 2)));
-                        item.lastScan = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                    } catch (e) { console.error("Scan Failed", e); }
+                        // Fetching actual market winners from the official API
+                        const res = await fetch('https://api.pokemontcg.io/v2/cards?q=set.id:sv6&pageSize=5&orderBy=-tcgplayer.prices.holofoil.market');
+                        const data = await res.json();
+                        this.pokemonCards = data.data.map(c => ({
+                            name: c.name,
+                            set: c.set.name,
+                            price: c.tcgplayer?.prices?.holofoil?.market || c.tcgplayer?.prices?.normal?.market,
+                            url: `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(c.name + ' ' + c.number + ' ' + c.set.name)}&LH_Sold=1&LH_Complete=1`
+                        }));
+                    } catch (e) {
+                        console.error("Pokemon API Offline");
+                    }
                 }
             }
         }
