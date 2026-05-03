@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Market Pulse</title>
+    <title>Crate Drop Collective | Global Market Pulse</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -14,78 +14,91 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900" x-data="marketPulse()" x-init="analyzeTrends()" x-cloak>
+<body class="bg-slate-50 font-sans text-slate-900" x-data="marketPulse()" x-init="init()" x-cloak>
 
+    <!-- Navigation -->
     <nav class="bg-black text-white p-5 sticky top-0 z-50 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <a href="/" class="flex flex-col hover:opacity-80 transition-opacity">
                 <span class="text-xl font-black tracking-tighter italic">CRATE DROP</span>
-                <span class="text-[9px] font-bold text-blue-500 tracking-[0.3em]">LIVE VELOCITY</span>
+                <span class="text-[9px] font-bold text-blue-500 tracking-[0.3em]">ARCHIVE & VELOCITY</span>
             </a>
-            <div class="hidden md:block text-[10px] font-black uppercase text-gray-500 tracking-widest">
-                Real-Time Supply vs Demand Analytics
+            
+            <!-- Search Bar -->
+            <div class="relative w-full md:w-96">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input 
+                    type="text" 
+                    x-model="searchQuery" 
+                    @input.debounce.500ms="filterSets()"
+                    placeholder="Search all sets (e.g. Base Set, Silver Tempest...)" 
+                    class="w-full bg-slate-900 border border-slate-800 rounded-full py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                >
             </div>
         </div>
     </nav>
 
-    <header class="bg-white border-b border-slate-200 py-12 px-4">
+    <header class="bg-white border-b border-slate-200 py-10 px-4">
         <div class="container mx-auto max-w-4xl text-center">
-            <h1 class="text-4xl md:text-5xl font-black uppercase tracking-tight text-slate-900 mb-4">Set <span class="text-blue-600">Momentum</span> Rankings</h1>
-            <p class="text-sm md:text-base text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
-                We rank sets based on **Price Density**. A set ranks higher when *many* different cards are rising in price simultaneously—this is the most accurate sign of a set that is truly "moving."
+            <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-900 mb-3">Live <span class="text-blue-600">Archive</span> Explorer</h1>
+            <p class="text-xs md:text-sm text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                Search through every set in Pokémon history. We calculate the **Momentum Density** in real-time based on current supply gaps.
             </p>
         </div>
     </header>
 
     <main class="container mx-auto py-10 px-4 max-w-6xl">
         
+        <!-- Loading -->
         <div x-show="loading" class="flex flex-col items-center py-20">
             <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-xs font-black uppercase tracking-widest text-blue-600 italic">Calculating Set Density...</p>
+            <p class="text-xs font-black uppercase tracking-widest text-blue-600 italic">Syncing with TCG Database...</p>
         </div>
 
+        <!-- Set Grid -->
         <div class="grid grid-cols-1 gap-8" x-show="!loading">
-            <template x-for="(set, index) in rankedSets" :key="set.id">
+            <template x-for="(set, index) in filteredSets" :key="set.id">
                 <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden flex flex-col lg:flex-row">
                     
-                    <!-- Left Stats -->
+                    <!-- Left Section: Set Info -->
                     <div class="p-8 lg:w-1/3 border-b lg:border-b-0 lg:border-r border-slate-100 flex flex-col justify-center">
                         <div class="flex items-center gap-4 mb-4">
-                            <span class="text-5xl font-black italic text-slate-200" x-text="'#' + (index + 1)"></span>
-                            <div :class="set.risingCardsCount > 7 ? 'bg-red-600' : 'bg-slate-900'" 
-                                 class="text-[10px] font-black text-white px-4 py-1.5 rounded-full uppercase tracking-tighter" 
-                                 x-text="set.risingCardsCount > 7 ? 'Trending Now' : 'Stable Growth'"></div>
+                            <img :src="set.logo" class="h-8 object-contain">
+                            <div :class="set.interestScore > 50 ? 'bg-orange-500' : 'bg-slate-900'" 
+                                 class="text-[9px] font-black text-white px-3 py-1 rounded-full uppercase" 
+                                 x-text="set.interestScore > 50 ? 'High Momentum' : 'Market Stable'"></div>
                         </div>
-                        <h2 class="text-2xl font-black uppercase leading-none text-slate-900" x-text="set.name"></h2>
-                        <p class="text-[11px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-2" x-text="set.series"></p>
+                        <h2 class="text-2xl font-black uppercase leading-tight text-slate-900" x-text="set.name"></h2>
+                        <div class="flex items-center gap-2 mt-2">
+                            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest" x-text="set.series"></p>
+                            <span class="text-slate-300">•</span>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase" x-text="set.releaseDate"></p>
+                        </div>
                         
-                        <div class="mt-8 space-y-4">
-                            <div>
-                                <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
-                                    <span>Momentum Density</span>
-                                    <span x-text="set.interestScore + '%'"></span>
-                                </div>
-                                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-blue-600 h-full transition-all duration-1000" :style="'width: ' + set.interestScore + '%'"></div>
-                                </div>
+                        <div class="mt-8">
+                            <div class="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-1">
+                                <span>Momentum Score</span>
+                                <span x-text="set.interestScore + '%'"></span>
                             </div>
-                            <p class="text-[11px] text-slate-500 font-bold leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100" x-text="set.simpleReason"></p>
+                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div class="bg-blue-600 h-full transition-all duration-1000" :style="'width: ' + set.interestScore + '%'"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Right Card List -->
+                    <!-- Right Section: Mover List -->
                     <div class="flex-1 p-8 bg-slate-50/30">
                         <div class="flex items-center justify-between mb-6">
-                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Active Market Movers (<span x-text="set.risingCardsCount"></span>)</h3>
+                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Rising Cards (<span x-text="set.allMovers.length"></span>)</h3>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                             <template x-for="card in set.allMovers" :key="card.name">
                                 <div class="flex items-center justify-between bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-blue-400 transition-colors">
                                     <div class="flex items-center gap-4">
-                                        <img :src="card.img" class="w-10 h-14 object-contain rounded shadow-sm">
+                                        <img :src="card.img" class="w-10 h-14 object-contain rounded">
                                         <div>
-                                            <p class="text-xs font-black text-slate-900 leading-tight uppercase" x-text="card.name"></p>
+                                            <p class="text-[11px] font-black text-slate-900 leading-tight uppercase" x-text="card.name"></p>
                                             <p class="text-[9px] text-slate-400 uppercase font-bold" x-text="'Floor: $' + card.low"></p>
                                         </div>
                                     </div>
@@ -95,6 +108,11 @@
                                     </div>
                                 </div>
                             </template>
+
+                            <!-- If no cards are rising -->
+                            <div x-show="set.allMovers.length === 0" class="col-span-2 py-10 text-center">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase italic">No active price premiums detected for this set.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -107,65 +125,80 @@
         function marketPulse() {
             return {
                 loading: true,
-                rankedSets: [],
-                async analyzeTrends() {
+                allSetsData: [],
+                filteredSets: [],
+                searchQuery: '',
+                async init() {
+                    await this.fetchAllSets();
+                },
+                async fetchAllSets() {
                     try {
-                        const setRes = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=6');
-                        const setData = await setRes.json();
-                        
-                        const results = await Promise.all(setData.data.map(async (set) => {
-                            // We look at 40 cards to ensure we capture the full "density" of the set
-                            const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=40`);
-                            const cardData = await cardRes.json();
-                            
-                            let risingCount = 0;
-                            let totalGap = 0;
-                            let movingCards = [];
-
-                            cardData.data.forEach((card) => {
-                                const p = card.tcgplayer?.prices?.holofoil || card.tcgplayer?.prices?.normal || card.tcgplayer?.prices?.reverseHolofoil || { market: 0, low: 0 };
-                                if (p.market > p.low && p.low > 0) {
-                                    risingCount++;
-                                    let growthPercentage = ((p.market - p.low) / p.low) * 100;
-                                    totalGap += growthPercentage;
-                                    movingCards.push({
-                                        name: card.name,
-                                        img: card.images.small,
-                                        market: p.market.toFixed(2),
-                                        low: p.low.toFixed(2),
-                                        growth: growthPercentage.toFixed(1)
-                                    });
-                                }
-                            });
-
-                            const avgGap = risingCount > 0 ? (totalGap / risingCount).toFixed(1) : 0;
-                            movingCards.sort((a, b) => parseFloat(b.growth) - parseFloat(a.growth));
-                            
-                            // RANKING LOGIC: We multiply risingCount by avgGap.
-                            // This ensures a set with 15 rising cards ranks higher than a set with 2 huge spikes[cite: 1].
-                            const interest = Math.min(100, Math.floor((risingCount * 6) + (avgGap * 1.5)));
-                            
-                            let reason = "This set shows broad interest across many cards.";
-                            if (risingCount > 10) reason = "Market Squeeze! Buyers are clearing listings for almost every major card.";
-                            else if (avgGap > 25) reason = "Extreme demand for the top chase cards in this set.";
-
-                            return {
-                                id: set.id,
-                                name: set.name,
-                                series: set.series,
-                                risingCardsCount: risingCount,
-                                interestScore: interest,
-                                simpleReason: reason,
-                                allMovers: movingCards
-                            };
-                        }));
-
-                        // The ultimate sort: Interest Score (Density + Premium)
-                        this.rankedSets = results.sort((a, b) => b.interestScore - a.interestScore);
-                        this.loading = false;
+                        // Fetch the most recent 20 sets to start with
+                        const res = await fetch('https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=20');
+                        const data = await res.json();
+                        this.allSetsData = data.data;
+                        await this.processSets(this.allSetsData);
                     } catch (e) {
-                        console.error("Analysis Error", e);
+                        console.error("Initialization Error", e);
                     }
+                },
+                async filterSets() {
+                    if (this.searchQuery.length < 3 && this.searchQuery.length > 0) return;
+                    
+                    this.loading = true;
+                    try {
+                        let url = `https://api.pokemontcg.io/v2/sets?orderBy=-releaseDate&pageSize=10`;
+                        if (this.searchQuery.length >= 3) {
+                            url = `https://api.pokemontcg.io/v2/sets?q=name:"*${this.searchQuery}*"&orderBy=-releaseDate&pageSize=10`;
+                        }
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        await this.processSets(data.data);
+                    } catch (e) {
+                        console.error("Search Error", e);
+                    }
+                },
+                async processSets(sets) {
+                    const results = await Promise.all(sets.map(async (set) => {
+                        const cardRes = await fetch(`https://api.pokemontcg.io/v2/cards?q=set.id:${set.id}&orderBy=-tcgplayer.prices.holofoil.market&pageSize=30`);
+                        const cardData = await cardRes.json();
+                        
+                        let risingCount = 0;
+                        let totalGap = 0;
+                        let movingCards = [];
+
+                        cardData.data.forEach((card) => {
+                            const p = card.tcgplayer?.prices?.holofoil || card.tcgplayer?.prices?.normal || card.tcgplayer?.prices?.unlimitedHolofoil || { market: 0, low: 0 };
+                            if (p.market > p.low && p.low > 0) {
+                                risingCount++;
+                                let growth = ((p.market - p.low) / p.low) * 100;
+                                totalGap += growth;
+                                movingCards.push({
+                                    name: card.name,
+                                    img: card.images.small,
+                                    market: p.market.toFixed(2),
+                                    low: p.low.toFixed(2),
+                                    growth: growth.toFixed(1)
+                                });
+                            }
+                        });
+
+                        const avgGap = risingCount > 0 ? (totalGap / risingCount).toFixed(1) : 0;
+                        movingCards.sort((a, b) => parseFloat(b.growth) - parseFloat(a.growth));
+                        
+                        return {
+                            id: set.id,
+                            name: set.name,
+                            series: set.series,
+                            releaseDate: set.releaseDate,
+                            logo: set.images.logo,
+                            interestScore: Math.min(100, Math.floor((risingCount * 6) + (avgGap * 1.5))),
+                            allMovers: movingCards
+                        };
+                    }));
+
+                    this.filteredSets = results;
+                    this.loading = false;
                 }
             }
         }
