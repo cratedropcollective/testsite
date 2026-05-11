@@ -3,91 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Processing Tool</title>
+    <title>Crate Drop | Order Management Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .accent-border { border-left: 4px solid #38bdf8; }
+        input, select, textarea { background: #1e293b !important; color: white !important; border: 1px solid #334155 !important; }
+        input:focus { border-color: #38bdf8 !important; outline: none; ring: 2px #38bdf8; }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto p-6">
-        <header class="mb-8 flex justify-between items-center">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Order Manager</h1>
-                <p class="text-sm text-gray-500">Manually log and track Facebook Messenger orders.</p>
+                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                    <span class="text-sky-400">CRATE DROP</span> COLLECTIVE
+                </h1>
+                <p class="text-slate-400 text-sm italic">Manual Order Processing & Inventory Sync</p>
             </div>
-            <button onclick="exportToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
-                Export to CSV
-            </button>
+            <div class="flex gap-3">
+                <button onclick="fetchInventory()" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded border border-slate-700 transition">
+                    🔄 Sync Inventory
+                </button>
+                <button onclick="exportToCSV()" class="text-xs bg-sky-600 hover:bg-sky-500 text-white px-3 py-2 rounded transition font-semibold">
+                    Export Data
+                </button>
+            </div>
         </header>
 
-        <!-- Order Input Form -->
-        <section class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
-            <h2 class="text-lg font-semibold mb-4">Add New Order</h2>
-            <form id="orderForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="text" id="custName" placeholder="Customer Name" class="border p-2 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" required>
-                <input type="text" id="orderItem" placeholder="Item / Set Name" class="border p-2 rounded-md focus:ring-2 focus:ring-blue-500 outline-none" required>
-                <div class="flex gap-2">
-                    <input type="number" id="orderQty" placeholder="Qty" class="border p-2 rounded-md w-20 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    <input type="number" id="orderTotal" placeholder="Total Price" class="border p-2 rounded-md flex-grow focus:ring-2 focus:ring-blue-500 outline-none" required>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT: Order Entry Form -->
+            <div class="lg:col-span-4">
+                <div class="glass p-6 rounded-2xl sticky top-8">
+                    <h2 class="text-lg font-semibold mb-6 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-sky-400 rounded-full"></span> New Messenger Order
+                    </h2>
+                    
+                    <form id="orderForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Customer Name</label>
+                            <input type="text" id="custName" class="w-full p-3 rounded-lg" placeholder="Full Name" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Product Search</label>
+                            <input list="product-list" id="productSearch" oninput="handleProductSelect()" class="w-full p-3 rounded-lg" placeholder="Type to search TSV database...">
+                            <datalist id="product-list"></datalist>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Qty</label>
+                                <input type="number" id="orderQty" value="1" min="1" class="w-full p-3 rounded-lg text-center">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Price (₱)</label>
+                                <input type="number" id="orderPrice" class="w-full p-3 rounded-lg font-bold text-sky-400">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-500 mb-1 font-bold">Messenger Notes</label>
+                            <textarea id="orderNotes" rows="3" class="w-full p-3 rounded-lg text-sm" placeholder="Address, payment method, or specific requests..."></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-lg transition shadow-lg shadow-sky-900/20">
+                            Log Order
+                        </button>
+                    </form>
                 </div>
-                <textarea id="orderNotes" placeholder="Additional Notes (Address, Payment Method...)" class="border p-2 rounded-md md:col-span-2 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium p-2 rounded-md transition self-end">
-                    Add Order
-                </button>
-            </form>
-        </section>
-
-        <!-- Filters & Summary -->
-        <div class="flex flex-wrap gap-4 mb-4 items-center justify-between">
-            <div class="flex gap-2">
-                <input type="text" id="searchInput" onkeyup="filterOrders()" placeholder="Search customer or item..." class="border p-2 rounded-md text-sm w-64">
-                <select id="filterStatus" onchange="filterOrders()" class="border p-2 rounded-md text-sm">
-                    <option value="all">All Statuses</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
             </div>
-            <div class="text-sm font-medium text-gray-600">
-                Total Orders: <span id="totalCount" class="text-blue-600">0</span>
-            </div>
-        </div>
 
-        <!-- Orders Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table class="w-full text-left border-collapse">
-                <thead class="bg-gray-100 border-b">
-                    <tr>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Date</th>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Customer</th>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Items</th>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Total</th>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Status</th>
-                        <th class="p-4 text-sm font-semibold text-gray-600">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="orderList">
-                    <!-- Orders will be injected here -->
-                </tbody>
-            </table>
+            <!-- RIGHT: Order List -->
+            <div class="lg:col-span-8">
+                <div class="flex flex-col md:flex-row gap-4 mb-6 justify-between items-center">
+                    <div class="relative w-full md:w-96">
+                        <input type="text" id="searchInput" onkeyup="filterOrders()" placeholder="Search active orders..." class="w-full p-2 pl-10 rounded-full text-sm">
+                        <span class="absolute left-4 top-2.5 opacity-30">🔍</span>
+                    </div>
+                    <div class="flex gap-2 text-xs">
+                        <span class="bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">Total: <span id="totalCount" class="text-sky-400 font-bold">0</span></span>
+                        <span class="bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700">Sales: <span id="totalSales" class="text-emerald-400 font-bold">₱0</span></span>
+                    </div>
+                </div>
+
+                <div class="space-y-3" id="orderList">
+                    <!-- Orders injected here -->
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        // CONFIGURATION: Paste your published TSV URL here
+        const TSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
+        
+        let inventory = [];
+        let orders = JSON.parse(localStorage.getItem('cd_orders')) || [];
 
+        // 1. Fetch Inventory from TSV
+        async function fetchInventory() {
+            try {
+                const response = await fetch(TSV_URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1); // Skip header row
+                
+                inventory = rows.map(row => {
+                    const cols = row.split('\t');
+                    return {
+                        name: cols[0]?.trim(), // Adjust index based on your sheet layout
+                        price: parseFloat(cols[1]?.replace(/[^0-9.-]+/g,"")) || 0 
+                    };
+                }).filter(item => item.name);
+
+                updateDatalist();
+                console.log('Inventory Synced:', inventory.length, 'items');
+            } catch (err) {
+                console.error('Error fetching inventory:', err);
+            }
+        }
+
+        function updateDatalist() {
+            const list = document.getElementById('product-list');
+            list.innerHTML = inventory.map(item => `<option value="${item.name}">`).join('');
+        }
+
+        function handleProductSelect() {
+            const val = document.getElementById('productSearch').value;
+            const product = inventory.find(i => i.name === val);
+            if (product) {
+                document.getElementById('orderPrice').value = product.price;
+            }
+        }
+
+        // 2. Manage Orders
         const orderForm = document.getElementById('orderForm');
-        const orderList = document.getElementById('orderList');
-
         orderForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const newOrder = {
                 id: Date.now(),
-                date: new Date().toLocaleDateString(),
+                timestamp: new Date().toLocaleString(),
                 name: document.getElementById('custName').value,
-                item: document.getElementById('orderItem').value,
+                product: document.getElementById('productSearch').value,
                 qty: document.getElementById('orderQty').value,
-                total: document.getElementById('orderTotal').value,
+                price: document.getElementById('orderPrice').value,
+                total: document.getElementById('orderQty').value * document.getElementById('orderPrice').value,
                 notes: document.getElementById('orderNotes').value,
                 status: 'Pending'
             };
@@ -97,52 +162,58 @@
         });
 
         function saveAndRender() {
-            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('cd_orders', JSON.stringify(orders));
             renderOrders(orders);
         }
 
         function renderOrders(data) {
-            orderList.innerHTML = '';
-            document.getElementById('totalCount').innerText = data.length;
-
+            const container = document.getElementById('orderList');
+            container.innerHTML = '';
+            
+            let totalCash = 0;
             data.forEach(order => {
-                const row = document.createElement('tr');
-                row.className = "border-b hover:bg-gray-50 transition";
-                row.innerHTML = `
-                    <td class="p-4 text-sm">${order.date}</td>
-                    <td class="p-4 text-sm font-medium">${order.name}</td>
-                    <td class="p-4 text-sm text-gray-600">${order.item} (x${order.qty})</td>
-                    <td class="p-4 text-sm font-bold">₱${Number(order.total).toLocaleString()}</td>
-                    <td class="p-4">
-                        <select onchange="updateStatus(${order.id}, this.value)" class="text-xs border rounded p-1 ${getStatusClass(order.status)}">
-                            <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
-                            <option value="Shipped" ${order.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                            <option value="Cancelled" ${order.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                        </select>
-                    </td>
-                    <td class="p-4">
-                        <button onclick="deleteOrder(${order.id})" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>
-                    </td>
+                totalCash += Number(order.total);
+                const card = document.createElement('div');
+                card.className = "glass p-5 rounded-xl accent-border flex justify-between items-center group transition hover:border-sky-500";
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-mono text-slate-500">${order.timestamp}</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 uppercase">${order.status}</span>
+                        </div>
+                        <h3 class="font-bold text-white">${order.name}</h3>
+                        <p class="text-sm text-slate-400">${order.product} <span class="text-slate-600">x${order.qty}</span></p>
+                        ${order.notes ? `<p class="text-[11px] text-slate-500 italic max-w-sm">"${order.notes}"</p>` : ''}
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-3">
+                        <span class="text-lg font-bold text-sky-400">₱${Number(order.total).toLocaleString()}</span>
+                        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                             <button onclick="updateStatus(${order.id})" class="text-[10px] bg-slate-700 px-2 py-1 rounded hover:bg-sky-600">Cycle Status</button>
+                             <button onclick="deleteOrder(${order.id})" class="text-[10px] bg-red-900/30 text-red-400 px-2 py-1 rounded hover:bg-red-600 hover:text-white">Delete</button>
+                        </div>
+                    </div>
                 `;
-                orderList.appendChild(row);
+                container.appendChild(card);
             });
+
+            document.getElementById('totalCount').innerText = data.length;
+            document.getElementById('totalSales').innerText = `₱${totalCash.toLocaleString()}`;
         }
 
-        function getStatusClass(status) {
-            if (status === 'Paid') return 'bg-blue-50 text-blue-700 border-blue-200';
-            if (status === 'Shipped') return 'bg-green-50 text-green-700 border-green-200';
-            if (status === 'Cancelled') return 'bg-red-50 text-red-700 border-red-200';
-            return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-        }
-
-        function updateStatus(id, newStatus) {
-            orders = orders.map(o => o.id === id ? {...o, status: newStatus} : o);
+        function updateStatus(id) {
+            const stages = ['Pending', 'Paid', 'Shipped', 'Delivered'];
+            orders = orders.map(o => {
+                if (o.id === id) {
+                    let nextIndex = (stages.indexOf(o.status) + 1) % stages.length;
+                    return { ...o, status: stages[nextIndex] };
+                }
+                return o;
+            });
             saveAndRender();
         }
 
         function deleteOrder(id) {
-            if(confirm('Are you sure you want to remove this order?')) {
+            if(confirm('Delete this order log?')) {
                 orders = orders.filter(o => o.id !== id);
                 saveAndRender();
             }
@@ -150,30 +221,28 @@
 
         function filterOrders() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
-            
-            const filtered = orders.filter(o => {
-                const matchesSearch = o.name.toLowerCase().includes(query) || o.item.toLowerCase().includes(query);
-                const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
-                return matchesSearch && matchesStatus;
-            });
+            const filtered = orders.filter(o => 
+                o.name.toLowerCase().includes(query) || 
+                o.product.toLowerCase().includes(query)
+            );
             renderOrders(filtered);
         }
 
         function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,Date,Customer,Item,Qty,Total,Status,Notes\n";
+            let csv = "Timestamp,Customer,Product,Qty,Price,Total,Status,Notes\n";
             orders.forEach(o => {
-                csvContent += `${o.date},"${o.name}","${o.item}",${o.qty},${o.total},${o.status},"${o.notes}"\n`;
+                csv += `"${o.timestamp}","${o.name}","${o.product}",${o.qty},${o.price},${o.total},"${o.status}","${o.notes}"\n`;
             });
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `orders_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `CrateDrop_Orders_${new Date().toISOString().split('T')[0]}.csv`);
+            a.click();
         }
 
-        // Initial Load
+        // Init
+        fetchInventory();
         renderOrders(orders);
     </script>
 </body>
