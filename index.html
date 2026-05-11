@@ -31,7 +31,7 @@
         <div class="flex items-center gap-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
             <div class="text-right">
                 <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Master Receivables</p>
-                <p class="text-4xl font-black text-emerald-400">₱<span x-text="totalReceivables.toLocaleString()"></span></p>
+                <p class="text-4xl font-black text-emerald-400">₱<span x-text="totalDP.toLocaleString()"></span></p>
             </div>
             <div class="flex flex-col gap-2">
                 <button @click="exportCSV()" class="text-[10px] bg-slate-800 hover:bg-white hover:text-black px-4 py-2 rounded-lg font-black transition">EXPORT CSV</button>
@@ -133,8 +133,8 @@
                         </div>
                         
                         <div class="text-center md:text-right flex flex-col items-center md:items-end min-w-[200px]">
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Balance</p>
-                            <p class="text-4xl font-black text-white mb-6 tracking-tight">₱<span x-text="log.totalBalance.toLocaleString()"></span></p>
+                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Paid</p>
+                            <p class="text-4xl font-black text-white mb-6 tracking-tight">₱<span x-text="log.totalDP.toLocaleString()"></span></p>
                             
                             <div class="flex gap-2">
                                 <button @click="generateSlip(log)" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-white hover:text-blue-600 transition shadow-lg">Generate Slip</button>
