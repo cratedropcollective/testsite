@@ -30,8 +30,8 @@
         </div>
         <div class="flex items-center gap-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
             <div class="text-right">
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Master Receivables</p>
-                <p class="text-4xl font-black text-emerald-400">₱<span x-text="totalDP.toLocaleString()"></span></p>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Collected</p>
+                <p class="text-4xl font-black text-emerald-400">₱<span x-text="totalReceivables.toLocaleString()"></span></p>
             </div>
             <div class="flex flex-col gap-2">
                 <button @click="exportCSV()" class="text-[10px] bg-slate-800 hover:bg-white hover:text-black px-4 py-2 rounded-lg font-black transition">EXPORT CSV</button>
@@ -337,8 +337,9 @@ function crateDropApp() {
         },
 
         get totalReceivables() {
-            return this.logs.reduce((sum, l) => sum + l.totalBalance, 0);
-        },
+    // This now sums up all the 30% downpayments across all logs
+    return this.logs.reduce((sum, l) => sum + l.totalDP, 0);
+},
 
         clearDB() {
             if (confirm('DANGER: This will delete your entire logged history. Continue?')) {
