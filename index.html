@@ -348,17 +348,32 @@ function crateDropApp() {
         },
 
         exportCSV() {
-            let csv = "Date,Customer,Items,Total,DP,Balance\n";
+            // Updated Header: One row per SKU for easy sorting/filtering
+            let csv = "Date,Customer,Product Name,Format,Qty,Units Per Case,Total PHP,DP (30%),Balance\n";
+            
             this.logs.forEach(l => {
-                const items = l.items.map(i => `${i.qty}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})`).join(' | ');
-                csv += `"${l.timestamp}","${l.name}","${items}",${l.totalOrder},${l.totalDP},${l.totalBalance}\n`;
+                // We loop through each individual item in the customer's log
+                l.items.forEach(i => {
+                    const itemName = i.name.replace(/,/g, ""); // Remove commas to prevent CSV breaking
+                    const customerName = l.name.replace(/,/g, "");
+                    const format = i.isCase ? 'CASE' : 'UNIT';
+                    const lineTotal = i.price * i.qty;
+                    const lineDP = Math.ceil(lineTotal * 0.3);
+                    const lineBalance = lineTotal - lineDP;
+
+                    // Create a dedicated row for this specific product/customer combo
+                    csv += `"${l.timestamp}","${customerName}","${itemName}","${format}",${i.qty},${i.unitsPerCase},${lineTotal},${lineDP},${lineBalance}\n`;
+                });
             });
+
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `CrateDrop_MasterExport.csv`;
+            a.download = `CrateDrop_Inventory_Log_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
         }
     }
 }
