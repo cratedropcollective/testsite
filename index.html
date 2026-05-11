@@ -3,287 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop | Order Log System</title>
+    <title>Crate Drop | Master Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        input, select, textarea { background: #1e293b !important; border: 1px solid #334155 !important; color: white !important; }
-        input:focus { border-color: #38bdf8 !important; outline: none; ring: 1px #38bdf8; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #f8fafc; }
+        .glass-panel { background: rgba(17, 24, 39, 0.9); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-primary { background: #38bdf8; color: #0f172a; font-weight: 900; transition: all 0.2s; }
+        .btn-primary:hover { background: #ffffff; transform: translateY(-1px); }
+        input, select { background: #1f2937 !important; border: 2px solid #374151 !important; color: white !important; font-size: 1.1rem !important; }
+        input:focus { border-color: #38bdf8 !important; outline: none; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="min-h-screen pb-20">
 
-<div x-data="orderLogger()" x-init="init()" class="max-w-7xl mx-auto">
+<div x-data="crateDropConsole()" x-init="init()" class="max-w-6xl mx-auto px-4 pt-10">
+    
     <!-- Header -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <header class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
         <div>
-            <h1 class="text-3xl font-black tracking-tighter">CRATE DROP <span class="text-sky-400">DATABASE</span></h1>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Order Management & Balance Tracking</p>
+            <h1 class="text-5xl font-black tracking-tighter text-white">CRATE <span class="text-sky-500">DROP</span></h1>
+            <p class="text-slate-500 font-bold uppercase tracking-[0.3em] text-sm">Master Order Database</p>
         </div>
-        <div class="flex gap-2">
-            <button @click="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition flex items-center gap-2">
-                <i class="fas fa-file-excel"></i> Export CSV
-            </button>
-            <button @click="clearAllData()" class="bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white text-xs font-bold px-4 py-2 rounded-lg border border-red-900/50 transition">
-                <i class="fas fa-trash-alt"></i> Clear All
-            </button>
+        <div class="flex gap-4">
+            <button @click="exportCSV()" class="px-6 py-3 bg-slate-800 rounded-xl font-bold text-sm hover:bg-slate-700 transition">EXPORT DATA</button>
+            <button @click="clearAll()" class="px-6 py-3 bg-red-900/30 text-red-500 rounded-xl font-bold text-sm border border-red-900/50 hover:bg-red-600 hover:text-white transition">CLEAR DATABASE</button>
         </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <!-- Input Panel -->
-        <div class="lg:col-span-4">
-            <div class="glass-card p-6 rounded-2xl sticky top-8">
-                <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
-                    <i class="fas fa-edit text-sky-400"></i>
-                    <span x-text="isEditing ? 'Update Order' : 'Log New Order'"></span>
-                </h2>
+    <div class="grid grid-cols-1 gap-10">
+        
+        <!-- SECTION 1: THE INPUT WORKBENCH -->
+        <div class="glass-panel p-8 rounded-[2rem] shadow-2xl border-t-4 border-t-sky-500">
+            <h2 class="text-2xl font-black mb-8 flex items-center gap-3">
+                <i class="fas fa-plus-circle text-sky-500"></i>
+                <span x-text="editingId ? 'EDITING CUSTOMER LOG' : 'LOG NEW CUSTOMER ORDER'"></span>
+            </h2>
 
-                <div class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- Customer Info -->
+                <div class="space-y-6">
                     <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Customer Name</label>
-                        <input type="text" x-model="form.customerName" class="w-full p-3 rounded-xl text-sm font-bold" placeholder="Juan Dela Cruz">
+                        <label class="block text-xs font-black text-slate-500 uppercase mb-2">Customer Name (Facebook/Messenger)</label>
+                        <input type="text" x-model="currentLog.name" class="w-full p-4 rounded-2xl font-bold text-xl" placeholder="Ex: Juan Dela Cruz">
                     </div>
 
-                    <div>
-                        <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Select Product</label>
-                        <select x-model="form.productId" @change="syncPrice" class="w-full p-3 rounded-xl text-sm font-bold">
-                            <option value="">-- Browse Inventory --</option>
-                            <template x-for="item in inventory" :key="item.id">
-                                <option :value="item.id" x-text="item.name"></option>
+                    <!-- Item Sub-Form -->
+                    <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <label class="block text-xs font-black text-sky-500 uppercase">Add Product to this Session</label>
+                        <select x-model="itemInput.id" @change="syncItemInput" class="w-full p-4 rounded-xl font-bold">
+                            <option value="">-- Select Product --</option>
+                            <template x-for="p in inventory" :key="p.id">
+                                <option :value="p.id" x-text="p.name"></option>
                             </template>
                         </select>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Format</label>
-                            <select x-model="form.isCase" @change="syncPrice" class="w-full p-3 rounded-xl text-sm font-bold">
-                                <option :value="false">Unit</option>
-                                <option :value="true">Case</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Qty</label>
-                            <input type="number" x-model.number="form.qty" class="w-full p-3 rounded-xl text-sm font-bold text-center">
-                        </div>
-                    </div>
-
-                    <div class="pt-4 border-t border-slate-700">
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-slate-500">Total Price:</span>
-                            <span class="font-bold text-sky-400">₱<span x-text="calculateTotal().toLocaleString()"></span></span>
-                        </div>
-                        <div class="flex justify-between text-xs mb-4">
-                            <span class="text-slate-500">Required DP (30%):</span>
-                            <span class="font-bold text-emerald-400">₱<span x-text="calculateDP().toLocaleString()"></span></span>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-black text-slate-600 block uppercase">Format</label>
+                                <select x-model="itemInput.isCase" @change="syncItemInput" class="w-full p-3 rounded-xl font-bold text-sm">
+                                    <option :value="false">Unit</option>
+                                    <option :value="true">Case</option>
+                                </select>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="text-[10px] font-black text-slate-600 block uppercase">Qty</label>
+                                <input type="number" x-model.number="itemInput.qty" class="w-full p-3 rounded-xl font-bold text-center">
+                            </div>
+                            <div class="flex items-end">
+                                <button @click="addItemToLog" :disabled="!itemInput.id" class="w-full bg-slate-700 hover:bg-sky-500 text-white font-black py-4 rounded-xl transition">ADD</button>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <button @click="saveOrder" class="w-full bg-sky-500 hover:bg-sky-400 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg" :disabled="!form.customerName || !form.productId">
-                        <span x-text="isEditing ? 'Confirm Changes' : 'Log Order to Database'"></span>
-                    </button>
-                    
-                    <button x-show="isEditing" @click="resetForm" class="w-full text-xs text-slate-500 hover:text-white mt-2">Cancel Edit</button>
+                <!-- Current List of Items in this Log -->
+                <div class="flex flex-col">
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-4">Pending Item List</label>
+                    <div class="flex-grow space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                        <template x-for="(item, index) in currentLog.items" :key="index">
+                            <div class="flex justify-between items-center p-4 bg-slate-800 rounded-xl border border-slate-700">
+                                <div>
+                                    <p class="font-black text-sm uppercase leading-tight" x-text="item.name"></p>
+                                    <p class="text-[10px] text-sky-400 font-bold uppercase"><span x-text="item.qty"></span>x <span x-text="item.isCase ? 'Case' : 'Unit'"></span></p>
+                                </div>
+                                <button @click="removeItemFromLog(index)" class="text-red-500 p-2"><i class="fas fa-times"></i></button>
+                            </div>
+                        </template>
+                        <template x-if="currentLog.items.length === 0">
+                            <div class="text-center py-10 text-slate-600 font-bold border-2 border-dashed border-slate-800 rounded-2xl">No items added yet.</div>
+                        </template>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-slate-800">
+                        <button @click="saveFullLog" :disabled="!currentLog.name || currentLog.items.length === 0" class="w-full btn-primary py-5 rounded-2xl text-xl shadow-xl shadow-sky-500/10">
+                            <span x-text="editingId ? 'UPDATE MASTER LOG' : 'COMMIT LOG TO DATABASE'"></span>
+                        </button>
+                        <button x-show="editingId" @click="resetForms" class="w-full text-sm text-slate-500 mt-4 underline">Cancel Editing</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Log Panel -->
-        <div class="lg:col-span-8">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <div class="relative w-full md:w-72">
-                    <input type="text" x-model="search" placeholder="Search orders..." class="w-full p-2 pl-10 rounded-full text-xs">
-                    <i class="fas fa-search absolute left-4 top-3 text-slate-600 text-xs"></i>
-                </div>
-                <div class="flex gap-4">
-                    <div class="text-center">
-                        <p class="text-[9px] text-slate-500 font-black uppercase">Active Orders</p>
-                        <p class="text-xl font-black text-white" x-text="filteredOrders.length"></p>
-                    </div>
-                    <div class="text-center border-l border-slate-700 pl-4">
-                        <p class="text-[9px] text-slate-500 font-black uppercase">Total Receivables</p>
-                        <p class="text-xl font-black text-emerald-400">₱<span x-text="totalReceivables.toLocaleString()"></span></p>
-                    </div>
+        <!-- SECTION 2: THE DATABASE DISPLAY -->
+        <div class="space-y-6">
+            <div class="flex justify-between items-center px-4">
+                <h3 class="text-xl font-black uppercase tracking-widest text-slate-400">Database History</h3>
+                <div class="bg-slate-900 px-4 py-2 rounded-full border border-slate-800 text-xs font-black">
+                    TOTAL RECEIVABLES: <span class="text-emerald-400">₱<span x-text="totalReceivables.toLocaleString()"></span></span>
                 </div>
             </div>
 
-            <div class="space-y-3">
-                <template x-for="order in filteredOrders" :key="order.id">
-                    <div class="glass-card p-5 rounded-xl border-l-4 border-sky-500 flex flex-col md:flex-row justify-between items-center group transition hover:bg-slate-800/50">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-mono text-slate-500" x-text="order.date"></span>
-                                <span class="text-[9px] bg-sky-900/50 text-sky-300 px-2 py-0.5 rounded font-bold uppercase" x-text="order.isCase ? 'Case' : 'Unit'"></span>
+            <div class="grid grid-cols-1 gap-4">
+                <template x-for="log in logs" :key="log.id">
+                    <div class="glass-panel p-8 rounded-[2rem] flex flex-col md:flex-row justify-between items-start md:items-center gap-8 group transition hover:border-sky-500/50">
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-4">
+                                <span class="text-[10px] font-black bg-sky-500 text-slate-950 px-2 py-0.5 rounded" x-text="log.timestamp"></span>
                             </div>
-                            <h3 class="font-black text-lg text-white uppercase tracking-tight" x-text="order.customerName"></h3>
-                            <p class="text-sm text-slate-400 font-semibold" x-text="order.productName + ' (x' + order.qty + ')'"></p>
-                        </div>
-                        <div class="text-right flex flex-col items-end gap-3 mt-4 md:mt-0">
-                            <div class="space-y-0">
-                                <p class="text-[10px] text-slate-500 font-bold uppercase">Balance Remaining</p>
-                                <p class="text-xl font-black text-white">₱<span x-text="order.balance.toLocaleString()"></span></p>
-                            </div>
-                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
-                                <button @click="editOrder(order)" class="text-[10px] bg-slate-700 hover:bg-sky-600 px-3 py-1.5 rounded-lg transition font-bold">EDIT</button>
-                                <button @click="deleteOrder(order.id)" class="text-[10px] bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg transition font-bold">DELETE</button>
+                            <h4 class="text-3xl font-black uppercase text-white" x-text="log.name"></h4>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <template x-for="i in log.items">
+                                    <span class="text-[9px] bg-slate-800 text-slate-400 px-2 py-1 rounded-md font-bold" x-text="i.qty + 'x ' + i.name"></span>
+                                </template>
                             </div>
                         </div>
-                    </div>
-                </template>
-                
-                <template x-if="filteredOrders.length === 0">
-                    <div class="text-center py-20 border-2 border-dashed border-slate-800 rounded-3xl">
-                        <i class="fas fa-box-open text-4xl text-slate-700 mb-4"></i>
-                        <p class="text-slate-500 font-bold">No orders found in database.</p>
+
+                        <div class="text-right flex flex-col md:items-end w-full md:w-auto">
+                            <p class="text-[10px] font-black text-slate-500 uppercase">Balance Due</p>
+                            <p class="text-4xl font-black text-white mb-6">₱<span x-text="log.totalBalance.toLocaleString()"></span></p>
+                            
+                            <div class="flex gap-2">
+                                <button @click="generateReceipt(log)" class="bg-white text-slate-950 px-4 py-2 rounded-lg font-black text-xs hover:bg-sky-500 transition">SLIP</button>
+                                <button @click="editLog(log)" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-black text-xs hover:bg-slate-700 transition">EDIT</button>
+                                <button @click="deleteLog(log.id)" class="bg-red-900/20 text-red-500 px-4 py-2 rounded-lg font-black text-xs hover:bg-red-600 hover:text-white transition">DELETE</button>
+                            </div>
+                        </div>
                     </div>
                 </template>
             </div>
         </div>
     </div>
+
+    <!-- HIDDEN RECEIPT CANVAS (FOR GENERATION) -->
+    <div style="position: absolute; left: -9999px;">
+        <div id="receipt-template" class="bg-white text-slate-950 p-12" style="width: 800px;">
+            <div class="text-center border-b-4 border-slate-950 pb-8 mb-8">
+                <h1 class="text-5xl font-black tracking-tighter">CRATE DROP</h1>
+                <p class="text-lg font-black tracking-[0.5em] text-sky-600 -mt-2">COLLECTIVE</p>
+                <div class="mt-4 bg-slate-950 text-white inline-block px-6 py-1 text-sm font-black uppercase">Order Confirmation</div>
+            </div>
+            
+            <div class="flex justify-between font-black uppercase text-sm mb-10">
+                <div>Customer: <span class="border-b-2 border-slate-950 ml-2" x-text="receiptData.name"></span></div>
+                <div>Date: <span x-text="receiptData.timestamp"></span></div>
+            </div>
+
+            <table class="w-full text-left mb-10">
+                <thead>
+                    <tr class="border-b-2 border-slate-950 text-[10px] font-black uppercase">
+                        <th class="py-2">Qty</th>
+                        <th>Product</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Line Total</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs font-bold uppercase">
+                    <template x-for="i in receiptData.items">
+                        <tr class="border-b border-slate-100">
+                            <td class="py-4 font-black text-lg" x-text="i.qty"></td>
+                            <td>
+                                <span x-text="i.name"></span>
+                                <div class="text-[9px] text-slate-400 font-bold" x-text="'Format: ' + (i.isCase ? 'CASE' : 'UNIT')"></div>
+                            </td>
+                            <td class="text-right">₱<span x-text="i.price.toLocaleString()"></span></td>
+                            <td class="text-right font-black">₱<span x-text="(i.price * i.qty).toLocaleString()"></span></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+            <div class="flex justify-end">
+                <div class="w-64 space-y-2">
+                    <div class="flex justify-between text-[10px] font-black text-slate-400"><span>TOTAL:</span> ₱<span x-text="receiptData.totalOrder.toLocaleString()"></span></div>
+                    <div class="flex justify-between bg-sky-100 p-2 font-black text-sky-800 text-sm"><span>DP PAID (30%):</span> ₱<span x-text="receiptData.totalDP.toLocaleString()"></span></div>
+                    <div class="flex justify-between font-black text-xl pt-2"><span>BALANCE:</span> ₱<span x-text="receiptData.totalBalance.toLocaleString()"></span></div>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-slate-100 text-[10px] text-center text-slate-400 italic font-medium px-10">
+                Standard Crate Drop Terms Apply: 30% Downpayment is non-refundable. Final balance due upon arrival/allocation.
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    function orderLogger() {
-        return {
-            inventory: [],
-            orders: [],
-            search: '',
-            isEditing: false,
-            form: {
-                id: null,
-                customerName: '',
-                productId: '',
-                productName: '',
-                qty: 1,
-                isCase: false,
-                price: 0,
-                date: ''
-            },
+function crateDropConsole() {
+    return {
+        inventory: [],
+        logs: [],
+        editingId: null,
+        currentLog: { name: '', items: [] },
+        itemInput: { id: '', name: '', qty: 1, isCase: false, price: 0 },
+        receiptData: { name: '', timestamp: '', items: [], totalOrder: 0, totalDP: 0, totalBalance: 0 },
 
-            async init() {
-                // Load Inventory from TSV
-                const tsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
-                try {
-                    const response = await fetch(tsvUrl);
-                    const text = await response.text();
-                    const rows = text.trim().split('\n').slice(1);
-                    this.inventory = rows.map(row => {
-                        const cols = row.split('\t').map(c => c.trim());
-                        const unitPrice = parseFloat(cols[4]?.replace(/[^0-9.]/g, '')) || 0;
-                        return {
-                            id: cols[0],
-                            name: cols[1],
-                            unitPrice: unitPrice,
-                            casePrice: unitPrice * (parseInt(cols[5]) || 1)
-                        };
-                    });
-                } catch (e) { console.error("Inventory Load Error", e); }
+        async init() {
+            const saved = localStorage.getItem('cd_master_db');
+            if (saved) this.logs = JSON.parse(saved);
 
-                // Load saved orders from LocalStorage
-                const saved = localStorage.getItem('cd_order_db');
-                if (saved) this.orders = JSON.parse(saved);
-            },
-
-            syncPrice() {
-                const item = this.inventory.find(i => i.id == this.form.productId);
-                if (item) {
-                    this.form.productName = item.name;
-                    this.form.price = this.form.isCase ? item.casePrice : item.unitPrice;
-                }
-            },
-
-            calculateTotal() {
-                return this.form.price * this.form.qty;
-            },
-
-            calculateDP() {
-                return Math.ceil(this.calculateTotal() * 0.3);
-            },
-
-            saveOrder() {
-                const total = this.calculateTotal();
-                const dp = this.calculateDP();
-                const orderData = {
-                    ...this.form,
-                    id: this.isEditing ? this.form.id : Date.now(),
-                    date: this.isEditing ? this.form.date : new Date().toLocaleDateString(),
-                    total: total,
-                    dp: dp,
-                    balance: total - dp
-                };
-
-                if (this.isEditing) {
-                    const index = this.orders.findIndex(o => o.id === this.form.id);
-                    this.orders[index] = orderData;
-                } else {
-                    this.orders.unshift(orderData);
-                }
-
-                this.persist();
-                this.resetForm();
-            },
-
-            editOrder(order) {
-                this.isEditing = true;
-                this.form = { ...order };
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            },
-
-            deleteOrder(id) {
-                if (confirm('Permanently delete this order from log?')) {
-                    this.orders = this.orders.filter(o => o.id !== id);
-                    this.persist();
-                }
-            },
-
-            resetForm() {
-                this.isEditing = false;
-                this.form = { id: null, customerName: '', productId: '', productName: '', qty: 1, isCase: false, price: 0, date: '' };
-            },
-
-            persist() {
-                localStorage.setItem('cd_order_db', JSON.stringify(this.orders));
-            },
-
-            clearAllData() {
-                if (confirm('CRITICAL: Delete EVERYTHING in the database? This cannot be undone.')) {
-                    this.orders = [];
-                    this.persist();
-                }
-            },
-
-            exportToCSV() {
-                let csv = "Date,Customer,Product,Format,Qty,Total,DP Paid,Balance\n";
-                this.orders.forEach(o => {
-                    csv += `${o.date},${o.customerName},${o.productName},${o.isCase ? 'Case' : 'Unit'},${o.qty},${o.total},${o.dp},${o.balance}\n`;
+            const tsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
+            try {
+                const response = await fetch(tsvUrl);
+                const text = await response.text();
+                const rows = text.trim().split('\n').slice(1);
+                this.inventory = rows.map(row => {
+                    const cols = row.split('\t').map(c => c.trim());
+                    const unitPrice = parseFloat(cols[4]?.replace(/[^0-9.]/g, '')) || 0;
+                    return {
+                        id: cols[0],
+                        name: cols[1],
+                        unitPrice: unitPrice,
+                        casePrice: unitPrice * (parseInt(cols[5]) || 1)
+                    };
                 });
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `CrateDrop_MasterLog_${new Date().toISOString().split('T')[0]}.csv`;
-                a.click();
-            },
+            } catch (e) { console.error("Sync Error", e); }
+        },
 
-            get filteredOrders() {
-                if (!this.search) return this.orders;
-                return this.orders.filter(o => 
-                    o.customerName.toLowerCase().includes(this.search.toLowerCase()) ||
-                    o.productName.toLowerCase().includes(this.search.toLowerCase())
-                );
-            },
-
-            get totalReceivables() {
-                return this.orders.reduce((sum, o) => sum + o.balance, 0);
+        syncItemInput() {
+            const p = this.inventory.find(i => i.id == this.itemInput.id);
+            if (p) {
+                this.itemInput.name = p.name;
+                this.itemInput.price = this.itemInput.isCase ? p.casePrice : p.unitPrice;
             }
+        },
+
+        addItemToLog() {
+            this.currentLog.items.push({...this.itemInput});
+            this.itemInput.id = '';
+            this.itemInput.qty = 1;
+        },
+
+        removeItemFromLog(index) {
+            this.currentLog.items.splice(index, 1);
+        },
+
+        saveFullLog() {
+            const totalOrder = this.currentLog.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const totalDP = Math.ceil(totalOrder * 0.3);
+            
+            const logData = {
+                ...this.currentLog,
+                id: this.editingId || Date.now(),
+                timestamp: this.editingId ? this.logs.find(l => l.id == this.editingId).timestamp : new Date().toLocaleString(),
+                totalOrder: totalOrder,
+                totalDP: totalDP,
+                totalBalance: totalOrder - totalDP
+            };
+
+            if (this.editingId) {
+                const idx = this.logs.findIndex(l => l.id == this.editingId);
+                this.logs[idx] = logData;
+            } else {
+                this.logs.unshift(logData);
+            }
+
+            this.persist();
+            this.resetForms();
+        },
+
+        editLog(log) {
+            this.editingId = log.id;
+            this.currentLog = JSON.parse(JSON.stringify(log)); // deep copy
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
+        deleteLog(id) {
+            if (confirm('Delete this customer history?')) {
+                this.logs = this.logs.filter(l => l.id !== id);
+                this.persist();
+            }
+        },
+
+        async generateReceipt(log) {
+            this.receiptData = log;
+            await this.$nextTick();
+            const element = document.getElementById('receipt-template');
+            const canvas = await html2canvas(element, { scale: 2 });
+            const link = document.createElement('a');
+            link.download = `CrateDrop_Slip_${log.name.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        },
+
+        resetForms() {
+            this.editingId = null;
+            this.currentLog = { name: '', items: [] };
+            this.itemInput = { id: '', name: '', qty: 1, isCase: false, price: 0 };
+        },
+
+        persist() {
+            localStorage.setItem('cd_master_db', JSON.stringify(this.logs));
+        },
+
+        clearAll() {
+            if (confirm('Wipe entire database?')) {
+                this.logs = [];
+                this.persist();
+            }
+        },
+
+        get totalReceivables() {
+            return this.logs.reduce((sum, l) => sum + l.totalBalance, 0);
+        },
+
+        exportCSV() {
+            let csv = "Timestamp,Customer,Items,Total,DP,Balance\n";
+            this.logs.forEach(l => {
+                const itemSummary = l.items.map(i => `${i.qty}x ${i.name}`).join(' | ');
+                csv += `"${l.timestamp}","${l.name}","${itemSummary}",${l.totalOrder},${l.totalDP},${l.totalBalance}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `CrateDrop_Inventory_Export.csv`;
+            a.click();
         }
     }
+}
 </script>
-
 </body>
 </html>
