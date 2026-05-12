@@ -114,47 +114,102 @@
         </div>
 
         <!-- RIGHT: DATABASE -->
-        <div class="lg:col-span-7 space-y-6">
-            <h3 class="text-2xl font-black text-slate-500 uppercase tracking-widest px-4">Database History</h3>
+        <div class="lg:col-span-7 flex flex-col h-full">
             
-            <div class="grid grid-cols-1 gap-6 max-h-[1200px] overflow-y-auto pr-4">
-                <template x-for="log in logs" :key="log.id">
-                    <div class="glass p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-8 group hover:border-blue-500 transition-all border-l-8 border-l-slate-800 hover:border-l-blue-500">
-                        <div class="flex-grow">
+            <!-- Filter Section -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4 px-4 shrink-0">
+                <h3 class="text-2xl font-black text-slate-500 uppercase tracking-widest">Database History</h3>
+                <div class="w-full sm:w-1/2 md:w-2/5">
+                    <select x-model="filterProduct" class="w-full bg-slate-800 border border-slate-600 text-white rounded-xl p-3 font-bold text-xs uppercase tracking-wide focus:border-blue-500 outline-none shadow-lg">
+                        <option value="">SHOW ALL PRODUCTS</option>
+                        <template x-for="p in uniqueLoggedProducts" :key="p.id">
+                            <option :value="p.id" x-text="p.name"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dynamic Aggregation Banner (Visible only when filtered) -->
+            <div x-show="filterProduct" style="display: none;" class="px-4 mb-6 shrink-0">
+                <div class="bg-blue-900/20 border-2 border-blue-600/30 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <span class="text-blue-400 font-black uppercase text-[10px] tracking-widest w-full sm:w-auto"><i class="fas fa-filter mr-2"></i> Pooled Inventory (Filtered)</span>
+                    <div class="flex gap-6 items-center w-full sm:w-auto justify-end">
+                        <div class="text-right">
+                            <p class="text-[10px] text-blue-500 uppercase font-bold tracking-widest">Total Raw Units</p>
+                            <p class="text-2xl font-black text-white leading-none" x-text="filteredProductTotals.units"></p>
+                        </div>
+                        <div class="w-px h-8 bg-blue-800/50 hidden sm:block"></div>
+                        <div class="text-right">
+                            <p class="text-[10px] text-blue-500 uppercase font-bold tracking-widest">Total Direct Cases</p>
+                            <p class="text-2xl font-black text-white leading-none" x-text="filteredProductTotals.cases"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 max-h-[1200px] overflow-y-auto pr-4 flex-grow relative">
+                
+                <!-- Empty state for filters -->
+                <div x-show="filteredLogs.length === 0 && logs.length > 0" class="text-center py-20 opacity-50">
+                    <i class="fas fa-box-open text-4xl mb-4 text-slate-600"></i>
+                    <p class="text-xl font-black text-slate-500">No matching orders found.</p>
+                </div>
+
+                <template x-for="log in filteredLogs" :key="log.id">
+                    <!-- FIXED OVERLAPS: flex-wrap/min-w-0 applied to parent structure -->
+                    <div class="glass p-8 rounded-[2.5rem] flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 group hover:border-blue-500 transition-all border-l-8 border-l-slate-800 hover:border-l-blue-500">
+                        
+                        <!-- Left Side: Log Info (Constrained width to prevent blowing out) -->
+                        <div class="flex-grow min-w-0 w-full">
                             <div class="flex items-center gap-3 mb-2">
                                 <span class="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-full uppercase" x-text="log.timestamp"></span>
                             </div>
-                            <h4 class="text-4xl font-black uppercase text-white tracking-tighter" x-text="log.name"></h4>
+                            <!-- Added truncate to name in case it's extremely long -->
+                            <h4 class="text-3xl sm:text-4xl font-black uppercase text-white tracking-tighter truncate" x-title="log.name" x-text="log.name"></h4>
+                            
                             <div class="flex flex-col gap-3 mt-4">
-                                <!-- UPDATED LOG DISPLAY: Larger text, distinct colors for CASE vs UNIT -->
                                 <template x-for="i in log.items">
-                                    <div :class="i.isCase ? 'bg-blue-900/40 border-blue-600/50 text-blue-100' : 'bg-slate-800 border-slate-600 text-slate-200'" class="px-4 py-3 rounded-xl border flex items-center font-black uppercase tracking-wide">
-                                        <span class="text-xl mr-2" x-text="i.qty"></span>
-                                        <span :class="i.isCase ? 'text-white' : 'text-slate-400'" class="text-sm mr-3" x-text="i.isCase ? 'CASE(S)' : 'UNIT(S)'"></span>
-                                        <span class="text-sm opacity-50 mr-3">|</span>
-                                        <span class="text-sm truncate" x-text="i.name"></span>
+                                    <!-- FIXED OVERLAPS: Added flex-shrink-0 to numbers, min-w-0 to container, and truncate strictly to the text -->
+                                    <div :class="[
+                                        i.isCase ? 'bg-blue-900/40 border-blue-600/50 text-blue-100' : 'bg-slate-800 border-slate-600 text-slate-200',
+                                        filterProduct && i.id !== filterProduct ? 'opacity-30' : 'opacity-100'
+                                    ]" class="px-4 py-3 rounded-xl border flex flex-row items-center font-black uppercase tracking-wide min-w-0 transition-opacity duration-300">
+                                        
+                                        <!-- Number/Format block (Does not shrink) -->
+                                        <div class="flex items-center flex-shrink-0">
+                                            <span class="text-xl mr-2" x-text="i.qty"></span>
+                                            <span :class="i.isCase ? 'text-white' : 'text-slate-400'" class="text-xs sm:text-sm mr-3" x-text="i.isCase ? 'CASE(S)' : 'UNIT(S)'"></span>
+                                            <span class="text-sm opacity-50 mr-3 hidden sm:inline-block">|</span>
+                                        </div>
+                                        
+                                        <!-- Item Name (Takes remaining space and truncates if too long) -->
+                                        <span class="text-xs sm:text-sm truncate flex-grow min-w-0" x-text="i.name"></span>
                                     </div>
                                 </template>
                             </div>
                         </div>
                         
-                        <div class="text-center md:text-right flex flex-col items-center md:items-end min-w-[200px]">
-                            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Paid</p>
-                            <p class="text-4xl font-black text-white mb-6 tracking-tight">₱<span x-text="log.totalDP.toLocaleString()"></span></p>
+                        <!-- Right Side: Actions (Fixed minimum width, won't shrink) -->
+                        <div class="text-left xl:text-right flex flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-start w-full xl:w-auto min-w-[220px] flex-shrink-0 pt-4 xl:pt-0 border-t border-slate-800 xl:border-none">
+                            <div class="xl:mb-6">
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Paid</p>
+                                <p class="text-3xl sm:text-4xl font-black text-white tracking-tight">₱<span x-text="log.totalDP.toLocaleString()"></span></p>
+                            </div>
                             
                             <div class="flex gap-2">
-                                <button @click="generateSlip(log)" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-white hover:text-blue-600 transition shadow-lg">Generate Slip</button>
-                                <button @click="editLog(log)" class="bg-slate-800 text-white px-6 py-3 rounded-xl font-black text-xs uppercase hover:bg-slate-700 transition">Edit</button>
-                                <button @click="deleteLog(log.id)" class="text-red-900 hover:text-red-500 transition px-2"><i class="fas fa-times-circle text-xl"></i></button>
+                                <button @click="generateSlip(log)" class="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase hover:bg-white hover:text-blue-600 transition shadow-lg">Slip</button>
+                                <button @click="editLog(log)" class="bg-slate-800 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase hover:bg-slate-700 transition">Edit</button>
+                                <button @click="deleteLog(log.id)" class="text-red-900 hover:text-red-500 transition px-2"><i class="fas fa-times-circle text-lg sm:text-xl"></i></button>
                             </div>
                         </div>
+
                     </div>
                 </template>
             </div>
         </div>
     </div>
 
-    <!-- HIDDEN CANVAS FOR RECEIPT GENERATION -->
+    <!-- HIDDEN CANVAS FOR RECEIPT GENERATION (Unchanged logic) -->
     <div style="position: absolute; left: -9999px; top: 0;">
         <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto border border-gray-100 flex flex-col" style="width: 850px; min-height: 800px;">
             <div class="p-10 border-b-2 border-gray-50">
@@ -234,6 +289,7 @@ function crateDropApp() {
     return {
         inventory: [],
         logs: [],
+        filterProduct: '',
         editingId: null,
         currentLog: { name: '', items: [] },
         itemInput: { id: '', name: '', qty: 1, isCase: false, price: 0, unitsPerCase: 1, eta: 'TBA' },
@@ -261,8 +317,52 @@ function crateDropApp() {
                         eta: cols[6] || 'TBA'
                     };
                 });
-            } catch (e) { console.error("Inventory Fetch Fetch Failed", e); }
+            } catch (e) { console.error("Inventory Fetch Failed", e); }
         },
+
+        // --- NEW FILTER COMPUTED PROPERTIES ---
+        get uniqueLoggedProducts() {
+            const productsMap = new Map();
+            this.logs.forEach(log => {
+                log.items.forEach(item => {
+                    if (!productsMap.has(item.id)) {
+                        productsMap.set(item.id, item.name);
+                    }
+                });
+            });
+            // Returns an alphabetically sorted array for the dropdown
+            return Array.from(productsMap, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
+        },
+
+        get filteredLogs() {
+            if (!this.filterProduct) return this.logs;
+            // Only returns logs where the customer purchased the selected product
+            return this.logs.filter(log => log.items.some(item => item.id === this.filterProduct));
+        },
+
+        get filteredProductTotals() {
+            if (!this.filterProduct) return { units: 0, cases: 0 };
+            
+            let totalUnits = 0;
+            let totalCases = 0;
+
+            this.filteredLogs.forEach(log => {
+                log.items.forEach(item => {
+                    // Only count the exact product being filtered
+                    if (item.id === this.filterProduct) {
+                        if (item.isCase) {
+                            totalCases += item.qty;
+                            totalUnits += (item.qty * item.unitsPerCase);
+                        } else {
+                            totalUnits += item.qty;
+                        }
+                    }
+                });
+            });
+
+            return { units: totalUnits, cases: totalCases };
+        },
+        // ----------------------------------------
 
         syncItem() {
             const p = this.inventory.find(i => i.id == this.itemInput.id);
@@ -354,7 +454,6 @@ function crateDropApp() {
         },
 
         exportCSV() {
-            // UPDATED: Now standardizes everything to "Total Units" for easy distributor ordering
             let csv = "Date,Customer,Product Name,Total Units Ordered,Line Total PHP,DP (30%),Balance\n";
             
             this.logs.forEach(l => {
@@ -362,9 +461,7 @@ function crateDropApp() {
                     const itemName = i.name.replace(/,/g, ""); 
                     const customerName = l.name.replace(/,/g, "");
                     
-                    // Logic breakdown: If it's a case, calculate actual unit count. Otherwise, use unit qty.
                     const totalUnits = i.isCase ? (i.qty * i.unitsPerCase) : i.qty;
-                    
                     const lineTotal = i.price * i.qty;
                     const lineDP = Math.ceil(lineTotal * 0.3);
                     const lineBalance = lineTotal - lineDP;
