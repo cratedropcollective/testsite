@@ -3,484 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop | Pro Console</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Riftbound Singles | Crate Drop Collective</title>
+    <link rel="stylesheet" href="style.css"> <!-- Link to your existing portal CSS -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #05070a; color: #f8fafc; }
-        .glass { background: #111827; border: 1px solid #1f2937; }
-        .input-huge { font-size: 1.5rem !important; font-weight: 900 !important; padding: 1.25rem !important; }
-        .label-huge { font-size: 0.85rem !important; font-weight: 900 !important; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.5rem; display: block; text-transform: uppercase; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        :root {
+            --accent-gold: #c4a46c;
+            --dark-bg: #0f1113;
+            --card-bg: #1a1d21;
+            --text-light: #e0e0e0;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header-section {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .singles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+            padding: 40px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card-item {
+            background: var(--card-bg);
+            border: 1px solid #2a2e33;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+        }
+
+        .card-img-container {
+            position: relative;
+            background: #000;
+            aspect-ratio: 2.5 / 3.5;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .card-rarity {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .card-price {
+            font-size: 1.25rem;
+            color: var(--accent-gold);
+            font-weight: 800;
+            margin-top: auto;
+        }
+
+        .buy-btn {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin-top: 15px;
+            border-radius: 6px;
+        }
+
+        .buy-btn:hover {
+            background: #d4b47c;
+        }
+
+        .filter-bar {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .filter-input {
+            background: #1a1d21;
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body>
 
-<div x-data="crateDropApp()" x-init="init()" class="max-w-[1600px] mx-auto">
-    
-    <!-- HEADER -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-6">
-        <div>
-            <h1 class="text-6xl font-black tracking-tighter italic">CRATE <span class="text-blue-500">DROP</span></h1>
-            <p class="text-slate-500 font-black uppercase tracking-[0.4em] text-sm">Collective Master Terminal</p>
-        </div>
-        <div class="flex items-center gap-6 bg-slate-900 p-6 rounded-3xl border border-slate-800">
-            <div class="text-right">
-                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Collected</p>
-                <p class="text-4xl font-black text-emerald-400">₱<span x-text="totalReceivables.toLocaleString()"></span></p>
-            </div>
-            <div class="flex flex-col gap-2">
-                <button @click="exportCSV()" class="text-[10px] bg-slate-800 hover:bg-white hover:text-black px-4 py-2 rounded-lg font-black transition">EXPORT CSV</button>
-                <button @click="clearDB()" class="text-[10px] text-red-500 hover:text-red-400 font-black">WIPE ALL DATA</button>
-            </div>
-        </div>
+    <section class="header-section">
+        <h1>RIFTBOUND SINGLES</h1>
+        <p>Official Origins & Spiritforged Inventory</p>
+    </section>
+
+    <div class="filter-bar">
+        <input type="text" id="searchBar" class="filter-input" placeholder="Search cards by name or set...">
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        <!-- LEFT: INPUT & CURRENT SESSION -->
-        <div class="lg:col-span-5 space-y-8">
-            <div class="glass p-10 rounded-[3rem] shadow-2xl border-t-8 border-blue-500">
-                <h2 class="text-3xl font-black mb-8 flex items-center gap-4">
-                    <i class="fas fa-user-tag text-blue-500"></i>
-                    <span x-text="editingId ? 'Edit Session' : 'New Session'"></span>
-                </h2>
+    <div class="singles-grid" id="cardContainer">
+        <!-- JS will populate cards here -->
+    </div>
 
-                <div class="space-y-8">
-                    <!-- Customer -->
-                    <div>
-                        <label class="label-huge">Customer Full Name</label>
-                        <input type="text" x-model="currentLog.name" class="w-full input-huge rounded-2xl bg-slate-800 border-2 border-slate-700 text-white" placeholder="JUAN DELA CRUZ">
-                    </div>
+    <script>
+        // Pricing Config
+        const MULTIPLIER = 50;
+        const CURRENCY_SYMBOL = "₱";
 
-                    <!-- Add Item Block -->
-                    <div class="bg-blue-600/5 p-8 rounded-3xl border-2 border-blue-500/20 space-y-6">
-                        <label class="label-huge text-blue-400">Select Product to Add</label>
-                        <select x-model="itemInput.id" @change="syncItem" class="w-full input-huge rounded-2xl bg-slate-900 border-2 border-slate-700">
-                            <option value="">-- SEARCH INVENTORY --</option>
-                            <template x-for="p in inventory" :key="p.id">
-                                <option :value="p.id" x-text="p.name"></option>
-                            </template>
-                        </select>
+        // Card Data (Example subset - can be expanded to full JSON)
+        const riftboundInventory = [
+            { id: "RB-001", name: "Sett, The Boss", set: "Origins", rarity: "Overnumbered", tcg_usd: 75.00, img: "https://images.tcgplayer.com/item/sett_boss_200w.jpg" },
+            { id: "RB-002", name: "Kai'Sa, Survivor", set: "Origins", rarity: "Epic", tcg_usd: 80.00, img: "https://images.tcgplayer.com/item/kaisa_survivor_200w.jpg" },
+            { id: "RB-003", name: "Ahri, Nine-Tailed Fox", set: "Origins", rarity: "Rare", tcg_usd: 3.75, img: "https://images.tcgplayer.com/item/ahri_nine_200w.jpg" },
+            { id: "RB-004", name: "Defy", set: "Origins", rarity: "Common", tcg_usd: 0.85, img: "https://images.tcgplayer.com/item/defy_200w.jpg" },
+            { id: "RB-005", name: "Karthus - Eternal", set: "Origins", rarity: "Rare", tcg_usd: 4.19, img: "https://images.tcgplayer.com/item/karthus_200w.jpg" },
+            { id: "RB-006", name: "Viktor, Machine Herald", set: "Origins", rarity: "Epic", tcg_usd: 18.42, img: "https://images.tcgplayer.com/item/viktor_200w.jpg" }
+        ];
 
-                        <div class="grid grid-cols-3 gap-6">
-                            <div class="col-span-1">
-                                <label class="label-huge">Format</label>
-                                <select x-model="itemInput.isCase" @change="syncItem" class="w-full p-4 rounded-xl font-black bg-slate-900 border-2 border-slate-700">
-                                    <option :value="false">UNIT</option>
-                                    <option :value="true">CASE</option>
-                                </select>
-                            </div>
-                            <div class="col-span-1">
-                                <label class="label-huge">Quantity</label>
-                                <input type="number" x-model.number="itemInput.qty" class="w-full p-4 rounded-xl font-black text-center bg-slate-900 border-2 border-slate-700 text-xl">
-                            </div>
-                            <div class="flex items-end">
-                                <button @click="addItem" :disabled="!itemInput.id" class="w-full h-[62px] bg-blue-600 hover:bg-white hover:text-blue-600 text-white font-black rounded-xl transition-all text-xl shadow-lg shadow-blue-500/20">ADD</button>
-                            </div>
-                        </div>
-                    </div>
+        function renderCards(filter = "") {
+            const container = document.getElementById('cardContainer');
+            container.innerHTML = "";
 
-                    <!-- Items in current session -->
-                    <div class="space-y-3">
-                        <label class="label-huge">Session Items (<span x-text="currentLog.items.length"></span>)</label>
-                        <template x-for="(item, index) in currentLog.items" :key="index">
-                            <div class="flex justify-between items-center p-5 bg-slate-900 rounded-2xl border border-slate-800 group">
-                                <div>
-                                    <p class="font-black text-lg uppercase tracking-tight" x-text="item.name"></p>
-                                    <p class="text-sm font-bold text-blue-400 uppercase">
-                                        <span x-text="item.qty"></span>x 
-                                        <span x-text="item.isCase ? 'CASE' : 'UNIT'"></span>
-                                        <template x-if="item.isCase">
-                                            <span class="text-slate-500 ml-2">(<span x-text="item.unitsPerCase"></span> Units/Case)</span>
-                                        </template>
-                                    </p>
-                                </div>
-                                <button @click="removeItem(index)" class="text-red-900 group-hover:text-red-500 p-2 transition"><i class="fas fa-trash-alt"></i></button>
-                            </div>
-                        </template>
-                    </div>
+            const filtered = riftboundInventory.filter(c => 
+                c.name.toLowerCase().includes(filter.toLowerCase()) || 
+                c.set.toLowerCase().includes(filter.toLowerCase())
+            );
 
-                    <button @click="saveLog" :disabled="!currentLog.name || currentLog.items.length === 0" class="w-full bg-white text-black font-black py-6 rounded-[2rem] text-2xl uppercase tracking-tighter hover:bg-blue-500 hover:text-white transition-all shadow-2xl">
-                        <span x-text="editingId ? 'Update Master Log' : 'Commit to Database'"></span>
-                    </button>
-                    <button x-show="editingId" @click="resetSession" class="w-full text-slate-500 font-bold uppercase text-xs mt-2">Discard Changes</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT: DATABASE -->
-        <div class="lg:col-span-7 flex flex-col h-full">
-            
-            <!-- Filter Section -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-4 px-4 shrink-0">
-                <h3 class="text-2xl font-black text-slate-500 uppercase tracking-widest">Database History</h3>
-                <div class="w-full sm:w-1/2 md:w-2/5">
-                    <select x-model="filterProduct" class="w-full bg-slate-800 border border-slate-600 text-white rounded-xl p-3 font-bold text-xs uppercase tracking-wide focus:border-blue-500 outline-none shadow-lg">
-                        <option value="">SHOW ALL PRODUCTS</option>
-                        <template x-for="p in uniqueLoggedProducts" :key="p.id">
-                            <option :value="p.id" x-text="p.name"></option>
-                        </template>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Dynamic Aggregation Banner (Visible only when filtered) -->
-            <div x-show="filterProduct" style="display: none;" class="px-4 mb-6 shrink-0">
-                <div class="bg-blue-900/20 border-2 border-blue-600/30 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span class="text-blue-400 font-black uppercase text-[10px] tracking-widest w-full sm:w-auto"><i class="fas fa-filter mr-2"></i> Pooled Inventory (Filtered)</span>
-                    <div class="flex gap-6 items-center w-full sm:w-auto justify-end">
-                        <div class="text-right">
-                            <p class="text-[10px] text-blue-500 uppercase font-bold tracking-widest">Total Raw Units</p>
-                            <p class="text-2xl font-black text-white leading-none" x-text="filteredProductTotals.units"></p>
-                        </div>
-                        <div class="w-px h-8 bg-blue-800/50 hidden sm:block"></div>
-                        <div class="text-right">
-                            <p class="text-[10px] text-blue-500 uppercase font-bold tracking-widest">Total Direct Cases</p>
-                            <p class="text-2xl font-black text-white leading-none" x-text="filteredProductTotals.cases"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6 max-h-[1200px] overflow-y-auto pr-4 flex-grow relative">
+            filtered.forEach(card => {
+                const phpPrice = (card.tcg_usd * MULTIPLIER).toLocaleString();
                 
-                <!-- Empty state for filters -->
-                <div x-show="filteredLogs.length === 0 && logs.length > 0" class="text-center py-20 opacity-50">
-                    <i class="fas fa-box-open text-4xl mb-4 text-slate-600"></i>
-                    <p class="text-xl font-black text-slate-500">No matching orders found.</p>
-                </div>
-
-                <template x-for="log in filteredLogs" :key="log.id">
-                    <!-- FIXED OVERLAPS: flex-wrap/min-w-0 applied to parent structure -->
-                    <div class="glass p-8 rounded-[2.5rem] flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 group hover:border-blue-500 transition-all border-l-8 border-l-slate-800 hover:border-l-blue-500">
-                        
-                        <!-- Left Side: Log Info (Constrained width to prevent blowing out) -->
-                        <div class="flex-grow min-w-0 w-full">
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-full uppercase" x-text="log.timestamp"></span>
-                            </div>
-                            <!-- Added truncate to name in case it's extremely long -->
-                            <h4 class="text-3xl sm:text-4xl font-black uppercase text-white tracking-tighter truncate" x-title="log.name" x-text="log.name"></h4>
-                            
-                            <div class="flex flex-col gap-3 mt-4">
-                                <template x-for="i in log.items">
-                                    <!-- FIXED OVERLAPS: Added flex-shrink-0 to numbers, min-w-0 to container, and truncate strictly to the text -->
-                                    <div :class="[
-                                        i.isCase ? 'bg-blue-900/40 border-blue-600/50 text-blue-100' : 'bg-slate-800 border-slate-600 text-slate-200',
-                                        filterProduct && i.id !== filterProduct ? 'opacity-30' : 'opacity-100'
-                                    ]" class="px-4 py-3 rounded-xl border flex flex-row items-center font-black uppercase tracking-wide min-w-0 transition-opacity duration-300">
-                                        
-                                        <!-- Number/Format block (Does not shrink) -->
-                                        <div class="flex items-center flex-shrink-0">
-                                            <span class="text-xl mr-2" x-text="i.qty"></span>
-                                            <span :class="i.isCase ? 'text-white' : 'text-slate-400'" class="text-xs sm:text-sm mr-3" x-text="i.isCase ? 'CASE(S)' : 'UNIT(S)'"></span>
-                                            <span class="text-sm opacity-50 mr-3 hidden sm:inline-block">|</span>
-                                        </div>
-                                        
-                                        <!-- Item Name (Takes remaining space and truncates if too long) -->
-                                        <span class="text-xs sm:text-sm truncate flex-grow min-w-0" x-text="i.name"></span>
-                                    </div>
-                                </template>
-                            </div>
+                const cardHtml = `
+                    <div class="card-item">
+                        <div class="card-img-container">
+                            <img src="${card.img}" alt="${card.name}" class="card-img" onerror="this.src='https://via.placeholder.com/250x350?text=Riftbound+Card'">
                         </div>
-                        
-                        <!-- Right Side: Actions (Fixed minimum width, won't shrink) -->
-                        <div class="text-left xl:text-right flex flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-start w-full xl:w-auto min-w-[220px] flex-shrink-0 pt-4 xl:pt-0 border-t border-slate-800 xl:border-none">
-                            <div class="xl:mb-6">
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total DP Paid</p>
-                                <p class="text-3xl sm:text-4xl font-black text-white tracking-tight">₱<span x-text="log.totalDP.toLocaleString()"></span></p>
-                            </div>
-                            
-                            <div class="flex gap-2">
-                                <button @click="generateSlip(log)" class="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase hover:bg-white hover:text-blue-600 transition shadow-lg">Slip</button>
-                                <button @click="editLog(log)" class="bg-slate-800 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-black text-[10px] sm:text-xs uppercase hover:bg-slate-700 transition">Edit</button>
-                                <button @click="deleteLog(log.id)" class="text-red-900 hover:text-red-500 transition px-2"><i class="fas fa-times-circle text-lg sm:text-xl"></i></button>
-                            </div>
+                        <div class="card-info">
+                            <div class="card-rarity">${card.set} • ${card.rarity}</div>
+                            <div class="card-name">${card.name}</div>
+                            <div class="card-price">${CURRENCY_SYMBOL}${phpPrice}</div>
+                            <button class="buy-btn" onclick="addToCart('${card.id}', '${card.name}', ${card.tcg_usd * MULTIPLIER})">Add to Order</button>
                         </div>
-
                     </div>
-                </template>
-            </div>
-        </div>
-    </div>
-
-    <!-- HIDDEN CANVAS FOR RECEIPT GENERATION (Unchanged logic) -->
-    <div style="position: absolute; left: -9999px; top: 0;">
-        <div id="receipt-canvas" class="bg-white shadow-2xl mx-auto border border-gray-100 flex flex-col" style="width: 850px; min-height: 800px;">
-            <div class="p-10 border-b-2 border-gray-50">
-                <div class="flex items-center justify-center space-x-6">
-                    <div class="flex flex-col items-center border-r-2 border-gray-100 pr-8">
-                        <span class="text-4xl font-black tracking-tighter leading-none text-slate-900">CRATE DROP</span>
-                        <span class="block text-[15px] font-bold text-blue-500 tracking-[0.4em] uppercase -mt-1">COLLECTIVE</span>
-                    </div>
-                    <div class="text-left">
-                        <h1 class="text-3xl font-black text-blue-800 italic tracking-tighter uppercase leading-none">Order <br> Confirmation</h1>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-blue-700 text-white px-10 py-3 flex justify-between font-bold text-xs uppercase tracking-widest">
-                <span>Customer: <span x-text="receiptData.name || '----------'" class="ml-2 font-black border-b border-white/40"></span></span>
-                <span>Date: <span x-text="receiptData.timestamp"></span></span>
-            </div>
-
-            <div class="mx-10 mt-8 flex-grow">
-                <div class="grid grid-cols-12 gap-2 text-blue-800 font-black text-[10px] uppercase border-b-4 border-blue-800 pb-3">
-                    <div class="col-span-1">Qty.</div>
-                    <div class="col-span-1 text-center">Format</div>
-                    <div class="col-span-4">Product Name</div>
-                    <div class="col-span-2 text-right">Price/Unit</div>
-                    <div class="col-span-2 text-right text-blue-500">DP (30%)</div>
-                    <div class="col-span-2 text-right">Line Total</div>
-                </div>
-
-                <template x-for="(item, index) in receiptData.items" :key="index">
-                    <div class="grid grid-cols-12 gap-2 text-slate-800 font-bold text-[11px] py-4 border-b border-gray-100 items-center">
-                        <div class="col-span-1 font-black text-lg" x-text="item.qty"></div>
-                        <div class="col-span-1 uppercase text-[8px] text-center text-blue-600 font-black" x-text="item.isCase ? 'CASE' : 'UNIT'"></div>
-                        <div class="col-span-4 uppercase leading-tight">
-                            <span x-text="item.name"></span>
-                            <template x-if="item.isCase">
-                                <div class="text-[8px] text-blue-500 font-black mt-1" x-text="'('+item.unitsPerCase+' UNITS PER CASE)'"></div>
-                            </template>
-                            <div class="text-[8px] text-gray-400 mt-1 font-bold" x-text="'ETA: ' + (item.eta || 'TBA')"></div>
-                        </div>
-                        <div class="col-span-2 text-right text-gray-500">₱<span x-text="item.price.toLocaleString()"></span></div>
-                        <div class="col-span-2 text-right text-blue-600 font-black">₱<span x-text="Math.ceil(item.price * item.qty * 0.3).toLocaleString()"></span></div>
-                        <div class="col-span-2 text-right font-black">₱<span x-text="(item.price * item.qty).toLocaleString()"></span></div>
-                    </div>
-                </template>
-            </div>
-
-            <div class="mx-10 flex flex-col items-end space-y-4 mt-8">
-                <div class="w-full max-w-[380px]">
-                    <div class="flex justify-between text-[10px] font-black text-gray-400 uppercase mb-2 px-2">
-                        <span>Total Combined Order:</span>
-                        <span>₱<span x-text="receiptData.totalOrder ? receiptData.totalOrder.toLocaleString() : '0'"></span></span>
-                    </div>
-                    <div class="bg-blue-700 text-white text-center py-2 font-black text-[11px] uppercase tracking-widest">Total Combined DP Paid (30%)</div>
-                    <div class="text-center font-black text-4xl text-slate-900 py-3 border-x border-b border-gray-100 shadow-sm">
-                        ₱<span x-text="receiptData.totalDP ? receiptData.totalDP.toLocaleString() : '0'"></span>
-                    </div>
-                </div>
-                <div class="w-full max-w-[380px] mb-8">
-                    <div class="bg-slate-800 text-white text-center py-1.5 font-black text-[10px] uppercase tracking-widest">Combined Balance Remaining</div>
-                    <div class="text-center font-black text-2xl text-slate-700 py-2 border-x border-b border-gray-100 shadow-sm">
-                        ₱<span x-text="receiptData.totalBalance ? receiptData.totalBalance.toLocaleString() : '0'"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="px-16 py-10 bg-gray-50 border-t border-gray-100 text-[10px] text-gray-400 text-center leading-relaxed font-semibold italic">
-                By placing a pre-order, you confirm that you have understood the risks of country allocation cuts. Payment for the remaining balance is due within 3 days of allocation confirmation. Cancellations are not allowed, and the 30% deposit is non-refundable.
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<script>
-function crateDropApp() {
-    return {
-        inventory: [],
-        logs: [],
-        filterProduct: '',
-        editingId: null,
-        currentLog: { name: '', items: [] },
-        itemInput: { id: '', name: '', qty: 1, isCase: false, price: 0, unitsPerCase: 1, eta: 'TBA' },
-        receiptData: { name: '', timestamp: '', items: [], totalOrder: 0, totalDP: 0, totalBalance: 0 },
-
-        async init() {
-            const saved = localStorage.getItem('cd_master_v2');
-            if (saved) this.logs = JSON.parse(saved);
-
-            const tsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
-            try {
-                const response = await fetch(tsvUrl);
-                const text = await response.text();
-                const rows = text.trim().split('\n').slice(1);
-                this.inventory = rows.map(row => {
-                    const cols = row.split('\t').map(c => c.trim());
-                    const unitPrice = parseFloat(cols[4]?.replace(/[^0-9.]/g, '')) || 0;
-                    const upc = parseInt(cols[5]) || 1;
-                    return {
-                        id: cols[0],
-                        name: cols[1],
-                        unitPrice: unitPrice,
-                        unitsPerCase: upc,
-                        casePrice: unitPrice * upc,
-                        eta: cols[6] || 'TBA'
-                    };
-                });
-            } catch (e) { console.error("Inventory Fetch Failed", e); }
-        },
-
-        // --- NEW FILTER COMPUTED PROPERTIES ---
-        get uniqueLoggedProducts() {
-            const productsMap = new Map();
-            this.logs.forEach(log => {
-                log.items.forEach(item => {
-                    if (!productsMap.has(item.id)) {
-                        productsMap.set(item.id, item.name);
-                    }
-                });
+                `;
+                container.innerHTML += cardHtml;
             });
-            // Returns an alphabetically sorted array for the dropdown
-            return Array.from(productsMap, ([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
-        },
-
-        get filteredLogs() {
-            if (!this.filterProduct) return this.logs;
-            // Only returns logs where the customer purchased the selected product
-            return this.logs.filter(log => log.items.some(item => item.id === this.filterProduct));
-        },
-
-        get filteredProductTotals() {
-            if (!this.filterProduct) return { units: 0, cases: 0 };
-            
-            let totalUnits = 0;
-            let totalCases = 0;
-
-            this.filteredLogs.forEach(log => {
-                log.items.forEach(item => {
-                    // Only count the exact product being filtered
-                    if (item.id === this.filterProduct) {
-                        if (item.isCase) {
-                            totalCases += item.qty;
-                            totalUnits += (item.qty * item.unitsPerCase);
-                        } else {
-                            totalUnits += item.qty;
-                        }
-                    }
-                });
-            });
-
-            return { units: totalUnits, cases: totalCases };
-        },
-        // ----------------------------------------
-
-        syncItem() {
-            const p = this.inventory.find(i => i.id == this.itemInput.id);
-            if (p) {
-                this.itemInput.name = p.name;
-                this.itemInput.unitsPerCase = p.unitsPerCase;
-                this.itemInput.price = this.itemInput.isCase ? p.casePrice : p.unitPrice;
-                this.itemInput.eta = p.eta;
-            }
-        },
-
-        addItem() {
-            this.currentLog.items.push({...this.itemInput});
-            this.itemInput.id = '';
-            this.itemInput.qty = 1;
-        },
-
-        removeItem(index) {
-            this.currentLog.items.splice(index, 1);
-        },
-
-        saveLog() {
-            const total = this.currentLog.items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const dp = Math.ceil(total * 0.3);
-            
-            const payload = {
-                ...this.currentLog,
-                id: this.editingId || Date.now(),
-                timestamp: this.editingId ? this.logs.find(l => l.id == this.editingId).timestamp : new Date().toLocaleString(),
-                totalOrder: total,
-                totalDP: dp,
-                totalBalance: total - dp
-            };
-
-            if (this.editingId) {
-                const idx = this.logs.findIndex(l => l.id == this.editingId);
-                this.logs[idx] = payload;
-            } else {
-                this.logs.unshift(payload);
-            }
-
-            this.persist();
-            this.resetSession();
-        },
-
-        editLog(log) {
-            this.editingId = log.id;
-            this.currentLog = JSON.parse(JSON.stringify(log));
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
-
-        deleteLog(id) {
-            if (confirm('Delete this customer log permanently?')) {
-                this.logs = this.logs.filter(l => l.id !== id);
-                this.persist();
-            }
-        },
-
-        async generateSlip(log) {
-            this.receiptData = log;
-            await this.$nextTick();
-            const element = document.getElementById('receipt-canvas');
-            const canvas = await html2canvas(element, { scale: 2 });
-            const link = document.createElement('a');
-            link.download = `Slip_${log.name.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-        },
-
-        resetSession() {
-            this.editingId = null;
-            this.currentLog = { name: '', items: [] };
-            this.itemInput = { id: '', name: '', qty: 1, isCase: false, price: 0, unitsPerCase: 1, eta: 'TBA' };
-        },
-
-        persist() {
-            localStorage.setItem('cd_master_v2', JSON.stringify(this.logs));
-        },
-
-        get totalReceivables() {
-            return this.logs.reduce((sum, l) => sum + l.totalDP, 0);
-        },
-
-        clearDB() {
-            if (confirm('DANGER: This will delete your entire logged history. Continue?')) {
-                this.logs = [];
-                this.persist();
-            }
-        },
-
-        exportCSV() {
-            let csv = "Date,Customer,Product Name,Total Units Ordered,Line Total PHP,DP (30%),Balance\n";
-            
-            this.logs.forEach(l => {
-                l.items.forEach(i => {
-                    const itemName = i.name.replace(/,/g, ""); 
-                    const customerName = l.name.replace(/,/g, "");
-                    
-                    const totalUnits = i.isCase ? (i.qty * i.unitsPerCase) : i.qty;
-                    const lineTotal = i.price * i.qty;
-                    const lineDP = Math.ceil(lineTotal * 0.3);
-                    const lineBalance = lineTotal - lineDP;
-
-                    csv += `"${l.timestamp}","${customerName}","${itemName}",${totalUnits},${lineTotal},${lineDP},${lineBalance}\n`;
-                });
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `CrateDrop_Inventory_Log_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         }
-    }
-}
-</script>
+
+        // Search listener
+        document.getElementById('searchBar').addEventListener('input', (e) => renderCards(e.target.value));
+
+        // Checkout Logic (Matching your existing Portal structure)
+        function addToCart(id, name, price) {
+            let cart = JSON.parse(localStorage.getItem('crateDropCart')) || [];
+            const item = { id, name, price, qty: 1, type: 'single' };
+            
+            const existing = cart.find(i => i.id === id);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push(item);
+            }
+
+            localStorage.setItem('crateDropCart', JSON.stringify(cart));
+            alert(`${name} added to your drop!`);
+            // Trigger your portal's global cart update if applicable
+            if(window.updatePortalCart) window.updatePortalCart();
+        }
+
+        // Initial Load
+        renderCards();
+    </script>
 </body>
 </html>
