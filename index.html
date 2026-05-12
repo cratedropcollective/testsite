@@ -125,9 +125,15 @@
                                 <span class="bg-blue-500/10 text-blue-500 text-[10px] font-black px-3 py-1 rounded-full uppercase" x-text="log.timestamp"></span>
                             </div>
                             <h4 class="text-4xl font-black uppercase text-white tracking-tighter" x-text="log.name"></h4>
-                            <div class="flex flex-wrap gap-2 mt-4">
+                            <div class="flex flex-col gap-3 mt-4">
+                                <!-- UPDATED LOG DISPLAY: Larger text, distinct colors for CASE vs UNIT -->
                                 <template x-for="i in log.items">
-                                    <span class="bg-slate-800 text-slate-400 text-[10px] font-black px-3 py-1.5 rounded-lg border border-slate-700" x-text="i.qty + 'x ' + i.name"></span>
+                                    <div :class="i.isCase ? 'bg-blue-900/40 border-blue-600/50 text-blue-100' : 'bg-slate-800 border-slate-600 text-slate-200'" class="px-4 py-3 rounded-xl border flex items-center font-black uppercase tracking-wide">
+                                        <span class="text-xl mr-2" x-text="i.qty"></span>
+                                        <span :class="i.isCase ? 'text-white' : 'text-slate-400'" class="text-sm mr-3" x-text="i.isCase ? 'CASE(S)' : 'UNIT(S)'"></span>
+                                        <span class="text-sm opacity-50 mr-3">|</span>
+                                        <span class="text-sm truncate" x-text="i.name"></span>
+                                    </div>
                                 </template>
                             </div>
                         </div>
@@ -255,7 +261,7 @@ function crateDropApp() {
                         eta: cols[6] || 'TBA'
                     };
                 });
-            } catch (e) { console.error("Inventory Fetch Failed", e); }
+            } catch (e) { console.error("Inventory Fetch Fetch Failed", e); }
         },
 
         syncItem() {
@@ -337,9 +343,8 @@ function crateDropApp() {
         },
 
         get totalReceivables() {
-    // This now sums up all the 30% downpayments across all logs
-    return this.logs.reduce((sum, l) => sum + l.totalDP, 0);
-},
+            return this.logs.reduce((sum, l) => sum + l.totalDP, 0);
+        },
 
         clearDB() {
             if (confirm('DANGER: This will delete your entire logged history. Continue?')) {
@@ -349,21 +354,22 @@ function crateDropApp() {
         },
 
         exportCSV() {
-            // Updated Header: One row per SKU for easy sorting/filtering
-            let csv = "Date,Customer,Product Name,Format,Qty,Units Per Case,Total PHP,DP (30%),Balance\n";
+            // UPDATED: Now standardizes everything to "Total Units" for easy distributor ordering
+            let csv = "Date,Customer,Product Name,Total Units Ordered,Line Total PHP,DP (30%),Balance\n";
             
             this.logs.forEach(l => {
-                // We loop through each individual item in the customer's log
                 l.items.forEach(i => {
-                    const itemName = i.name.replace(/,/g, ""); // Remove commas to prevent CSV breaking
+                    const itemName = i.name.replace(/,/g, ""); 
                     const customerName = l.name.replace(/,/g, "");
-                    const format = i.isCase ? 'CASE' : 'UNIT';
+                    
+                    // Logic breakdown: If it's a case, calculate actual unit count. Otherwise, use unit qty.
+                    const totalUnits = i.isCase ? (i.qty * i.unitsPerCase) : i.qty;
+                    
                     const lineTotal = i.price * i.qty;
                     const lineDP = Math.ceil(lineTotal * 0.3);
                     const lineBalance = lineTotal - lineDP;
 
-                    // Create a dedicated row for this specific product/customer combo
-                    csv += `"${l.timestamp}","${customerName}","${itemName}","${format}",${i.qty},${i.unitsPerCase},${lineTotal},${lineDP},${lineBalance}\n`;
+                    csv += `"${l.timestamp}","${customerName}","${itemName}",${totalUnits},${lineTotal},${lineDP},${lineBalance}\n`;
                 });
             });
 
