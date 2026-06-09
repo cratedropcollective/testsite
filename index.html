@@ -15,7 +15,6 @@
 </head>
 <body class="bg-gray-50 font-sans text-slate-900" x-data="shop()" x-cloak>
 
-    <!-- Navigation -->
     <nav class="bg-black text-white p-4 sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
             <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
@@ -39,7 +38,6 @@
         </div>
     </nav>
 
-    <!-- Search & Planner Toggle -->
     <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
         <div class="py-4 px-4 container mx-auto">
             <div class="flex gap-2">
@@ -56,7 +54,6 @@
         </div>
     </div>
 
-    <!-- Allocation Planner Section -->
     <section x-show="showPlanner" 
              x-transition:enter="transition ease-out duration-300"
              x-transition:enter-start="opacity-0 -translate-y-4"
@@ -125,8 +122,7 @@
                             <p class="text-[10px] font-bold uppercase opacity-80 mb-1">Total Downpayment Required (30% DP)</p>
                             <p class="text-3xl font-black tracking-tighter">₱<span x-text="calculatedDownpayment"></span></p>
                             <p class="text-[9px] font-medium mt-2 leading-tight opacity-90">
-                                This DP is calculated based on your <strong>Target Order</strong> of 
-                                <span x-text="calcInputQty"></span> <span x-text="calcIsCase ? 'Case(s)' : 'Unit(s)'"></span>.
+                                This DP is calculated based on your <strong>Target Order</strong> of <span x-text="calcInputQty"></span> <span x-text="calcIsCase ? 'Case(s)' : 'Unit(s)'"></span>.
                             </p>
                         </div>
                         <i class="fas fa-wallet absolute -bottom-2 -right-2 text-6xl opacity-10 rotate-12"></i>
@@ -136,7 +132,6 @@
         </div>
     </section>
 
-    <!-- Product Grid -->
     <main class="container mx-auto py-6 px-2 md:px-4">
         <div x-show="isLoading" class="text-center py-12">
             <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest">Loading Drops...</p>
@@ -168,7 +163,6 @@
                         </template>
 
                         <div class="space-y-2 mb-4">
-                            <!-- FIXED: Changed calculateLiveDepositx to calculateFullPrice -->
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateFullPrice(product).toLocaleString()"></span></div>
                             <div class="text-[10px] font-bold uppercase text-slate-500">30% Downpayment:</div>
                             <div class="text-sm md:text-xl font-black text-slate-900">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
@@ -195,7 +189,6 @@
         </div>
     </main>
 
-    <!-- Cart Sidebar & Payment Modals remain same, functionality updated in script -->
     <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
@@ -228,8 +221,6 @@
             </div>
 
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                
                 <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mb-2">
                     <label class="block text-[10px] font-black uppercase text-blue-800 mb-1">Your Facebook Profile Name <span class="text-red-500">*</span></label>
                     <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 bg-white border-none rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
@@ -253,7 +244,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl flex flex-col max-h-[90vh]">
@@ -297,7 +287,7 @@
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
-            
+
             <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4 shadow-lg">
                 Send Proof to Messenger
             </button>
@@ -311,7 +301,7 @@
                 cartOpen: false,
                 paymentModalOpen: false,
                 searchQuery: '',
-                fbName: '',
+                fbName: '', // Holds reactive state for checkout form tracking
                 cart: [],
                 products: [], 
                 now: new Date().getTime(), 
@@ -323,12 +313,10 @@
                 calcIsCase: false,
 
                 async init() {
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv'; 
-                    
+                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
                     setInterval(() => {
                         this.now = new Date().getTime();
                     }, 1000);
-
                     try {
                         const response = await fetch(sheetUrl);
                         if (!response.ok) throw new Error('Network response was not ok');
@@ -347,14 +335,12 @@
 
                     const headers = lines[0].split('\t').map(h => h.trim());
                     const items = [];
-
                     for (let i = 1; i < lines.length; i++) {
                         const line = lines[i].trim();
                         if (!line) continue; 
 
                         const values = line.split('\t');
                         let product = {};
-                        
                         headers.forEach((header, index) => {
                             let val = values[index] ? values[index].trim() : '';
                             
@@ -368,7 +354,6 @@
                                 product[header] = val;
                             }
                         });
-
                         product.selectedQty = 1;
                         product.isCase = false;
                         product.justAdded = false;
@@ -381,7 +366,6 @@
                     }
                 },
 
-                // --- NEW PRICING FUNCTIONS ---
                 calculateFullPrice(product) {
                     const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     return base * (product.selectedQty || 1);
@@ -392,7 +376,6 @@
                     return base * 0.3 * (product.selectedQty || 1);
                 },
 
-                // --- COUNTDOWN LOGIC ---
                 getCountdown(deadline) {
                     if (!deadline) return null;
                     const distance = deadline - this.now;
@@ -408,7 +391,6 @@
                     return deadline && (deadline - this.now < 0);
                 },
                 
-                // --- PLANNER LOGIC ---
                 get calculatedUnits() {
                     if (!this.calcSelectedId) return 0;
                     const product = this.products.find(p => p.id == this.calcSelectedId);
@@ -432,26 +414,19 @@
                     return (basePrice * this.calcInputQty * 0.3).toLocaleString();
                 },
 
-                // --- CART CORE ---
                 get filteredProducts() {
                     return this.products
                         .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
                         .sort((a, b) => {
-                            // 1. Check if items are "Active" (Not sold out AND not expired)
                             const aActive = !a.soldOut && !this.isExpired(a.deadline);
                             const bActive = !b.soldOut && !this.isExpired(b.deadline);
 
-                            // 2. If one is active and the other isn't, put the active one first
                             if (aActive !== bActive) {
                                 return aActive ? -1 : 1;
                             }
-
-                            // 3. For two active items, sort by the closest deadline
                             if (a.deadline && b.deadline) {
                                 return a.deadline - b.deadline;
                             }
-
-                            // 4. Fallback: If an item has no deadline, keep it below those that do
                             if (a.deadline) return -1;
                             if (b.deadline) return 1;
 
@@ -478,7 +453,7 @@
                     const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
                     const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
                     if (existing) { 
-                        existing.quantity += product.selectedQty; 
+                        existing.quantity += product.selectedQty;
                     } else {
                         this.cart.push({ 
                             ...product, 
@@ -496,75 +471,36 @@
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
                 checkoutSelf() {
-                    // 1. Validation Check for Self-Checkout
                     if (!this.fbName || this.fbName.trim() === '') {
                         alert("⚠️ Please enter your Facebook Profile Name in the cart before proceeding to payment.");
                         return;
                     }
-                    
                     this.cartOpen = false;
                     this.paymentModalOpen = true;
                 },
-
                 async confirmAndRedirect() {
-                    // 1. Validation Check for Assisted Checkout
                     if (!this.fbName || this.fbName.trim() === '') {
                         alert("⚠️ Please enter your Facebook Profile Name in the cart before proceeding.");
                         return;
                     }
 
-                    // 2. Generate Order Items Summary
-                    let itemsList = "";
-                    this.cart.forEach(i => {
-                        itemsList += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
-                    });
-
-                    // 3. Prepare payload for Apps Script
-                    const orderPayload = {
-                        fbName: this.fbName.trim(), 
-                        summaryText: itemsList,
-                        depositTotal: "₱" + this.cartDepositTotal,
-                        balanceTotal: "₱" + this.cartBalanceTotal
-                    };
-
-                    let refNumber = "GENERATING...";
-                    
-                    // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-                    const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbzDnDO-aSqo8_wmVYZ9yR02ZYUDI3ORSJKxE3sfGwsaQSTlm4tK0AmIThS--LXyA2qbOg/exec"; 
-
-                    try {
-                        const response = await fetch(gasWebAppUrl, {
-                            method: "POST",
-                            body: JSON.stringify(orderPayload)
-                        });
-                        const result = await response.json();
-                        if (result.status === "success") {
-                            refNumber = result.refNum;
-                        }
-                    } catch (err) {
-                        console.error('Sheet logging failed, generating offline fallback ref', err);
-                        refNumber = "CDC-FALLBACK-" + Math.floor(1000 + Math.random() * 9000);
-                    }
-
-                    // 4. Build Final Clipboard Summary
-                    let summary = `🆔 ORDER REF: ${refNumber}\n`;
-                    summary += `👤 FB NAME: ${this.fbName.trim()}\n`; 
+                    let summary = `👤 FB NAME: ${this.fbName.trim()}\n`;
                     summary += "🛒 PRE ORDER SUMMARY\n-----------------\n";
-                    summary += itemsList;
+                    this.cart.forEach(i => {
+                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    });
                     summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
                     summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
                     summary += `STATUS: Payment Pending\n\n`;
-                    summary += `Pre-Orders are subject to country allocation.\n`;
-                    summary += `Verify status & claim slip here: cratedropcollective.github.io/slip`;
+                    summary += `Pre-Orders are subject to country allocation.`;
 
                     try {
                         await navigator.clipboard.writeText(summary);
-                        alert(`Order Recorded!\n\nReference No: ${refNumber}\n\nSummary copied to clipboard. Paste this along with your payment screenshot on Messenger.`);
+                        alert("Order summary copied to clipboard! Redirecting you to Messenger...");
                     } catch (err) {
                         console.error('Clipboard failed', err);
                     }
 
-                    // 5. Platform Detection & Redirection
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
@@ -573,8 +509,9 @@
                     } else {
                         window.open("https://m.me/cratedropcollective", "_blank");
                     }
-                }            } // End of return object
-        } // End of shop function
+                }
+            }
+        }
     </script>
 </body>
 </html>
