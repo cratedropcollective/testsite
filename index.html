@@ -290,6 +290,12 @@
                 </div>
             </div>
 
+            <div class="mt-4 mb-2">
+    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Your Facebook Profile Name <span class="text-red-500">*</span></label>
+    <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-3 bg-gray-100 border-none rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" required>
+    <p class="text-[9px] text-gray-400 mt-1 font-medium">Required so we can match your payment on Messenger.</p>
+</div>
+            
             <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4 shadow-lg">
                 Send Proof to Messenger
             </button>
@@ -303,6 +309,7 @@
                 cartOpen: false,
                 paymentModalOpen: false,
                 searchQuery: '',
+                fbName: '',
                 cart: [],
                 products: [], 
                 now: new Date().getTime(), 
@@ -491,14 +498,21 @@
                     this.paymentModalOpen = true;
                 },
                 async confirmAndRedirect() {
-    // 1. Generate Order Items Summary
+    // 1. Validation: Stop checkout if FB Name is empty
+    if (!this.fbName || this.fbName.trim() === '') {
+        alert("⚠️ Please enter your Facebook Profile Name before checking out.");
+        return; // This stops the script from proceeding
+    }
+
+    // 2. Generate Order Items Summary
     let itemsList = "";
     this.cart.forEach(i => {
         itemsList += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
     });
 
-    // Prepare payload for Google Sheet
+    // 3. Prepare payload, now including fbName
     const orderPayload = {
+        fbName: this.fbName.trim(), // <-- NEW
         summaryText: itemsList,
         depositTotal: "₱" + this.cartDepositTotal,
         balanceTotal: "₱" + this.cartBalanceTotal
@@ -507,10 +521,9 @@
     let refNumber = "GENERATING...";
     
     // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-    const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbza5_bj0fMkyUcy1G4uAf7i9iKe4gKshWG6EhfF_vfX6K128UbR4AtDtpl3SNuYkEVsSg/exec"; 
+    const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbzDnDO-aSqo8_wmVYZ9yR02ZYUDI3ORSJKxE3sfGwsaQSTlm4tK0AmIThS--LXyA2qbOg/exec"; 
 
     try {
-        // Send order to Google Sheet backend
         const response = await fetch(gasWebAppUrl, {
             method: "POST",
             body: JSON.stringify(orderPayload)
@@ -524,8 +537,9 @@
         refNumber = "CDC-FALLBACK-" + Math.floor(1000 + Math.random() * 9000);
     }
 
-    // 2. Build Final Clipboard Summary incorporating the Reference Number
+    // 4. Build Final Clipboard Summary
     let summary = `🆔 ORDER REF: ${refNumber}\n`;
+    summary += `👤 FB NAME: ${this.fbName.trim()}\n`; // Added to the text copy as well
     summary += "🛒 PRE ORDER SUMMARY\n-----------------\n";
     summary += itemsList;
     summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
@@ -536,13 +550,12 @@
 
     try {
         await navigator.clipboard.writeText(summary);
-        // Alert client so they know they have a reference number saved
         alert(`Order Recorded!\n\nReference No: ${refNumber}\n\nSummary copied to clipboard. Paste this along with your payment screenshot on Messenger.`);
     } catch (err) {
         console.error('Clipboard failed', err);
     }
 
-    // 3. Platform Detection & Redirection
+    // 5. Platform Detection & Redirection
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
