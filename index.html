@@ -228,6 +228,15 @@
             </div>
 
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
+                <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
+                
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mb-2">
+                    <label class="block text-[10px] font-black uppercase text-blue-800 mb-1">Your Facebook Profile Name <span class="text-red-500">*</span></label>
+                    <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 bg-white border-none rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    <p class="text-[8px] text-blue-600 mt-1 font-bold uppercase tracking-wider">Required to verify your payment</p>
+                </div>
+
+                <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
                 <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
                     <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
                     <div class="flex justify-between text-sm font-black text-blue-600 uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
@@ -289,12 +298,6 @@
                     <p class="text-[11px] text-gray-500 mb-4 font-medium px-4">Pre-Orders are subject to country allocation, by placing a pre-order, I, the customer, acknowledge that there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
-
-            <div class="mt-4 mb-2">
-    <label class="block text-[10px] font-black uppercase text-gray-500 mb-1">Your Facebook Profile Name <span class="text-red-500">*</span></label>
-    <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-3 bg-gray-100 border-none rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-blue-500" required>
-    <p class="text-[9px] text-gray-400 mt-1 font-medium">Required so we can match your payment on Messenger.</p>
-</div>
             
             <button @click="confirmAndRedirect()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-sm uppercase mt-4 shadow-lg">
                 Send Proof to Messenger
@@ -494,77 +497,84 @@
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
                 checkoutSelf() {
+                    // 1. Validation Check for Self-Checkout
+                    if (!this.fbName || this.fbName.trim() === '') {
+                        alert("⚠️ Please enter your Facebook Profile Name in the cart before proceeding to payment.");
+                        return;
+                    }
+                    
                     this.cartOpen = false;
                     this.paymentModalOpen = true;
                 },
+
                 async confirmAndRedirect() {
-    // 1. Validation: Stop checkout if FB Name is empty
-    if (!this.fbName || this.fbName.trim() === '') {
-        alert("⚠️ Please enter your Facebook Profile Name before checking out.");
-        return; // This stops the script from proceeding
-    }
+                    // 1. Validation Check for Assisted Checkout
+                    if (!this.fbName || this.fbName.trim() === '') {
+                        alert("⚠️ Please enter your Facebook Profile Name in the cart before proceeding.");
+                        return;
+                    }
 
-    // 2. Generate Order Items Summary
-    let itemsList = "";
-    this.cart.forEach(i => {
-        itemsList += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
-    });
+                    // 2. Generate Order Items Summary
+                    let itemsList = "";
+                    this.cart.forEach(i => {
+                        itemsList += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    });
 
-    // 3. Prepare payload, now including fbName
-    const orderPayload = {
-        fbName: this.fbName.trim(), // <-- NEW
-        summaryText: itemsList,
-        depositTotal: "₱" + this.cartDepositTotal,
-        balanceTotal: "₱" + this.cartBalanceTotal
-    };
+                    // 3. Prepare payload for Apps Script
+                    const orderPayload = {
+                        fbName: this.fbName.trim(), 
+                        summaryText: itemsList,
+                        depositTotal: "₱" + this.cartDepositTotal,
+                        balanceTotal: "₱" + this.cartBalanceTotal
+                    };
 
-    let refNumber = "GENERATING...";
-    
-    // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-    const gasWebAppUrl = "https://script.google.com/macros/s/AKfycbzDnDO-aSqo8_wmVYZ9yR02ZYUDI3ORSJKxE3sfGwsaQSTlm4tK0AmIThS--LXyA2qbOg/exec"; 
+                    let refNumber = "GENERATING...";
+                    
+                    // REPLACE WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+                    const gasWebAppUrl = "https://script.google.com/macros/s/XXXXX/exec"; 
 
-    try {
-        const response = await fetch(gasWebAppUrl, {
-            method: "POST",
-            body: JSON.stringify(orderPayload)
-        });
-        const result = await response.json();
-        if (result.status === "success") {
-            refNumber = result.refNum;
-        }
-    } catch (err) {
-        console.error('Sheet logging failed, generating offline fallback ref', err);
-        refNumber = "CDC-FALLBACK-" + Math.floor(1000 + Math.random() * 9000);
-    }
+                    try {
+                        const response = await fetch(gasWebAppUrl, {
+                            method: "POST",
+                            body: JSON.stringify(orderPayload)
+                        });
+                        const result = await response.json();
+                        if (result.status === "success") {
+                            refNumber = result.refNum;
+                        }
+                    } catch (err) {
+                        console.error('Sheet logging failed, generating offline fallback ref', err);
+                        refNumber = "CDC-FALLBACK-" + Math.floor(1000 + Math.random() * 9000);
+                    }
 
-    // 4. Build Final Clipboard Summary
-    let summary = `🆔 ORDER REF: ${refNumber}\n`;
-    summary += `👤 FB NAME: ${this.fbName.trim()}\n`; // Added to the text copy as well
-    summary += "🛒 PRE ORDER SUMMARY\n-----------------\n";
-    summary += itemsList;
-    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
-    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
-    summary += `STATUS: Payment Pending\n\n`;
-    summary += `Pre-Orders are subject to country allocation.\n`;
-    summary += `Verify status & claim slip here: cratedropcollective.github.io/slip`;
+                    // 4. Build Final Clipboard Summary
+                    let summary = `🆔 ORDER REF: ${refNumber}\n`;
+                    summary += `👤 FB NAME: ${this.fbName.trim()}\n`; 
+                    summary += "🛒 PRE ORDER SUMMARY\n-----------------\n";
+                    summary += itemsList;
+                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
+                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
+                    summary += `STATUS: Payment Pending\n\n`;
+                    summary += `Pre-Orders are subject to country allocation.\n`;
+                    summary += `Verify status & claim slip here: cratedropcollective.github.io/slip`;
 
-    try {
-        await navigator.clipboard.writeText(summary);
-        alert(`Order Recorded!\n\nReference No: ${refNumber}\n\nSummary copied to clipboard. Paste this along with your payment screenshot on Messenger.`);
-    } catch (err) {
-        console.error('Clipboard failed', err);
-    }
+                    try {
+                        await navigator.clipboard.writeText(summary);
+                        alert(`Order Recorded!\n\nReference No: ${refNumber}\n\nSummary copied to clipboard. Paste this along with your payment screenshot on Messenger.`);
+                    } catch (err) {
+                        console.error('Clipboard failed', err);
+                    }
 
-    // 5. Platform Detection & Redirection
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                    // 5. Platform Detection & Redirection
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    if (isIOS) {
-        window.location.href = "fb-messenger://user-thread/745474078647634";
-    } else {
-        window.open("https://m.me/cratedropcollective", "_blank");
-    }
-}            } // End of return object
+                    if (isIOS) {
+                        window.location.href = "fb-messenger://user-thread/745474078647634";
+                    } else {
+                        window.open("https://m.me/cratedropcollective", "_blank");
+                    }
+                }            } // End of return object
         } // End of shop function
     </script>
 </body>
