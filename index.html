@@ -228,12 +228,11 @@
             </div>
 
             <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                <div class="mt-6 pt-6 border-t space-y-4" x-show="cart.length > 0">
-                
-                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 mb-2">
+                <div class="bg-blue-50 p-3.5 rounded-xl border border-blue-100 shadow-sm">
                     <label class="block text-[10px] font-black uppercase text-blue-800 mb-1">Your Facebook Profile Name <span class="text-red-500">*</span></label>
-                    <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 bg-white border-none rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-                    <p class="text-[8px] text-blue-600 mt-1 font-bold uppercase tracking-wider">Required to verify your payment</p>
+                    <input type="text" x-model="fbName" placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 bg-white border border-blue-200 rounded-lg text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
+                    <p class="text-[8px] text-blue-600 mt-1 font-bold uppercase tracking-wider">Required to verify your transaction and map your claim slips</p>
+                </div>
 
                 <div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
                     <div class="flex justify-between text-[10px] font-bold text-gray-500 uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
