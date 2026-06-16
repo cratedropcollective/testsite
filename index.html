@@ -150,11 +150,19 @@
       mix-blend-mode: overlay;
       pointer-events: none;
     }
-    .booster-logo-img { width: 80%; max-width: 110px; z-index: 2; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7)); pointer-events: none; }
+    .booster-logo-img {
+      width: 82%;
+      max-width: 118px;
+      height: auto;
+      display: block;
+      z-index: 2;
+      position: relative;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      pointer-events: none;
+    }
 
     /* Tear animation */
     .booster-wrap.tearing .booster-pack-el { animation: packShake 0.09s infinite; filter: brightness(1.4) saturate(1.5); }
-    .booster-wrap.burst .booster-pack-el { transform: scale(1.08); filter: brightness(2); opacity: 0; transition: all 0.25s; }
 
     /* Particle burst container */
     .burst-particles { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
@@ -434,9 +442,7 @@
               <img
                 src="https://www.image2url.com/r2/default/images/1781591852305-4a685090-2274-47d0-83af-16ea98860a4a.png"
                 alt="CDC Logo" class="booster-logo-img"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
               >
-              <div style="display:none; font-size:22px; font-weight:900; letter-spacing:4px; color:#fff; flex-direction:column; align-items:center;">CDC</div>
             </div>
           </div>
           <div class="pack-stage-label">Tap to open</div>
@@ -485,7 +491,7 @@
           <div class="lock-pack-wrap" id="lock-pack-wrap">
             <div class="holo-overlay"></div>
             <div class="lock-pack-inner" id="lock-pack-inner">
-              <div class="lock-pack-badge">LIMITER ACTIVE</div>
+              <div class="lock-pack-badge">LIMITED EDITION</div>
               <div class="lock-pack-logo">CDC</div>
               <div class="lock-pack-status" id="lock-status-badge">Sealed</div>
             </div>
@@ -550,98 +556,103 @@
       const packEl = document.getElementById('booster-pack-el');
       const pullBtn = document.getElementById('pull-btn');
       const pullResult = document.getElementById('pull-result');
-      const resultLabel = document.getElementById('result-label');
       const revealCard = document.getElementById('reveal-card');
       const revealRarity = document.getElementById('reveal-rarity');
       const revealCodeText = document.getElementById('reveal-code-text');
 
-      // Reset card
-      revealCard.classList.remove('visible');
-      packEl.style.opacity = '1';
-      packEl.style.transform = '';
-      packEl.style.transition = '';
+      try {
+        // ── RESET: fully restore pack to visible resting state ──
+        revealCard.classList.remove('visible');
+        wrap.classList.remove('tearing');
 
-      // Increment
-      packsOpened++;
-      document.getElementById('packs-opened-count').textContent = packsOpened;
+        // Kill ALL inline styles on packEl so CSS animation takes over cleanly
+        packEl.removeAttribute('style');
+        void packEl.offsetWidth; // force reflow
 
-      pullBtn.disabled = true;
-      pullBtn.textContent = 'Ripping foil...';
+        // Restart the float animation
+        packEl.style.animation = 'none';
+        void packEl.offsetWidth;
+        packEl.style.animation = '';
 
-      // Loading state
-      pullResult.className = 'pull-result state-loading';
-      resultLabel.textContent = 'Extracting...';
-      pullResult.innerHTML = '<div class="result-label" style="color:var(--primary)">Extracting...</div>';
+        // ── COUNTER ──
+        packsOpened++;
+        document.getElementById('packs-opened-count').textContent = packsOpened;
 
-      // Tearing
-      wrap.classList.add('tearing');
-      await sleep(1400);
-      wrap.classList.remove('tearing');
+        pullBtn.disabled = true;
+        pullBtn.textContent = 'Ripping foil...';
 
-      // RNG
-      const roll = Math.random() * 100;
-      let rarity, code, color, stateClass;
+        pullResult.className = 'pull-result state-loading';
+        pullResult.innerHTML = '<div class="result-label" style="color:var(--primary)">Extracting...</div>';
 
-      if (roll < 0.1) {
-        rarity = 'LEGENDARY'; code = 'JSX8047'; color = '#ffb703'; stateClass = 'state-legendary';
-      } else if (roll < 1.1) {
-        rarity = 'EPIC'; code = 'YRH9186'; color = '#d946ef'; stateClass = 'state-epic';
-      } else if (roll < 6.1) {
-        rarity = 'RARE'; code = '782CUXR'; color = '#00f5ff'; stateClass = 'state-rare';
-      } else {
-        rarity = 'COMMON'; code = null; color = 'rgba(255,255,255,0.3)'; stateClass = 'state-dud';
+        // ── TEARING SHAKE ──
+        wrap.classList.add('tearing');
+        await sleep(1400);
+        wrap.classList.remove('tearing');
+
+        // ── RNG ──
+        const roll = Math.random() * 100;
+        let rarity, code, color, stateClass;
+        if (roll < 0.1)       { rarity='LEGENDARY'; code='JSX8047'; color='#ffb703'; stateClass='state-legendary'; }
+        else if (roll < 1.1)  { rarity='EPIC';      code='YRH9186'; color='#d946ef'; stateClass='state-epic'; }
+        else if (roll < 6.1)  { rarity='RARE';      code='782CUXR'; color='#00f5ff'; stateClass='state-rare'; }
+        else                  { rarity='COMMON';    code=null;      color='rgba(255,255,255,0.3)'; stateClass='state-dud'; }
+
+        // ── BURST: animate pack out via inline JS only ──
+        spawnParticles(color);
+        if (rarity !== 'COMMON') flashScreen(color);
+
+        packEl.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out, filter 0.25s ease-out';
+        packEl.style.transform = 'scale(1.1)';
+        packEl.style.filter = 'brightness(2.5)';
+        packEl.style.opacity = '0';
+
+        await sleep(280);
+
+        // ── REVEAL CARD (non-common only) ──
+        if (rarity !== 'COMMON') {
+          revealRarity.textContent = rarity;
+          revealRarity.style.color = color;
+          revealCodeText.textContent = code;
+          revealCodeText.style.color = color;
+          revealCard.style.background = `linear-gradient(135deg, #1a1c29 0%, ${color}20 100%)`;
+          revealCard.style.border = `2px solid ${color}60`;
+          revealCard.style.boxShadow = `0 0 30px ${color}40`;
+          revealCard.classList.add('visible');
+        }
+
+        // ── RESULT PANEL ──
+        pullResult.className = `pull-result ${stateClass}`;
+
+        if (rarity === 'COMMON') {
+          pullResult.innerHTML = `
+            <div class="result-label" style="color:rgba(255,255,255,0.35)">DUD PULL</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">No code this time — better luck next pack.</div>
+          `;
+        } else {
+          codesFound++;
+          document.getElementById('codes-found-count').textContent = codesFound;
+          const btnStyle = rarity==='LEGENDARY' ? 'legendary-style' : rarity==='EPIC' ? 'epic-style' : '';
+          pullResult.innerHTML = `
+            <div class="result-label" style="color:${color}">${rarity} PULL!</div>
+            <div class="result-code" style="color:${color}" onclick="copyToUnlocker('${code}')">${code}</div>
+            <div class="result-hint">Tap code to paste into terminal below</div>
+            <button class="copy-btn ${btnStyle}" onclick="copyToUnlocker('${code}')">↓ Send to Terminal</button>
+          `;
+          if (rarity==='LEGENDARY' || rarity==='EPIC') fireConfetti(color);
+          setStep(2);
+          document.getElementById('tip-banner').classList.add('hidden');
+        }
+
+        pullBtn.disabled = false;
+        pullBtn.textContent = 'Crack Another';
+
+      } catch(e) {
+        console.error('Pull error:', e);
+        pullBtn.disabled = false;
+        pullBtn.textContent = 'Crack Another';
+      } finally {
+        isPulling = false;
       }
-
-      // Burst animation
-      wrap.classList.add('burst');
-      spawnParticles(color);
-      if (rarity !== 'COMMON') flashScreen(color);
-
-      await sleep(260);
-      wrap.classList.remove('burst');
-      packEl.style.opacity = '0';
-
-      // Show reveal card
-      if (rarity !== 'COMMON') {
-        revealRarity.textContent = rarity;
-        revealRarity.style.color = color;
-        revealCodeText.textContent = code;
-        revealCodeText.style.color = color;
-        revealCard.style.background = `linear-gradient(135deg, #1a1c29 0%, ${color}20 100%)`;
-        revealCard.style.border = `2px solid ${color}60`;
-        revealCard.style.boxShadow = `0 0 30px ${color}40`;
-        revealCard.classList.add('visible');
-      }
-
-      // Result panel
-      pullResult.className = `pull-result ${stateClass}`;
-
-      if (rarity === 'COMMON') {
-        pullResult.innerHTML = `
-          <div class="result-label" style="color:rgba(255,255,255,0.35)">DUD PULL</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">No code this time — better luck next pack.</div>
-        `;
-      } else {
-        codesFound++;
-        document.getElementById('codes-found-count').textContent = codesFound;
-
-        const btnStyle = rarity === 'LEGENDARY' ? 'legendary-style' : rarity === 'EPIC' ? 'epic-style' : '';
-        pullResult.innerHTML = `
-          <div class="result-label" style="color:${color}">${rarity} PULL!</div>
-          <div class="result-code" style="color:${color}" onclick="copyToUnlocker('${code}')">${code}</div>
-          <div class="result-hint">Tap code to paste into terminal below</div>
-          <button class="copy-btn ${btnStyle}" onclick="copyToUnlocker('${code}')">
-            ↓ Send to Terminal
-          </button>
-        `;
-        if (rarity === 'LEGENDARY' || rarity === 'EPIC') fireConfetti(color);
-        setStep(2);
-        document.getElementById('tip-banner').classList.add('hidden');
-      }
-
-      pullBtn.disabled = false;
-      pullBtn.textContent = 'Crack Another';
-      isPulling = false;
     }
 
     function copyToUnlocker(code) {
