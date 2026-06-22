@@ -3,972 +3,858 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crate Drop — Encrypted Pack</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Crate Drop Collective | Pre-Order Card Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #00f5ff;
-      --secret-rare: #ff2d6b;
-      --ultra-rare: #d946ef;
-      --super-rare: #00f5ff;
-      --bg: #06070d;
-      --surface: #0e1018;
-      --surface2: #13161f;
-      --border: rgba(255,255,255,0.07);
-      --error: #ff3055;
-    }
+    /* ── RESET & BASE ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    :root {
+      --blue:   #2563EB;
+      --red:    #DC2626;
+      --gold:   #F59E0B;
+      --dark:   #0A0C10;
+      --panel:  #111827;
+      --border: #1F2937;
+      --text:   #F1F5F9;
+      --muted:  #64748B;
+    }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg);
-      color: #fff;
+      font-family: 'Barlow', sans-serif;
+      background: var(--dark);
+      color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
+      padding: 2rem 1rem 4rem;
     }
 
-    /* ── NAV ── */
-    nav {
-      position: sticky; top: 0; z-index: 200;
-      background: rgba(6,7,13,0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
-      display: flex; align-items: center; justify-content: space-between;
+    /* ── HEADER ── */
+    header {
+      max-width: 900px;
+      margin: 0 auto 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
     }
-    .nav-logo { display: flex; flex-direction: column; line-height: 1; text-decoration: none; }
-    .nav-logo span:first-child { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; color: #fff; }
-    .nav-logo span:last-child { font-size: 9px; font-weight: 700; letter-spacing: 4px; color: #3b82f6; }
-    .nav-links { display: flex; gap: 4px; }
-    .nav-links a {
-      font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
-      color: rgba(255,255,255,0.45); text-decoration: none;
-      padding: 6px 14px; border-radius: 20px; transition: all 0.2s;
+    header img.logo {
+      height: 64px;
+      width: auto;
+      flex-shrink: 0;
     }
-    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.08); }
-    .nav-links a.active { color: #fff; background: rgba(255,255,255,0.12); }
-
-    /* ── CONFETTI ── */
-    #confetti-canvas {
-      position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    .header-text h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: #fff;
     }
-
-    /* ── LAYOUT ── */
-    .page { max-width: 960px; margin: 0 auto; padding: 48px 20px 80px; }
-
-    .hero { text-align: center; margin-bottom: 60px; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-      color: var(--primary); border: 1px solid rgba(0,245,255,0.2);
-      background: rgba(0,245,255,0.06); padding: 6px 16px; border-radius: 20px;
-      margin-bottom: 20px;
-    }
-    .hero-eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); animation: blink 1.4s ease-in-out infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .hero h1 { font-size: clamp(28px,5vw,48px); font-weight: 900; letter-spacing: -1px; line-height: 1.1; }
-    .hero h1 span { background: linear-gradient(90deg, #fff 40%, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero p { margin-top: 14px; font-size: 14px; color: rgba(255,255,255,0.4); max-width: 420px; margin-inline: auto; line-height: 1.7; }
-
-    /* ── STEP INDICATOR ── */
-    .steps {
-      display: flex; align-items: center; justify-content: center;
-      gap: 0; margin-bottom: 52px;
-    }
-    .step-node {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      position: relative; z-index: 1;
-    }
-    .step-dot {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.12);
-      background: var(--surface); color: rgba(255,255,255,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; transition: all 0.4s;
-    }
-    .step-dot.active { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 16px rgba(0,245,255,0.25); }
-    .step-dot.done { border-color: var(--primary); background: var(--primary); color: #04060a; }
-    .step-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.25); white-space: nowrap; transition: color 0.4s; }
-    .step-label.active { color: var(--primary); }
-    .step-label.done { color: rgba(0,245,255,0.6); }
-    .step-connector { width: 80px; height: 1px; background: rgba(255,255,255,0.08); flex-shrink: 0; position: relative; top: -12px; }
-    .step-connector.done { background: var(--primary); }
-    @media(max-width:480px){ .step-connector { width: 32px; } }
-
-    /* ── PANELS ── */
-    .panel {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 36px 28px;
-      transition: opacity 0.5s, transform 0.5s;
-    }
-    .panel.hidden-panel { opacity: 0; pointer-events: none; position: absolute; transform: translateY(12px); }
-    .panel-wrapper { position: relative; }
-    .panel h2 { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 28px; }
-
-    /* ── BOOSTER SECTION ── */
-    .booster-layout { display: flex; gap: 40px; align-items: flex-start; }
-    @media(max-width:680px){
-      .booster-layout { flex-direction: column; align-items: stretch; }
-      .pack-stage { width: 100% !important; max-width: 100% !important; }
-      .pack-stage-btn { max-width: 100% !important; }
+    .header-text h1 span.blue { color: var(--blue); }
+    .header-text h1 span.red  { color: var(--red); }
+    .header-text h1 span.gold { color: var(--gold); }
+    .header-text p {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2px;
     }
 
-    /* Pack visual */
-    .pack-stage { width: 200px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .pack-stage-btn { width: 100%; max-width: 200px; }
-
-    .booster-wrap {
-      width: 160px; height: 240px;
-      perspective: 800px;
-      position: relative;
-      cursor: pointer;
+    /* ── CONTROLS ── */
+    .controls {
+      max-width: 900px;
+      margin: 0 auto 2.5rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--blue);
+      border-radius: 1.5rem;
+      padding: 2rem;
     }
-
-    .booster-pack-el {
-      width: 100%; height: 100%;
-      background: linear-gradient(135deg, #3a3e52 0%, #8a8fa8 48%, #2e3248 100%);
-      border-radius: 6px;
-      position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.25);
-      animation: floatPack 3.5s ease-in-out infinite;
-      transition: transform 0.4s, opacity 0.4s, filter 0.3s;
-      border-top: 14px solid #1a1c28;
-      border-bottom: 14px solid #1a1c28;
-      transform-style: preserve-3d;
-      will-change: transform;
+    .controls h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 1.5rem;
     }
-    .booster-pack-el::before, .booster-pack-el::after {
-      content: ''; position: absolute; left: 0; right: 0; height: 14px;
-      background: repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(255,255,255,0.08) 3px, rgba(255,255,255,0.08) 5px);
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
     }
-    .booster-pack-el::before { top: -14px; }
-    .booster-pack-el::after { bottom: -14px; }
-
-    .booster-foil {
-      position: absolute; inset: 0; border-radius: 4px;
-      background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.7) 25%, transparent 30%);
-      background-size: 200% 100%;
-      animation: foilShine 2.8s linear infinite;
-      mix-blend-mode: overlay;
-      pointer-events: none;
+    @media (max-width: 600px) {
+      .field-grid { grid-template-columns: 1fr; }
     }
-    .booster-logo-img {
-      width: 82%;
-      max-width: 118px;
-      height: auto;
+    .field-grid.wide { grid-template-columns: 1fr; }
+    label {
       display: block;
-      z-index: 2;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      background: #0d1117;
+      border: 1.5px solid var(--border);
+      border-radius: 0.75rem;
+      color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 0.8rem 1rem;
+      appearance: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    select:focus, input:focus { border-color: var(--blue); }
+    select option { background: #0d1117; }
+
+    .status-bar {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .status-bar.loading { background: rgba(37,99,235,0.12); color: var(--blue); }
+    .status-bar.success { background: rgba(16,185,129,0.1);  color: #10b981; }
+    .status-bar.error   { background: rgba(220,38,38,0.12);  color: var(--red); }
+
+    /* ── PREVIEW & DOWNLOAD ── */
+    .action-row {
+      max-width: 900px;
+      margin: 0 auto 2rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      flex: 1;
+      min-width: 160px;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: 1rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-download {
+      background: var(--gold);
+      color: #000;
+    }
+    .btn-download:hover:not(:disabled) { background: #d97706; transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── LIVE PREVIEW ── */
+    .preview-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      display: none;
+    }
+    .preview-wrap.visible { display: block; }
+    .preview-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .preview-scroll {
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    /* ── THE CARD (1080×1080 target, scaled for display) ── */
+    #preorder-card {
+      width: 1080px;
+      min-height: 1080px;
+      background: #0A0C10;
       position: relative;
-      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.7));
+      overflow: hidden;
+      transform-origin: top left;
+      transform: scale(0.5);
+      /* visual: rendered at half size for preview */
+      margin-bottom: -540px; /* compensate for scale shrink */
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+
+    /* Diagonal stripe accent */
+    .card-stripe {
+      position: absolute;
+      top: 0; right: 0;
+      width: 420px;
+      height: 100%;
+      background: linear-gradient(135deg, transparent 48%, #12192A 48%);
       pointer-events: none;
     }
 
-    /* Tear animation */
-    .booster-wrap.tearing .booster-pack-el { animation: packShake 0.09s infinite; filter: brightness(1.4) saturate(1.5); }
+    /* Top colour bar */
+    .card-topbar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      height: 14px;
+    }
+    .card-topbar span:nth-child(1) { flex: 1; background: var(--blue); }
+    .card-topbar span:nth-child(2) { flex: 1; background: var(--red); }
+    .card-topbar span:nth-child(3) { flex: 1; background: var(--gold); }
 
-    /* Particle burst container */
-    .burst-particles { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-    .particle {
+    /* Header row inside card */
+    .card-header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 44px 60px 0;
+    }
+    .card-logo {
+      height: 110px;
+      width: auto;
+    }
+    .card-badge {
+      background: var(--red);
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-style: italic;
+      font-size: 1.25rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 1.2rem;
+      border-radius: 0.4rem;
+      margin-top: 12px;
+    }
+
+    /* Item name */
+    .card-name {
+      position: relative;
+      z-index: 2;
+      padding: 48px 60px 0;
+    }
+    .card-name .eyebrow {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .card-name h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 5.5rem;
+      font-weight: 900;
+      font-style: italic;
+      line-height: 0.9;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      max-width: 820px;
+      word-break: break-word;
+    }
+
+    /* Price tiles */
+    .card-prices {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      padding: 52px 60px 0;
+    }
+    .price-tile {
+      border-radius: 1rem;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .price-tile.blue { background: rgba(37,99,235,0.15); border: 2px solid var(--blue); }
+    .price-tile.red  { background: rgba(220,38,38,0.12); border: 2px solid var(--red); }
+    .price-tile.gold { background: rgba(245,158,11,0.12); border: 2px solid var(--gold); }
+    .price-tile .tile-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .price-tile.blue .tile-label { color: var(--blue); }
+    .price-tile.red  .tile-label { color: var(--red); }
+    .price-tile.gold .tile-label { color: var(--gold); }
+    .price-tile .tile-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 3.8rem;
+      font-weight: 900;
+      font-style: italic;
+      line-height: 1;
+      color: #fff;
+    }
+    .price-tile .tile-sub {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Divider */
+    .card-divider {
+      position: relative;
+      z-index: 2;
+      margin: 44px 60px 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--red), var(--gold));
+      border-radius: 2px;
+      opacity: 0.5;
+    }
+
+    /* Meta row: deadline + ETA */
+    .card-meta {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 48px;
+      padding: 40px 60px 0;
+    }
+    .meta-item .meta-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .meta-item .meta-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #fff;
+    }
+    .meta-item .meta-value.gold-accent { color: var(--gold); }
+
+    /* Footer */
+    .card-footer {
+      position: relative;
+      z-index: 2;
+      padding: 48px 60px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .footer-disclaimer {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      max-width: 580px;
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .footer-handle {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--blue);
+      text-align: right;
+    }
+
+    /* Bottom bar */
+    .card-bottombar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      height: 14px;
+      margin-top: 48px;
+    }
+    .card-bottombar span:nth-child(1) { flex: 1; background: var(--gold); }
+    .card-bottombar span:nth-child(2) { flex: 1; background: var(--red); }
+    .card-bottombar span:nth-child(3) { flex: 1; background: var(--blue); }
+
+    /* BG decoration circles */
+    .bg-circle {
       position: absolute;
       border-radius: 50%;
-      animation: particleBurst 0.8s ease-out forwards;
-      opacity: 0;
-    }
-    @keyframes particleBurst {
-      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+      pointer-events: none;
+      z-index: 1;
     }
 
-    /* Reveal card */
-    .reveal-card {
-      position: absolute; inset: 8px;
-      border-radius: 10px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-      opacity: 0; transform: scale(0.85) translateY(8px);
-      transition: opacity 0.5s 0.2s, transform 0.6s 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      z-index: 5; pointer-events: none;
-    }
-    .reveal-card.visible { opacity: 1; transform: scale(1) translateY(0); }
-    .reveal-card-rarity { font-size: 11px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
-    .reveal-card-code { font-family: monospace; font-size: 16px; font-weight: 700; letter-spacing: 3px; }
-
-    /* Stats & results side */
-    .booster-results { flex: 1; display: flex; flex-direction: column; gap: 20px; }
-
-    .counter-row { display: flex; gap: 12px; }
-    .counter-chip {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 12px 16px;
-      display: flex; flex-direction: column; gap: 2px; flex: 1;
-    }
-    .counter-chip .val { font-size: 22px; font-weight: 900; color: #fff; }
-    .counter-chip .lbl { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.3); }
-
-    /* Pull result */
-    .pull-result {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px; min-height: 120px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; text-align: center;
-      transition: border-color 0.4s, box-shadow 0.4s;
-    }
-    .pull-result .result-label { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
-    .pull-result .result-code { font-family: monospace; font-size: 24px; font-weight: 900; letter-spacing: 4px; cursor: pointer; user-select: all; }
-    .pull-result .result-hint { font-size: 10px; color: rgba(255,255,255,0.35); }
-
-    .pull-result.state-idle .result-label { color: rgba(255,255,255,0.2); }
-    .pull-result.state-loading .result-label { color: var(--primary); animation: pulseText 1s ease-in-out infinite; }
-    @keyframes pulseText { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .pull-result.state-dud .result-label { color: rgba(255,255,255,0.35); }
-    .pull-result.state-super-rare { border-color: rgba(0,245,255,0.4); box-shadow: 0 0 20px rgba(0,245,255,0.1); }
-    .pull-result.state-ultra-rare { border-color: rgba(217,70,239,0.5); box-shadow: 0 0 28px rgba(217,70,239,0.18); }
-    .pull-result.state-secret-rare { border-color: rgba(255,45,107,0.6); box-shadow: 0 0 35px rgba(255,45,107,0.25); animation: secretPulse 1.8s ease-in-out infinite; }
-    @keyframes secretPulse { 0%,100%{box-shadow:0 0 35px rgba(255,45,107,0.25)} 50%{box-shadow:0 0 55px rgba(255,45,107,0.5)} }
-
-    /* Rarity flash */
-    .rarity-flash {
-      position: fixed; inset: 0; z-index: 500; pointer-events: none;
-      opacity: 0; transition: opacity 0.1s;
-    }
-    .rarity-flash.fire { opacity: 1; animation: flashOut 0.5s forwards; }
-    @keyframes flashOut { 0%{opacity:0.6} 100%{opacity:0} }
-
-    /* Copy-to-terminal button */
-    .copy-btn {
-      background: rgba(0,245,255,0.1); border: 1px solid rgba(0,245,255,0.25);
-      color: var(--primary); border-radius: 8px; padding: 9px 18px;
-      font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
-    }
-    .copy-btn:hover { background: rgba(0,245,255,0.18); }
-    .copy-btn.ultra-rare-style { border-color: rgba(217,70,239,0.35); color: var(--ultra-rare); background: rgba(217,70,239,0.08); }
-    .copy-btn.ultra-rare-style:hover { background: rgba(217,70,239,0.16); }
-    .copy-btn.secret-rare-style { border-color: rgba(255,45,107,0.4); color: var(--secret-rare); background: rgba(255,45,107,0.08); }
-    .copy-btn.secret-rare-style:hover { background: rgba(255,45,107,0.16); }
-
-    .pull-cta {
-      background: linear-gradient(135deg, rgba(0,245,255,0.9), rgba(0,191,255,0.9));
-      color: #03080f; border: none; border-radius: 12px; padding: 15px 24px;
-      font-size: 13px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
-      cursor: pointer; width: 100%; transition: all 0.25s;
-      box-shadow: 0 4px 20px rgba(0,245,255,0.2);
-    }
-    .pull-cta:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 6px 28px rgba(0,245,255,0.35); }
-    .pull-cta:active { transform: translateY(1px); }
-    .pull-cta:disabled { background: #1a1d2a; color: #3a3e52; box-shadow: none; cursor: not-allowed; transform: none; filter: none; }
-
-    /* ── DIVIDER ── */
-    .section-divider { display: flex; align-items: center; gap: 16px; margin: 36px 0; }
-    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .section-divider span { font-size: 10px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.2); text-transform: uppercase; white-space: nowrap; }
-
-    /* ── UNLOCKER SECTION ── */
-    .unlocker-layout { display: flex; gap: 40px; align-items: flex-start; }
-    @media(max-width:680px){ .unlocker-layout { flex-direction: column-reverse; align-items: center; } }
-
-    /* CDC Pack visual */
-    .lock-pack-stage { width: 180px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-    .lock-pack-wrap {
-      width: 160px; height: 220px;
-      background: linear-gradient(145deg, #151726 0%, #0a0b12 50%, #1e2238 100%);
-      border-radius: 6px; overflow: hidden; position: relative;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.06);
-      animation: floatPack 4s ease-in-out infinite;
-      border-top: 12px solid #0d0f1a; border-bottom: 12px solid #0d0f1a;
-      transition: all 0.5s;
-    }
-    .lock-pack-wrap::before, .lock-pack-wrap::after {
-      content: ''; position: absolute; left: 0; right: 0; height: 12px;
-      background: repeating-linear-gradient(90deg, #111 0, #111 2px, #1d1f2a 2px, #1d1f2a 5px);
-      z-index: 10;
-    }
-    .lock-pack-wrap::before { top: -12px; }
-    .lock-pack-wrap::after { bottom: -12px; }
-
-    .holo-overlay {
-      position: absolute; inset: 0; z-index: 3;
-      background: linear-gradient(115deg, transparent 25%, rgba(0,245,255,0.08) 35%, rgba(217,70,239,0.08) 45%, transparent 55%);
-      background-size: 300% 300%;
-      animation: holoStream 3.5s ease-in-out infinite;
-    }
-    .lock-pack-inner {
-      position: absolute; inset: 8px; border: 1px solid rgba(0,245,255,0.15);
-      border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-      z-index: 4;
-    }
-    .lock-pack-badge {
-      font-size: 11px; font-weight: 900; letter-spacing: 5px; color: rgba(0,245,255,0.4);
-      font-family: monospace;
-    }
-    .lock-pack-logo { font-size: 28px; font-weight: 900; letter-spacing: 6px; color: #fff; text-shadow: 0 0 12px rgba(0,245,255,0.5); border-top: 2px solid #fff; border-bottom: 2px solid #fff; padding: 4px 10px; }
-    .lock-pack-status { font-size: 9px; letter-spacing: 2px; color: rgba(255,255,255,0.25); text-transform: uppercase; font-family: monospace; }
-    .lock-pack-glow { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); width: 120px; height: 16px; background: radial-gradient(ellipse, rgba(0,245,255,0.35) 0%, transparent 70%); animation: glowPulse 3s ease-in-out infinite; }
-
-    .lock-pack-wrap.unlocking { animation: packOverdrive 0.12s infinite; box-shadow: 0 0 50px var(--primary); }
-    .lock-pack-wrap.error-shake { animation: packOverdrive 0.2s 3; box-shadow: 0 0 40px var(--error); }
-    .lock-pack-wrap.success-burst { transform: scale(1.05); filter: brightness(2.5) saturate(2); opacity: 0; transition: all 0.3s; }
-
-    /* Unlocker form side */
-    .unlocker-form { flex: 1; display: flex; flex-direction: column; gap: 16px; }
-    .form-label { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 4px; }
-
-    input[type="text"] {
-      width: 100%; background: #08090f; border: 1px solid rgba(255,255,255,0.1);
-      color: var(--primary); padding: 16px 20px; font-size: 18px; font-family: monospace;
-      text-align: center; text-transform: uppercase; border-radius: 10px;
-      outline: none; letter-spacing: 4px; transition: all 0.3s;
-    }
-    input[type="text"]:focus { border-color: rgba(0,245,255,0.4); box-shadow: 0 0 24px rgba(0,245,255,0.12); background: #0c0e17; }
-    input[type="text"].has-value { border-color: rgba(0,245,255,0.25); }
-
-    .unlock-cta {
-      background: linear-gradient(135deg, #1a1e38, #0e1020);
-      border: 1px solid rgba(0,245,255,0.3);
-      color: var(--primary); border-radius: 12px; padding: 15px 24px;
-      font-size: 13px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
-      cursor: pointer; width: 100%; transition: all 0.25s;
-    }
-    .unlock-cta:hover { background: rgba(0,245,255,0.06); border-color: rgba(0,245,255,0.5); box-shadow: 0 0 20px rgba(0,245,255,0.1); }
-    .unlock-cta:disabled { border-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.2); cursor: not-allowed; }
-
-    .status-line { font-size: 12px; font-family: monospace; color: rgba(255,255,255,0.3); min-height: 20px; transition: color 0.3s; }
-    .status-line.error { color: var(--error); }
-    .status-line.success { color: #22c55e; }
-    .status-line.loading { color: var(--primary); }
-
-    /* ── REWARD REVEAL ── */
-    .reward-reveal {
+    /* ── LOADING OVERLAY ── */
+    #loading {
       display: none;
-      flex-direction: column; align-items: center; gap: 20px;
-      text-align: center; padding: 20px 0;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,12,16,0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
     }
-    .reward-reveal.visible { display: flex; animation: rewardIn 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
-    @keyframes rewardIn { 0%{opacity:0;transform:scale(0.7) rotateX(-20deg);filter:brightness(3)} 100%{opacity:1;transform:scale(1) rotateX(0);filter:brightness(1)} }
-
-    .reward-card {
-      background: linear-gradient(140deg, #1e2240, #0f1120);
-      border: 2px solid var(--accent); border-radius: 18px;
-      padding: 28px; width: 100%; max-width: 340px;
-      box-shadow: 0 0 50px rgba(255,183,3,0.15); position: relative; overflow: hidden;
+    #loading.show { display: flex; }
+    #loading p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      color: var(--gold);
     }
-    .reward-card::before { content: 'UNLOCKED'; position: absolute; top: 14px; right: 14px; background: var(--accent); color: #03080f; font-size: 8px; font-weight: 900; padding: 3px 10px; border-radius: 20px; letter-spacing: 1.5px; }
-    .reward-img { max-width: 100%; height: 200px; object-fit: contain; border-radius: 10px; background: rgba(0,0,0,0.4); padding: 10px; border: 1px solid rgba(255,183,3,0.15); display: none; }
-    .reward-txt { font-size: 28px; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,183,3,0.4); display: none; }
-    .reward-subtext { font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.6; }
-    .reset-btn { background: transparent; border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); border-radius: 10px; padding: 12px 28px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-    .reset-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
-
-    /* ── DISCLAIMER ── */
-    .disclaimer { font-size: 9.5px; color: rgba(255,255,255,0.2); line-height: 1.7; font-family: sans-serif; text-align: center; margin-top: 8px; max-width: 280px; }
-
-    /* ── KEYFRAMES ── */
-    @keyframes floatPack { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-    @keyframes foilShine { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    @keyframes packShake { 0%,100%{transform:translateX(0) rotate(0)} 25%{transform:translateX(-5px) rotate(-3deg)} 75%{transform:translateX(5px) rotate(3deg)} }
-    @keyframes packOverdrive { 0%,100%{transform:translateX(0) scale(1.02)} 20%{transform:translateX(-3px) rotate(-1.5deg) scale(1.04)} 40%{transform:translateX(3px) rotate(1.5deg) scale(1.05)} 60%{transform:translateX(-4px) rotate(-1deg) scale(1.04)} 80%{transform:translateX(4px) rotate(2deg) scale(1.05)} }
-    @keyframes holoStream { 0%{background-position:0% 0%} 100%{background-position:100% 100%} }
-    @keyframes glowPulse { 0%,100%{width:110px;opacity:0.6} 50%{width:150px;opacity:1} }
-    @keyframes float { 0%,100%{transform:translateY(0) rotate(0)} 50%{transform:translateY(-10px) rotate(0.5deg)} }
-
-    .tip-banner {
-      background: rgba(0,245,255,0.05); border: 1px solid rgba(0,245,255,0.1);
-      border-radius: 10px; padding: 12px 16px;
-      display: flex; align-items: center; gap: 10px;
-      font-size: 12px; color: rgba(0,245,255,0.7); line-height: 1.5;
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
     }
-    .tip-banner span { font-size: 14px; }
-    .tip-banner.hidden { display: none; }
-
-    .warn-banner {
-      background: rgba(255,160,0,0.06); border: 1px solid rgba(255,160,0,0.3);
-      border-radius: 10px; padding: 12px 16px;
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 12px; color: rgba(255,190,50,0.9); line-height: 1.5;
-      animation: warnPulse 2s ease-in-out infinite;
-    }
-    @keyframes warnPulse { 0%,100%{border-color:rgba(255,160,0,0.3)} 50%{border-color:rgba(255,160,0,0.7)} }
-    .warn-banner span { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-    .warn-banner.hidden { display: none; }
-
-    /* Availability panel */
-    .avail-panel {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 14px; padding: 16px 18px;
-    }
-    .avail-title { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 12px; }
-    .avail-rows { display: flex; flex-direction: column; gap: 9px; }
-    .avail-row { display: flex; align-items: center; gap: 10px; }
-    .avail-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .avail-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.55); flex: 1; letter-spacing: 0.5px; }
-    .avail-count {
-      font-size: 12px; font-weight: 900; font-family: monospace;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-      padding: 2px 10px; border-radius: 20px; color: rgba(255,255,255,0.7);
-      min-width: 36px; text-align: center;
-    }
-    .avail-count.zero { color: rgba(255,255,255,0.2); }
-    .avail-count.loading { color: rgba(255,255,255,0.2); }
-
-    .hidden { display: none !important; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <canvas id="confetti-canvas"></canvas>
-  <div id="rarity-flash" class="rarity-flash"></div>
+<!-- HEADER -->
+<header>
+  <img class="logo" src="https://i.imgur.com/placeholder.png" id="logo-img" alt="Crate Drop Collective">
+  <div class="header-text">
+    <h1><span class="blue">CRATE</span><span class="red">DROP</span> <span class="gold">COLLECTIVE</span></h1>
+    <p>Pre-Order Card Generator</p>
+  </div>
+</header>
 
-  <nav>
-    <a href="https://cratedropcollective.github.io/" class="nav-logo">
-      <span>CRATE DROP</span>
-      <span>COLLECTIVE</span>
-    </a>
-    <div class="nav-links">
-      <a href="https://cratedropcollective.github.io/">Home</a>
-      <a href="/products">Products</a>
-      <a href="/preorder" class="active">Preorder</a>
+<!-- CONTROLS -->
+<div class="controls">
+  <h2>⚙ Configure Card</h2>
+  <div class="field-grid">
+    <div>
+      <label>Select Product</label>
+      <select id="product-select">
+        <option value="">— Loading inventory… —</option>
+      </select>
     </div>
-  </nav>
-
-  <div class="page">
-
-    <!-- HERO -->
-    <div class="hero">
-      <div class="hero-eyebrow">Encrypted Pack System</div>
-      <h1><span>Rip. Reveal. Unlock.</span></h1>
-      <p>Crack a booster pack to find your access code — then use it to unseal your exclusive drop.</p>
+    <div>
+      <label>Pre-Order Deadline</label>
+      <input type="text" id="deadline-input" placeholder="e.g. July 15, 2025" value="">
     </div>
+  </div>
+  <div id="status" class="status-bar loading" style="display:none"></div>
+</div>
 
-    <!-- STEP INDICATOR -->
-    <div class="steps">
-      <div class="step-node">
-        <div class="step-dot active" id="step1-dot">1</div>
-        <div class="step-label active" id="step1-lbl">Crack Pack</div>
+<!-- ACTIONS -->
+<div class="action-row">
+  <button class="btn btn-primary" id="preview-btn" disabled onclick="buildCard()">Preview Card</button>
+  <button class="btn btn-download" id="download-btn" disabled onclick="downloadCard()">Download PNG</button>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview-wrap" id="preview-wrap">
+  <p class="preview-label">Card Preview (50% scale)</p>
+  <div class="preview-scroll">
+    <!-- CARD RENDERED HERE -->
+    <div id="preorder-card">
+      <!-- top bar -->
+      <div class="card-topbar"><span></span><span></span><span></span></div>
+
+      <!-- BG circles (decoration) -->
+      <div class="bg-circle" style="width:600px;height:600px;right:-160px;bottom:40px;background:radial-gradient(circle, rgba(37,99,235,0.09) 0%, transparent 70%);"></div>
+      <div class="bg-circle" style="width:400px;height:400px;left:-80px;top:200px;background:radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%);"></div>
+      <div class="card-stripe"></div>
+
+      <!-- header -->
+      <div class="card-header">
+        <img class="card-logo" id="card-logo" src="" alt="CDC Logo">
+        <div class="card-badge">PRE-ORDER NOW OPEN</div>
       </div>
-      <div class="step-connector" id="connector-1-2"></div>
-      <div class="step-node">
-        <div class="step-dot" id="step2-dot">2</div>
-        <div class="step-label" id="step2-lbl">Enter Code</div>
+
+      <!-- product name -->
+      <div class="card-name">
+        <span class="eyebrow">Now Available for Pre-Order</span>
+        <h2 id="card-name-text">Product Name Here</h2>
       </div>
-      <div class="step-connector" id="connector-2-3"></div>
-      <div class="step-node">
-        <div class="step-dot" id="step3-dot">3</div>
-        <div class="step-label" id="step3-lbl">Claim Drop</div>
+
+      <!-- prices -->
+      <div class="card-prices">
+        <div class="price-tile blue">
+          <span class="tile-label">Price / Unit</span>
+          <span class="tile-value" id="card-unit-price">₱0</span>
+          <span class="tile-sub">per single unit</span>
+        </div>
+        <div class="price-tile red">
+          <span class="tile-label">Price / Case</span>
+          <span class="tile-value" id="card-case-price">₱0</span>
+          <span class="tile-sub" id="card-case-sub">per case</span>
+        </div>
+        <div class="price-tile gold">
+          <span class="tile-label">Down Payment (30%)</span>
+          <span class="tile-value" id="card-dp">₱0</span>
+          <span class="tile-sub" id="card-dp-sub">DP per unit to reserve</span>
+        </div>
       </div>
+
+      <!-- divider -->
+      <div class="card-divider"></div>
+
+      <!-- meta -->
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-label">⏰ Pre-Order Deadline</div>
+          <div class="meta-value gold-accent" id="card-deadline">TBA</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">📦 Estimated Arrival (ETA)</div>
+          <div class="meta-value" id="card-eta">TBA</div>
+        </div>
+      </div>
+
+      <!-- footer -->
+      <div class="card-footer">
+        <div class="footer-disclaimer">
+          By placing a pre-order, you agree to the pre-order terms.<br>
+          30% deposit is required to reserve your slot. Non-refundable.
+        </div>
+        <div class="footer-handle">@CrateDropCollective</div>
+      </div>
+
+      <!-- bottom bar -->
+      <div class="card-bottombar"><span></span><span></span><span></span></div>
     </div>
+  </div>
+</div>
 
-    <!-- BOOSTER PANEL -->
-    <div class="panel" id="booster-panel">
-      <h2>Step 1 — Access Code Booster</h2>
-      <div class="booster-layout">
+<!-- LOADING OVERLAY -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Generating card…</p>
+</div>
 
-        <!-- Pack visual + button grouped together -->
-        <div class="pack-stage">
-          <div class="booster-wrap" id="booster-wrap" onclick="simulatePull()">
-            <div class="burst-particles" id="burst-particles"></div>
-            <div class="reveal-card" id="reveal-card">
-              <div class="reveal-card-rarity" id="reveal-rarity"></div>
-              <div class="reveal-card-code" id="reveal-code-text"></div>
-            </div>
-            <div class="booster-pack-el" id="booster-pack-el">
-              <div class="booster-foil"></div>
-              <img
-                src="https://www.image2url.com/r2/default/images/1781591852305-4a685090-2274-47d0-83af-16ea98860a4a.png"
-                alt="CDC Logo" class="booster-logo-img"
-              >
-            </div>
-          </div>
-          <button class="pull-cta pack-stage-btn" id="pull-btn" onclick="simulatePull()">Crack Pack (Free)</button>
-          <div class="disclaimer">Pull rates — Common: 98.4% / Super Rare: 1% (10 uses) / Ultra Rare: 0.5% (1 use) / Secret Rare: 0.1% (1 use)<br>Codes are server-issued. Each code expires once its redemption limit is hit.</div>
-        </div>
+<!-- Hidden full-res card for download -->
+<div id="hidden-card-wrap" style="position:absolute;left:-9999px;top:0;pointer-events:none;">
+  <div id="preorder-card-hires" style="width:1080px;min-height:1080px;background:#0A0C10;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;">
+    <!-- identical content, filled by JS -->
+  </div>
+</div>
 
-        <!-- Results -->
-        <div class="booster-results">
-          <div class="counter-row">
-            <div class="counter-chip" style="flex:unset; width:auto; padding: 12px 20px;">
-              <div class="val" id="packs-opened-count">0</div>
-              <div class="lbl">Packs Opened</div>
-            </div>
-          </div>
+<script>
+  // ─────────────────────────────────────
+  // CONFIG
+  // ─────────────────────────────────────
+  const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv";
+  const LOGO_PATH = "CDCPNGLOGO.png"; // local file — will be loaded as base64
 
-          <!-- AVAILABILITY PANEL -->
-          <div class="avail-panel" id="avail-panel">
-            <div class="avail-title">Rewards Available</div>
-            <div class="avail-rows">
-              <div class="avail-row">
-                <span class="avail-dot" style="background:#ff2d6b"></span>
-                <span class="avail-name">Secret Rare</span>
-                <span class="avail-count" id="stock-secret-rare">—</span>
-              </div>
-              <div class="avail-row">
-                <span class="avail-dot" style="background:#d946ef"></span>
-                <span class="avail-name">Ultra Rare</span>
-                <span class="avail-count" id="stock-ultra-rare">—</span>
-              </div>
-              <div class="avail-row">
-                <span class="avail-dot" style="background:#00f5ff"></span>
-                <span class="avail-name">Super Rare</span>
-                <span class="avail-count" id="stock-super-rare">—</span>
-              </div>
-            </div>
-          </div>
+  let inventory = [];
+  let logoBase64 = null;
 
-          <div class="pull-result state-idle" id="pull-result">
-            <div class="result-label" id="result-label">Pack sealed — waiting for your pull</div>
-          </div>
-
-          <div class="tip-banner" id="tip-banner">
-            <span>💡</span>
-            <div>Got a code? Scroll down to enter it in the terminal and unlock your drop.</div>
-          </div>
-          <div class="warn-banner hidden" id="warn-banner">
-            <span>⚠️</span>
-            <div><strong>Code pending!</strong> Redeem your code below before cracking another pack.</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- DIVIDER -->
-    <div class="section-divider"><span>Step 2 — Enter Code &amp; Unlock</span></div>
-
-    <!-- UNLOCKER PANEL -->
-    <div class="panel" id="unlocker-panel">
-      <h2>Step 2 — Secure VIP Drop Terminal</h2>
-      <div class="unlocker-layout">
-
-        <!-- CDC Pack -->
-        <div class="lock-pack-stage">
-          <div class="lock-pack-wrap" id="lock-pack-wrap">
-            <div class="holo-overlay"></div>
-            <div class="lock-pack-inner" id="lock-pack-inner">
-              <div class="lock-pack-badge">LIMITED EDITION</div>
-              <div class="lock-pack-logo">CDC</div>
-              <div class="lock-pack-status" id="lock-status-badge">Sealed</div>
-            </div>
-          </div>
-          <div class="lock-pack-glow"></div>
-        </div>
-
-        <!-- Form -->
-        <div class="unlocker-form" id="unlocker-form">
-          <div>
-            <div class="form-label">Access Code</div>
-            <input type="text" id="passcodeInput" placeholder="ENTER CODE" autocomplete="off" spellcheck="false"
-              oninput="this.classList.toggle('has-value', this.value.length > 0)">
-          </div>
-          <button class="unlock-cta" id="unlock-btn" onclick="processDecrypt()">Unlock Pack</button>
-          <div class="status-line" id="status-msg">// Terminal ready — awaiting code input</div>
-        </div>
-
-        <!-- Reward area -->
-        <div class="reward-reveal" id="reward-reveal">
-          <div class="reward-card">
-            <img id="reward-img" class="reward-img" src="" alt="Your reward">
-            <div id="reward-txt" class="reward-txt"></div>
-          </div>
-          <p class="reward-subtext">Screenshot this to save your claim record.</p>
-          <button class="reset-btn" onclick="location.reload()">Start Over</button>
-        </div>
-
-      </div>
-    </div>
-
-  </div><!-- /page -->
-
-  <script>
-    // ── CONFIG ──
-    // ── Replace both URLs with your deployed Apps Script URL ──
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEDvbtfhjG405oQeSAzee46VDzk-qbSNsYIV7EKEfB5f-lwoIZhkzcHTEX-o3r2VaV/exec";
-
-    // ── STATE ──
-    let isPulling = false;
-    let packsOpened = 0;
-    let pendingCode = null; // track if a non-redeemed code is waiting — locks the pull btn
-
-    // ── STEP SYSTEM ──
-    function setStep(n) {
-      [1,2,3].forEach(i => {
-        const dot = document.getElementById(`step${i}-dot`);
-        const lbl = document.getElementById(`step${i}-lbl`);
-        if (i < n) { dot.className = 'step-dot done'; dot.textContent = '✓'; lbl.className = 'step-label done'; }
-        else if (i === n) { dot.className = 'step-dot active'; dot.textContent = i; lbl.className = 'step-label active'; }
-        else { dot.className = 'step-dot'; dot.textContent = i; lbl.className = 'step-label'; }
+  // ─────────────────────────────────────
+  // LOAD LOGO AS BASE64 (for html2canvas)
+  // ─────────────────────────────────────
+  async function loadLogo() {
+    // Try to load from file input or a known URL
+    // Since the logo is a local file, we embed it via fetch as blob
+    // For deployment, the CDCPNGLOGO.png must be in the same directory.
+    // We also provide an inline fallback via the CDC text logo.
+    try {
+      const resp = await fetch(LOGO_PATH);
+      const blob = await resp.blob();
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
       });
-      if (n > 1) document.getElementById('connector-1-2').classList.add('done');
-      if (n > 2) document.getElementById('connector-2-3').classList.add('done');
+    } catch {
+      return null;
+    }
+  }
+
+  // ─────────────────────────────────────
+  // INIT
+  // ─────────────────────────────────────
+  async function init() {
+    const statusEl = document.getElementById('status');
+    statusEl.style.display = 'block';
+    statusEl.className = 'status-bar loading';
+    statusEl.textContent = '⟳  Connecting to inventory sheet…';
+
+    // Load logo
+    logoBase64 = await loadLogo();
+    if (logoBase64) {
+      document.getElementById('logo-img').src = logoBase64;
+      document.getElementById('card-logo').src  = logoBase64;
+    } else {
+      // Hide logo elements if file not found
+      document.getElementById('logo-img').style.display = 'none';
+      document.getElementById('card-logo').style.display = 'none';
     }
 
-    // ── PULL BUTTON LOCK ──
-    function lockPullBtn() {
-      const btn = document.getElementById('pull-btn');
-      const wrap = document.getElementById('booster-wrap');
-      btn.disabled = true;
-      btn.textContent = 'Redeem code first ↓';
-      btn.style.background = 'linear-gradient(135deg,#2a1a00,#1a1000)';
-      btn.style.color = 'rgba(255,190,50,0.8)';
-      btn.style.border = '1px solid rgba(255,160,0,0.3)';
-      btn.style.boxShadow = 'none';
-      wrap.style.cursor = 'default';
-      wrap.onclick = null;
-      document.getElementById('warn-banner').classList.remove('hidden');
-      document.getElementById('tip-banner').classList.add('hidden');
+    // Fetch inventory
+    try {
+      const resp = await fetch(SHEET_URL);
+      if (!resp.ok) throw new Error('Network response was not ok');
+      const text = await resp.text();
+      const rows = text.trim().split('\n').slice(1); // skip header row
+      inventory = rows
+        .map(row => {
+          const cols = row.split('\t').map(c => c.trim());
+          const id        = cols[0] || '';
+          const name      = cols[1] || '';
+          const unitPrice = parseFloat(cols[4]?.replace(/[^0-9.]/g, '')) || 0;
+          const upc       = parseInt(cols[5]) || 1;
+          const casePrice = unitPrice * upc;
+          const eta       = cols[6] || 'TBA';
+          if (!name) return null;
+          return { id, name, unitPrice, unitsPerCase: upc, casePrice, eta };
+        })
+        .filter(Boolean);
+
+      populateSelect();
+      statusEl.className = 'status-bar success';
+      statusEl.textContent = `✓  Loaded ${inventory.length} product(s) from inventory sheet.`;
+    } catch (err) {
+      statusEl.className = 'status-bar error';
+      statusEl.textContent = `✗  Could not load inventory: ${err.message}. Check sheet is published publicly.`;
+      console.error(err);
     }
+  }
 
-    function unlockPullBtn() {
-      const btn = document.getElementById('pull-btn');
-      const wrap = document.getElementById('booster-wrap');
-      pendingCode = null;
-      btn.disabled = false;
-      btn.textContent = 'Crack Another';
-      btn.style.background = '';
-      btn.style.color = '';
-      btn.style.border = '';
-      btn.style.boxShadow = '';
-      wrap.style.cursor = 'pointer';
-      wrap.onclick = simulatePull;
-      document.getElementById('warn-banner').classList.add('hidden');
-    }
-
-    // ── STOCK LOADER ──
-    async function loadStock() {
-      try {
-        const res = await fetch(`${APPS_SCRIPT_URL}?action=stock`);
-        const data = await res.json();
-        if (data.status === 'success') {
-          updateStockDisplay(data.stock);
-        }
-      } catch(e) {
-        // silently fail — stock display just stays at dashes
-      }
-    }
-
-    function updateStockDisplay(stock) {
-      const map = {
-        'SECRET RARE': 'stock-secret-rare',
-        'ULTRA RARE':  'stock-ultra-rare',
-        'SUPER RARE':  'stock-super-rare'
-      };
-      for (const [rarity, elId] of Object.entries(map)) {
-        const el = document.getElementById(elId);
-        if (!el) continue;
-        const count = stock[rarity] ?? 0;
-        el.textContent = count === 0 ? 'SOLD OUT' : count;
-        el.className = 'avail-count' + (count === 0 ? ' zero' : '');
-      }
-    }
-
-    // ── RARITY COLOURS ──
-    const RARITY_STYLES = {
-      'SECRET RARE': { color: '#ff2d6b', stateClass: 'state-secret-rare', btnClass: 'secret-rare-style' },
-      'ULTRA RARE':  { color: '#d946ef', stateClass: 'state-ultra-rare',  btnClass: 'ultra-rare-style'  },
-      'SUPER RARE':  { color: '#00f5ff', stateClass: 'state-super-rare',  btnClass: ''                  },
-      'COMMON':      { color: 'rgba(255,255,255,0.3)', stateClass: 'state-dud', btnClass: '' }
-    };
-
-    // ── BOOSTER PULL ──
-    async function simulatePull() {
-      if (isPulling) return;
-      isPulling = true;
-
-      const wrap         = document.getElementById('booster-wrap');
-      const packEl       = document.getElementById('booster-pack-el');
-      const pullBtn      = document.getElementById('pull-btn');
-      const pullResult   = document.getElementById('pull-result');
-      const revealCard   = document.getElementById('reveal-card');
-      const revealRarity = document.getElementById('reveal-rarity');
-      const revealCode   = document.getElementById('reveal-code-text');
-
-      try {
-        // ── RESET ──
-        revealCard.classList.remove('visible');
-        wrap.classList.remove('tearing');
-        packEl.removeAttribute('style');
-        void packEl.offsetWidth;
-        packEl.style.animation = 'none';
-        void packEl.offsetWidth;
-        packEl.style.animation = '';
-
-        packsOpened++;
-        document.getElementById('packs-opened-count').textContent = packsOpened;
-        pullBtn.disabled = true;
-        pullBtn.textContent = 'Ripping foil...';
-        pullResult.className = 'pull-result state-loading';
-        pullResult.innerHTML = '<div class="result-label" style="color:var(--primary)">Contacting server...</div>';
-
-        // ── TEARING + SERVER CALL in parallel ──
-        wrap.classList.add('tearing');
-        const serverCall = fetch(`${APPS_SCRIPT_URL}?action=pull`)
-          .then(r => r.json())
-          .catch(() => ({ status: 'error', message: '// CONNECTION LOST: Check your network.' }));
-
-        await sleep(1400);
-        wrap.classList.remove('tearing');
-
-        const data = await serverCall;
-
-        if (data.status === 'error') {
-          pullResult.className = 'pull-result state-dud';
-          pullResult.innerHTML = `<div class="result-label" style="color:var(--error)">${data.message}</div>`;
-          pullBtn.disabled = false;
-          pullBtn.textContent = 'Try Again';
-          return;
-        }
-
-        const rarity = data.rarity || 'COMMON';
-        const code   = data.code   || null;
-        const style  = RARITY_STYLES[rarity] || RARITY_STYLES['COMMON'];
-        const { color, stateClass, btnClass } = style;
-
-        // ── BURST ──
-        spawnParticles(color);
-        if (rarity !== 'COMMON') flashScreen(color);
-
-        packEl.style.transition = 'transform 0.25s ease-out, opacity 0.25s ease-out, filter 0.25s ease-out';
-        packEl.style.transform  = 'scale(1.1)';
-        packEl.style.filter     = 'brightness(2.5)';
-        packEl.style.opacity    = '0';
-        await sleep(280);
-
-        // ── REVEAL CARD ──
-        if (code) {
-          revealRarity.textContent       = rarity;
-          revealRarity.style.color       = color;
-          revealCode.textContent         = code;
-          revealCode.style.color         = color;
-          revealCard.style.background    = `linear-gradient(135deg, #1a1c29 0%, ${color}20 100%)`;
-          revealCard.style.border        = `2px solid ${color}60`;
-          revealCard.style.boxShadow     = `0 0 30px ${color}40`;
-          revealCard.classList.add('visible');
-        }
-
-        // ── RESULT PANEL ──
-        pullResult.className = `pull-result ${stateClass}`;
-
-        if (rarity === 'COMMON') {
-          pullResult.innerHTML = `
-            <div class="result-label" style="color:rgba(255,255,255,0.35)">DUD PULL</div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:4px">No code this time — better luck next pack.</div>
-          `;
-        } else {
-          pendingCode = code;
-          lockPullBtn();
-          pullResult.innerHTML = `
-            <div class="result-label" style="color:${color}">${rarity}!</div>
-            <div class="result-code" style="color:${color}" onclick="copyToUnlocker('${code}')">${code}</div>
-            <div class="result-hint">Tap code to paste into terminal below</div>
-            <button class="copy-btn ${btnClass}" onclick="copyToUnlocker('${code}')">↓ Send to Terminal</button>
-          `;
-          if (rarity === 'SECRET RARE' || rarity === 'ULTRA RARE') fireConfetti(color);
-          setStep(2);
-          document.getElementById('tip-banner').classList.add('hidden');
-        }
-
-        if (!pendingCode) {
-          unlockPullBtn();
-        }
-        // if pendingCode is set, button stays locked via lockPullBtn()
-
-      } catch(e) {
-        console.error('Pull error:', e);
-        unlockPullBtn();
-      } finally {
-        isPulling = false;
-      }
-    }
-
-    function copyToUnlocker(code) {
-      const input = document.getElementById('passcodeInput');
-      input.value = code;
-      input.classList.add('has-value');
-      document.getElementById('unlocker-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => { input.style.boxShadow = '0 0 0 2px rgba(0,245,255,0.4)'; }, 300);
-      setTimeout(() => { input.style.boxShadow = ''; }, 900);
-    }
-
-    // ── PARTICLES ──
-    function spawnParticles(color) {
-      const container = document.getElementById('burst-particles');
-      container.innerHTML = '';
-      const wrap = document.getElementById('booster-wrap');
-      const cx = wrap.clientWidth / 2;
-      const cy = wrap.clientHeight / 2;
-
-      for (let i = 0; i < 24; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const angle = (i / 24) * 360;
-        const dist = 60 + Math.random() * 80;
-        const tx = Math.cos(angle * Math.PI/180) * dist + 'px';
-        const ty = Math.sin(angle * Math.PI/180) * dist + 'px';
-        const size = 4 + Math.random() * 6;
-        p.style.cssText = `
-          left:${cx}px; top:${cy}px;
-          width:${size}px; height:${size}px;
-          background:${color};
-          --tx:${tx}; --ty:${ty};
-          animation-duration:${0.5 + Math.random() * 0.4}s;
-          animation-delay:${Math.random() * 0.1}s;
-        `;
-        container.appendChild(p);
-        setTimeout(() => p.remove(), 900);
-      }
-    }
-
-    // ── SCREEN FLASH ──
-    function flashScreen(color) {
-      const f = document.getElementById('rarity-flash');
-      f.style.background = color;
-      f.classList.add('fire');
-      f.addEventListener('animationend', () => f.classList.remove('fire'), { once: true });
-    }
-
-    // ── UNLOCKER ──
-    async function processDecrypt() {
-      const codeInput = document.getElementById('passcodeInput').value.trim();
-      const btn = document.getElementById('unlock-btn');
-      const lockWrap = document.getElementById('lock-pack-wrap');
-      const statusMsg = document.getElementById('status-msg');
-      const lockStatusBadge = document.getElementById('lock-status-badge');
-
-      if (!codeInput) { triggerError('// ERROR: No code entered.'); return; }
-
-      btn.disabled = true;
-      btn.textContent = 'Initializing...';
-      statusMsg.className = 'status-line loading';
-      statusMsg.textContent = '// Handshaking with secure server...';
-      lockStatusBadge.textContent = 'Verifying...';
-
-      lockWrap.style.animation = 'none';
-      void lockWrap.offsetWidth;
-      lockWrap.classList.add('unlocking');
-
-      const minDelay = sleep(2000);
-
-      try {
-        const fetchP = fetch(`${APPS_SCRIPT_URL}?code=${encodeURIComponent(codeInput)}`).then(r => r.json());
-        const [_, data] = await Promise.all([minDelay, fetchP]);
-
-        if (data.status === 'success') {
-          showSuccess(data.reward);
-        } else {
-          triggerError(data.message || '// FAILED: Code invalid or already claimed.');
-        }
-      } catch(e) {
-        console.error(e);
-        triggerError('// CONNECTION LOST: Check your network and retry.');
-      }
-    }
-
-    function triggerError(msg) {
-      const btn = document.getElementById('unlock-btn');
-      const lockWrap = document.getElementById('lock-pack-wrap');
-      const statusMsg = document.getElementById('status-msg');
-      const lockStatusBadge = document.getElementById('lock-status-badge');
-
-      lockWrap.classList.remove('unlocking');
-      lockWrap.classList.add('error-shake');
-      statusMsg.className = 'status-line error';
-      statusMsg.textContent = msg;
-      lockStatusBadge.textContent = 'Rejected';
-      btn.disabled = false;
-      btn.textContent = 'Try Again';
-
-      setTimeout(() => {
-        lockWrap.classList.remove('error-shake');
-        lockWrap.style.animation = '';
-        lockStatusBadge.textContent = 'Sealed';
-      }, 700);
-    }
-
-    function showSuccess(rewardData) {
-      const lockWrap = document.getElementById('lock-pack-wrap');
-      lockWrap.classList.remove('unlocking');
-      lockWrap.classList.add('success-burst');
-
-      setTimeout(() => {
-        document.getElementById('unlocker-form').classList.add('hidden');
-        document.getElementById('lock-pack-wrap').classList.add('hidden');
-
-        const revealEl = document.getElementById('reward-reveal');
-        revealEl.classList.add('visible');
-
-        const isImage = rewardData.startsWith('http://') || rewardData.startsWith('https://');
-        if (isImage) {
-          const img = document.getElementById('reward-img');
-          img.src = rewardData;
-          img.style.display = 'block';
-        } else {
-          const txt = document.getElementById('reward-txt');
-          txt.innerHTML = rewardData;
-          txt.style.display = 'block';
-        }
-
-        setStep(3);
-        fireConfetti();
-        unlockPullBtn(); // allow cracking another pack after claiming
-        loadStock();     // refresh availability counts after redemption
-      }, 350);
-    }
-
-    // ── CONFETTI ──
-    function fireConfetti(singleColor = null) {
-      const canvas = document.getElementById('confetti-canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particles = [];
-      const colors = singleColor
-        ? [singleColor, '#ffffff', singleColor]
-        : ['#00f5ff','#ffb703','#ffffff','#d946ef','#22c55e'];
-
-      for (let i = 0; i < 180; i++) {
-        particles.push({
-          x: canvas.width / 2, y: canvas.height * 0.4,
-          r: Math.random() * 5 + 2,
-          dx: (Math.random() - 0.5) * 16,
-          dy: Math.random() * -16 - 5,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          tilt: Math.random() * 10 - 10,
-          tai: Math.random() * 0.07 + 0.04,
-          ta: 0, life: 1
-        });
-      }
-
-      function animate() {
-        if (!particles.length) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
-        requestAnimationFrame(animate);
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        particles.forEach((p, idx) => {
-          p.ta += p.tai; p.dy += 0.25;
-          p.y += p.dy + Math.cos(p.ta) * 0.5;
-          p.x += p.dx + Math.sin(p.ta) * 2;
-          p.life -= 0.008;
-          ctx.globalAlpha = Math.max(0, p.life);
-          ctx.beginPath(); ctx.lineWidth = p.r; ctx.strokeStyle = p.color;
-          ctx.moveTo(p.x + p.tilt + p.r, p.y);
-          ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
-          ctx.stroke();
-          if (p.y > canvas.height || p.life <= 0) particles.splice(idx, 1);
-        });
-        ctx.globalAlpha = 1;
-      }
-      animate();
-    }
-
-    // ── UTIL ──
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-    window.addEventListener('resize', () => {
-      const c = document.getElementById('confetti-canvas');
-      if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+  function populateSelect() {
+    const sel = document.getElementById('product-select');
+    sel.innerHTML = '<option value="">— Select a product —</option>';
+    inventory.forEach((p, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = p.name;
+      sel.appendChild(opt);
     });
+    sel.disabled = false;
+    sel.addEventListener('change', onProductChange);
+  }
 
-    // Init
-    setStep(1);
-    loadStock();
-  </script>
+  function onProductChange() {
+    const idx = document.getElementById('product-select').value;
+    const btn = document.getElementById('preview-btn');
+    btn.disabled = (idx === '');
+  }
+
+  // ─────────────────────────────────────
+  // BUILD CARD (preview)
+  // ─────────────────────────────────────
+  function buildCard() {
+    const idx      = parseInt(document.getElementById('product-select').value);
+    const deadline = document.getElementById('deadline-input').value.trim() || 'TBA';
+    const product  = inventory[idx];
+    if (!product) return;
+
+    const dp = Math.ceil(product.unitPrice * 0.3);
+
+    // Fill preview card
+    document.getElementById('card-name-text').textContent  = product.name;
+    document.getElementById('card-unit-price').textContent = '₱' + product.unitPrice.toLocaleString();
+    document.getElementById('card-case-price').textContent = '₱' + product.casePrice.toLocaleString();
+    document.getElementById('card-case-sub').textContent   = `per case (${product.unitsPerCase} units)`;
+    document.getElementById('card-dp').textContent         = '₱' + dp.toLocaleString();
+    document.getElementById('card-dp-sub').textContent     = `30% DP per unit`;
+    document.getElementById('card-eta').textContent        = product.eta;
+    document.getElementById('card-deadline').textContent   = deadline;
+
+    // Show preview
+    const wrap = document.getElementById('preview-wrap');
+    wrap.classList.add('visible');
+    document.getElementById('download-btn').disabled = false;
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ─────────────────────────────────────
+  // DOWNLOAD CARD (hi-res via html2canvas)
+  // ─────────────────────────────────────
+  async function downloadCard() {
+    const idx      = parseInt(document.getElementById('product-select').value);
+    const deadline = document.getElementById('deadline-input').value.trim() || 'TBA';
+    const product  = inventory[idx];
+    if (!product) return;
+
+    document.getElementById('loading').classList.add('show');
+
+    const dp = Math.ceil(product.unitPrice * 0.3);
+
+    // Build hires card HTML
+    const hires = document.getElementById('preorder-card-hires');
+    hires.innerHTML = buildCardHTML(product, deadline, dp);
+
+    // Give fonts time to apply
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      const canvas = await html2canvas(hires, {
+        scale: 2,
+        backgroundColor: '#0A0C10',
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        width: 1080,
+        windowWidth: 1080
+      });
+
+      const link = document.createElement('a');
+      const safeName = product.name.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 40);
+      link.download = `CDC_PreOrder_${safeName}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch(err) {
+      alert('Download failed: ' + err.message);
+      console.error(err);
+    } finally {
+      document.getElementById('loading').classList.remove('show');
+    }
+  }
+
+  // ─────────────────────────────────────
+  // BUILD CARD HTML STRING (for hires)
+  // ─────────────────────────────────────
+  function buildCardHTML(product, deadline, dp) {
+    const logoSrc = logoBase64 || '';
+    const logoTag = logoSrc
+      ? `<img src="${logoSrc}" style="height:110px;width:auto;display:block;" alt="CDC Logo">`
+      : `<div style="font-size:2.5rem;font-weight:900;font-style:italic;color:#fff;letter-spacing:-0.02em;">CRATE<span style="color:#2563EB;">DROP</span><br><span style="font-size:1rem;letter-spacing:0.35em;color:#F59E0B;">COLLECTIVE</span></div>`;
+
+    return `
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Barlow:wght@400;600;700;800&display=swap');
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Barlow Condensed',sans-serif; }
+      </style>
+
+      <!-- top bar -->
+      <div style="display:flex;height:14px;">
+        <span style="flex:1;background:#2563EB;"></span>
+        <span style="flex:1;background:#DC2626;"></span>
+        <span style="flex:1;background:#F59E0B;"></span>
+      </div>
+
+      <!-- bg circles -->
+      <div style="position:absolute;width:600px;height:600px;right:-160px;bottom:40px;background:radial-gradient(circle, rgba(37,99,235,0.09) 0%, transparent 70%);border-radius:50%;pointer-events:none;z-index:1;"></div>
+      <div style="position:absolute;width:400px;height:400px;left:-80px;top:200px;background:radial-gradient(circle, rgba(245,158,11,0.07) 0%, transparent 70%);border-radius:50%;pointer-events:none;z-index:1;"></div>
+      <!-- diagonal stripe -->
+      <div style="position:absolute;top:0;right:0;width:420px;height:100%;background:linear-gradient(135deg, transparent 48%, #12192A 48%);pointer-events:none;z-index:1;"></div>
+
+      <!-- header -->
+      <div style="position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:44px 60px 0;">
+        ${logoTag}
+        <div style="background:#DC2626;color:#fff;font-weight:900;font-style:italic;font-size:1.25rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.4rem 1.2rem;border-radius:0.4rem;margin-top:12px;">PRE-ORDER NOW OPEN</div>
+      </div>
+
+      <!-- product name -->
+      <div style="position:relative;z-index:2;padding:48px 60px 0;">
+        <span style="display:block;font-size:1rem;font-weight:700;letter-spacing:0.35em;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;">Now Available for Pre-Order</span>
+        <h2 style="font-size:5.5rem;font-weight:900;font-style:italic;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;max-width:820px;word-break:break-word;">${escapeHtml(product.name)}</h2>
+      </div>
+
+      <!-- prices -->
+      <div style="position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:52px 60px 0;">
+        <div style="border-radius:1rem;padding:28px 24px;background:rgba(37,99,235,0.15);border:2px solid #2563EB;">
+          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#2563EB;margin-bottom:8px;">Price / Unit</span>
+          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.unitPrice.toLocaleString()}</span>
+          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">per single unit</span>
+        </div>
+        <div style="border-radius:1rem;padding:28px 24px;background:rgba(220,38,38,0.12);border:2px solid #DC2626;">
+          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#DC2626;margin-bottom:8px;">Price / Case</span>
+          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.casePrice.toLocaleString()}</span>
+          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">per case (${product.unitsPerCase} units)</span>
+        </div>
+        <div style="border-radius:1rem;padding:28px 24px;background:rgba(245,158,11,0.12);border:2px solid #F59E0B;">
+          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#F59E0B;margin-bottom:8px;">Down Payment (30%)</span>
+          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${dp.toLocaleString()}</span>
+          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">30% DP per unit to reserve</span>
+        </div>
+      </div>
+
+      <!-- divider -->
+      <div style="position:relative;z-index:2;margin:44px 60px 0;height:2px;background:linear-gradient(90deg,#2563EB,#DC2626,#F59E0B);border-radius:2px;opacity:0.5;"></div>
+
+      <!-- meta -->
+      <div style="position:relative;z-index:2;display:flex;gap:48px;padding:40px 60px 0;">
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">⏰ Pre-Order Deadline</div>
+          <div style="font-size:2.4rem;font-weight:900;color:#F59E0B;">${escapeHtml(deadline)}</div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">📦 Estimated Arrival (ETA)</div>
+          <div style="font-size:2.4rem;font-weight:900;color:#fff;">${escapeHtml(product.eta)}</div>
+        </div>
+      </div>
+
+      <!-- footer -->
+      <div style="position:relative;z-index:2;padding:48px 60px 0;display:flex;justify-content:space-between;align-items:flex-end;">
+        <div style="font-size:0.85rem;font-weight:600;color:#64748B;max-width:580px;line-height:1.5;font-style:italic;">By placing a pre-order, you agree to the pre-order terms.<br>30% deposit is required to reserve your slot. Non-refundable.</div>
+        <div style="font-size:1.5rem;font-weight:900;letter-spacing:0.06em;color:#2563EB;text-align:right;">@CrateDropCollective</div>
+      </div>
+
+      <!-- bottom bar -->
+      <div style="display:flex;height:14px;margin-top:48px;">
+        <span style="flex:1;background:#F59E0B;"></span>
+        <span style="flex:1;background:#DC2626;"></span>
+        <span style="flex:1;background:#2563EB;"></span>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ─────────────────────────────────────
+  // LOGO FILE UPLOAD FALLBACK
+  // ─────────────────────────────────────
+  // If the logo file isn't co-located, let user upload it manually
+  function addLogoUpload() {
+    const controls = document.querySelector('.controls');
+    const row = document.createElement('div');
+    row.style.marginTop = '1.25rem';
+    row.innerHTML = `
+      <label style="display:block;font-size:0.65rem;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:#64748B;margin-bottom:0.4rem;">
+        Logo Image (if not auto-loaded)
+      </label>
+      <input type="file" id="logo-upload" accept="image/*"
+        style="font-size:0.85rem;color:#94a3b8;background:#0d1117;border:1.5px solid #1F2937;border-radius:0.75rem;padding:0.6rem 1rem;width:100%;cursor:pointer;">
+    `;
+    controls.appendChild(row);
+
+    document.getElementById('logo-upload').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        logoBase64 = e.target.result;
+        document.getElementById('logo-img').src = logoBase64;
+        document.getElementById('card-logo').src = logoBase64;
+        document.getElementById('logo-img').style.display = '';
+        document.getElementById('card-logo').style.display = '';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ─────────────────────────────────────
+  // BOOT
+  // ─────────────────────────────────────
+  addLogoUpload();
+  init();
+</script>
 </body>
 </html>
