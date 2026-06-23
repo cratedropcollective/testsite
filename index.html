@@ -6,7 +6,8 @@
   <title>Crate Drop Collective | Pre-Order Card Generator</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Barlow:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap" rel="stylesheet">
   <style>
     /* ── RESET & BASE ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -21,7 +22,7 @@
       --muted:  #64748B;
     }
     body {
-      font-family: 'Barlow', sans-serif;
+      font-family: 'Poppins', sans-serif;
       background: var(--dark);
       color: var(--text);
       min-height: 100vh;
@@ -42,7 +43,7 @@
       flex-shrink: 0;
     }
     .header-text h1 {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 2.2rem;
       font-weight: 900;
       font-style: italic;
@@ -73,7 +74,7 @@
       padding: 2rem;
     }
     .controls h2 {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Poppins', sans-serif;
       font-weight: 900;
       font-size: 1.3rem;
       letter-spacing: 0.05em;
@@ -105,9 +106,9 @@
       border: 1.5px solid var(--border);
       border-radius: 0.75rem;
       color: var(--text);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
       padding: 0.8rem 1rem;
       appearance: none;
       outline: none;
@@ -142,9 +143,9 @@
       padding: 1rem 1.5rem;
       border: none;
       border-radius: 1rem;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.1rem;
-      font-weight: 900;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       cursor: pointer;
@@ -193,7 +194,7 @@
       transform: scale(0.5);
       /* visual: rendered at half size for preview */
       margin-bottom: -540px; /* compensate for scale shrink */
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Poppins', sans-serif;
     }
 
     /* Diagonal stripe accent */
@@ -233,11 +234,11 @@
     .card-badge {
       background: var(--red);
       color: #fff;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 900;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
       font-style: italic;
-      font-size: 1.25rem;
-      letter-spacing: 0.12em;
+      font-size: 1.05rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 0.4rem 1.2rem;
       border-radius: 0.4rem;
@@ -260,8 +261,8 @@
       display: block;
     }
     .card-name h2 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 5.5rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 4.8rem;
       font-weight: 900;
       font-style: italic;
       line-height: 0.9;
@@ -301,8 +302,8 @@
     .price-tile.red  .tile-label { color: var(--red); }
     .price-tile.gold .tile-label { color: var(--gold); }
     .price-tile .tile-value {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 3.8rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 3.2rem;
       font-weight: 900;
       font-style: italic;
       line-height: 1;
@@ -343,8 +344,8 @@
       margin-bottom: 8px;
     }
     .meta-item .meta-value {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 2.4rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
       font-weight: 900;
       color: #fff;
     }
@@ -368,8 +369,8 @@
       font-style: italic;
     }
     .footer-handle {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.5rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.3rem;
       font-weight: 900;
       letter-spacing: 0.06em;
       color: var(--blue);
@@ -410,8 +411,8 @@
     }
     #loading.show { display: flex; }
     #loading p {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 1.5rem;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
       font-weight: 900;
       letter-spacing: 0.1em;
       color: var(--gold);
@@ -544,7 +545,7 @@
 
 <!-- Hidden full-res card for download -->
 <div id="hidden-card-wrap" style="position:absolute;left:-9999px;top:0;pointer-events:none;">
-  <div id="preorder-card-hires" style="width:1080px;min-height:1080px;background:#0A0C10;position:relative;overflow:hidden;font-family:'Barlow Condensed',sans-serif;">
+  <div id="preorder-card-hires" style="width:1080px;min-height:1080px;background:#0A0C10;position:relative;overflow:hidden;font-family:'Poppins',sans-serif;">
     <!-- identical content, filled by JS -->
   </div>
 </div>
@@ -728,12 +729,12 @@
     const logoSrc = logoBase64 || '';
     const logoTag = logoSrc
       ? `<img src="${logoSrc}" style="height:110px;width:auto;display:block;" alt="CDC Logo">`
-      : `<div style="font-size:2.5rem;font-weight:900;font-style:italic;color:#fff;letter-spacing:-0.02em;">CRATE<span style="color:#2563EB;">DROP</span><br><span style="font-size:1rem;letter-spacing:0.35em;color:#F59E0B;">COLLECTIVE</span></div>`;
+      : `<div style="font-family:'Poppins',sans-serif;font-size:2.5rem;font-weight:900;font-style:italic;color:#fff;letter-spacing:-0.02em;">CRATE<span style="color:#2563EB;">DROP</span><br><span style="font-size:1rem;letter-spacing:0.35em;color:#F59E0B;">COLLECTIVE</span></div>`;
 
     return `
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;0,900;1,900&family=Barlow:wght@400;600;700;800&display=swap');
-        * { box-sizing:border-box; margin:0; padding:0; font-family:'Barlow Condensed',sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap');
+        * { box-sizing:border-box; margin:0; padding:0; font-family:'Poppins',sans-serif; }
       </style>
 
       <!-- top bar -->
@@ -752,31 +753,31 @@
       <!-- header -->
       <div style="position:relative;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;padding:44px 60px 0;">
         ${logoTag}
-        <div style="background:#DC2626;color:#fff;font-weight:900;font-style:italic;font-size:1.25rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.4rem 1.2rem;border-radius:0.4rem;margin-top:12px;">PRE-ORDER NOW OPEN</div>
+        <div style="font-family:'Poppins',sans-serif;background:#DC2626;color:#fff;font-weight:800;font-style:italic;font-size:1.1rem;letter-spacing:0.08em;text-transform:uppercase;padding:0.4rem 1.2rem;border-radius:0.4rem;margin-top:12px;">PRE-ORDER NOW OPEN</div>
       </div>
 
       <!-- product name -->
       <div style="position:relative;z-index:2;padding:48px 60px 0;">
-        <span style="display:block;font-size:1rem;font-weight:700;letter-spacing:0.35em;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;">Now Available for Pre-Order</span>
-        <h2 style="font-size:5.5rem;font-weight:900;font-style:italic;line-height:0.9;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;max-width:820px;word-break:break-word;">${escapeHtml(product.name)}</h2>
+        <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#F59E0B;margin-bottom:10px;">Now Available for Pre-Order</span>
+        <h2 style="font-family:'Poppins',sans-serif;font-size:4.8rem;font-weight:900;font-style:italic;line-height:0.95;color:#fff;text-transform:uppercase;letter-spacing:-0.02em;max-width:820px;word-break:break-word;">${escapeHtml(product.name)}</h2>
       </div>
 
       <!-- prices -->
       <div style="position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;padding:52px 60px 0;">
         <div style="border-radius:1rem;padding:28px 24px;background:rgba(37,99,235,0.15);border:2px solid #2563EB;">
-          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#2563EB;margin-bottom:8px;">Price / Unit</span>
-          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.unitPrice.toLocaleString()}</span>
-          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">per single unit</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#2563EB;margin-bottom:8px;">Price / Unit</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:3.2rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.unitPrice.toLocaleString()}</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;color:#64748B;margin-top:6px;">per single unit</span>
         </div>
         <div style="border-radius:1rem;padding:28px 24px;background:rgba(220,38,38,0.12);border:2px solid #DC2626;">
-          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#DC2626;margin-bottom:8px;">Price / Case</span>
-          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.casePrice.toLocaleString()}</span>
-          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">per case (${product.unitsPerCase} units)</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#DC2626;margin-bottom:8px;">Price / Case</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:3.2rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${product.casePrice.toLocaleString()}</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;color:#64748B;margin-top:6px;">per case (${product.unitsPerCase} units)</span>
         </div>
         <div style="border-radius:1rem;padding:28px 24px;background:rgba(245,158,11,0.12);border:2px solid #F59E0B;">
-          <span style="display:block;font-size:0.85rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#F59E0B;margin-bottom:8px;">Down Payment (30%)</span>
-          <span style="display:block;font-size:3.8rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${dp.toLocaleString()}</span>
-          <span style="display:block;font-size:0.8rem;font-weight:600;color:#64748B;margin-top:6px;">30% DP per unit to reserve</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#F59E0B;margin-bottom:8px;">Down Payment (30%)</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:3.2rem;font-weight:900;font-style:italic;line-height:1;color:#fff;">₱${dp.toLocaleString()}</span>
+          <span style="display:block;font-family:'Poppins',sans-serif;font-size:0.75rem;font-weight:600;color:#64748B;margin-top:6px;">30% DP per unit to reserve</span>
         </div>
       </div>
 
@@ -786,19 +787,19 @@
       <!-- meta -->
       <div style="position:relative;z-index:2;display:flex;gap:48px;padding:40px 60px 0;">
         <div>
-          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">⏰ Pre-Order Deadline</div>
-          <div style="font-size:2.4rem;font-weight:900;color:#F59E0B;">${escapeHtml(deadline)}</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">⏰ Pre-Order Deadline</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:#F59E0B;">${escapeHtml(deadline)}</div>
         </div>
         <div>
-          <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">📦 Estimated Arrival (ETA)</div>
-          <div style="font-size:2.4rem;font-weight:900;color:#fff;">${escapeHtml(product.eta)}</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.25em;text-transform:uppercase;color:#64748B;margin-bottom:8px;">📦 Estimated Arrival (ETA)</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:#fff;">${escapeHtml(product.eta)}</div>
         </div>
       </div>
 
       <!-- footer -->
       <div style="position:relative;z-index:2;padding:48px 60px 0;display:flex;justify-content:space-between;align-items:flex-end;">
-        <div style="font-size:0.85rem;font-weight:600;color:#64748B;max-width:580px;line-height:1.5;font-style:italic;">By placing a pre-order, you agree to the pre-order terms.<br>30% deposit is required to reserve your slot. Non-refundable.</div>
-        <div style="font-size:1.5rem;font-weight:900;letter-spacing:0.06em;color:#2563EB;text-align:right;">@CrateDropCollective</div>
+        <div style="font-family:'Poppins',sans-serif;font-size:0.8rem;font-weight:500;color:#64748B;max-width:580px;line-height:1.6;font-style:italic;">By placing a pre-order, you agree to the pre-order terms.<br>30% deposit is required to reserve your slot. Non-refundable.</div>
+        <div style="font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:0.04em;color:#2563EB;text-align:right;">@CrateDropCollective</div>
       </div>
 
       <!-- bottom bar -->
