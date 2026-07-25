@@ -327,9 +327,20 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 /* ── RESPONSIVE ───────────────────────────────────── */
 @media (max-width:900px) { .dashboard { grid-template-columns:1fr 1fr; } .raffle-grid { grid-template-columns:1fr; } }
 @media (max-width:580px) { .app { padding:14px 14px 60px; } .dashboard { grid-template-columns:1fr; } .form-grid { flex-direction:column; } .ff { min-width:100%; } }
+
+/* ── PRESENTATION MODE ("Go Live") ────────────────── */
+.presentation-toggle-btn { position:fixed; top:14px; right:14px; z-index:250; background:var(--surf-2); border:1px solid var(--border); color:var(--text-d); padding:8px 15px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,0.4); transition:all 0.14s; }
+.presentation-toggle-btn:hover { border-color:var(--accent); color:var(--text); }
+.presentation-toggle-btn.active { background:var(--red-s); border-color:var(--red); color:var(--red); }
+body.presentation-mode .app-header,
+body.presentation-mode .dashboard,
+body.presentation-mode .panel:not(#raffleWheelPanel) { display:none !important; }
+body.presentation-mode .app { padding-top:64px; }
+body.presentation-mode #raffleWheelPanel { max-width:900px; margin:0 auto; }
 </style>
 </head>
 <body>
+<button type="button" id="presentationToggle" class="presentation-toggle-btn" data-a="toggle-presentation">🎥 Presentation Mode</button>
 <div class="app">
   <header class="app-header">
     <div class="brand">
@@ -414,7 +425,7 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
     </div>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="raffleWheelPanel">
     <div class="panel-head"><div class="panel-title">🎡 Raffle Wheel <span class="badge" id="raffleBadge">0 items</span></div><button type="button" class="raffle-sound-toggle" id="raffleSoundToggle" data-a="toggle-raffle-sound">🔊 Sound On</button></div>
     <div class="panel-body">
       <div class="ff" style="max-width:360px;margin-bottom:18px">
@@ -464,7 +475,8 @@ let ui = {
   showColPicker:    false,
   raffleSelectedItem: null,    /* itemId currently shown in the Raffle Wheel panel */
   raffleSpinning:   {},        /* itemId+poolKey -> true while a spin animation is in flight, guards double-clicks */
-  raffleSoundMuted: false
+  raffleSoundMuted: false,
+  presentationMode: false     /* "Go Live" view — hides everything except the Raffle Wheel panel */
 };
 
 /* ── UTILITIES ──────────────────────────────────── */
@@ -1011,6 +1023,14 @@ function updateOrderHint() {
   } else {hint.textContent='';hint.className='form-hint';}
 }
 
+/* ── PRESENTATION MODE ("Go Live") ────────────────── */
+function syncPresentationMode() {
+  const btn=$e('presentationToggle'); if(!btn) return;
+  document.body.classList.toggle('presentation-mode', ui.presentationMode);
+  btn.classList.toggle('active', ui.presentationMode);
+  btn.textContent = ui.presentationMode ? '✕ Exit Presentation Mode' : '🎥 Presentation Mode';
+}
+
 /* ── RENDER: RAFFLE WHEEL ────────────────────────── */
 function syncRaffleSoundToggle() {
   const btn=$e('raffleSoundToggle'); if(!btn) return;
@@ -1493,7 +1513,7 @@ function renderItemTab(itemId) {
   area.innerHTML=html;
 }
 
-function renderAll(){renderDash();renderFloatBreakdown();renderItems();syncOrderForm();renderLedger();renderBasket();syncRaffleItemSelect();syncRaffleSoundToggle();renderRaffleArea();}
+function renderAll(){renderDash();renderFloatBreakdown();renderItems();syncOrderForm();renderLedger();renderBasket();syncRaffleItemSelect();syncRaffleSoundToggle();syncPresentationMode();renderRaffleArea();}
 
 /* ── ACTIONS: ITEMS ─────────────────────────────── */
 $e('itemForm').addEventListener('submit',function(e){
@@ -2078,6 +2098,10 @@ document.addEventListener('click',function(e){
       clearTimeout(_raffleWinnerTimeout); $e('raffleWinnerPopup').innerHTML=''; break;
     case 'toggle-raffle-sound':
       ui.raffleSoundMuted=!ui.raffleSoundMuted; save(); syncRaffleSoundToggle(); break;
+    case 'toggle-presentation':
+      ui.presentationMode=!ui.presentationMode; save(); syncPresentationMode();
+      if(ui.presentationMode) window.scrollTo({top:0,behavior:'smooth'});
+      break;
     case 'undo-action':
       if(_undoCb){clearTimeout(_tt);_undoCb();_undoCb=null;$e('toast').classList.remove('show');} break;
   }
@@ -2302,7 +2326,7 @@ $e('importInput').addEventListener('change',function(e){
       if(d.sortClients) ui.sortClients=d.sortClients;
       if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
       if(typeof d.raffleSoundMuted==='boolean') ui.raffleSoundMuted=d.raffleSoundMuted;
-      ui.activeTab='clients'; ui.basket=[]; ui.raffleSelectedItem=null; renderAll(); save();
+      ui.activeTab='clients'; ui.basket=[]; ui.raffleSelectedItem=null; ui.presentationMode=false; renderAll(); save();
       toast(`Loaded: ${state.items.length} items, ${state.orders.length} orders.`,'ok');
     }catch(err){toast('Load failed: '+err.message,'err');}
   };
@@ -2311,7 +2335,7 @@ $e('importInput').addEventListener('change',function(e){
 
 /* ── LOCAL STORAGE ──────────────────────────────── */
 const SK='tcgPreOrderV5';
-function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted}));}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted,presentationMode:ui.presentationMode}));}catch(e){}}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(SK)||'null'); if(!d) return;
@@ -2322,6 +2346,7 @@ function load(){
     if(d.sortClients) ui.sortClients=d.sortClients;
     if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
     if(typeof d.raffleSoundMuted==='boolean') ui.raffleSoundMuted=d.raffleSoundMuted;
+    if(typeof d.presentationMode==='boolean') ui.presentationMode=d.presentationMode;
   }catch(e){}
 }
 
