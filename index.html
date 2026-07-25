@@ -267,6 +267,10 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 .fcb-row.fcb-total { background:var(--surf-3); border-bottom:none; padding:14px 16px; }
 .fcb-row.fcb-total .fcb-label { color:var(--text); font-weight:700; font-family:var(--fd); font-size:14px; }
 .fcb-row.fcb-total .fcb-val { font-size:19px; }
+.fcb-section-head { font-family:var(--fd); font-weight:700; font-size:14px; color:var(--text); margin:24px 0 12px; padding-top:20px; border-top:1px solid var(--border-s); }
+.fcb-section-head:first-child { margin-top:0; padding-top:0; border-top:none; }
+.fcb-section-sub { display:block; font-family:var(--fb); font-weight:400; font-size:11.5px; color:var(--text-f); margin-top:4px; letter-spacing:0; }
+.fcb-totals-row td { background:var(--surf-3); font-family:var(--fd); border-top:2px solid var(--border); }
 
 /* ── EMPTY STATES ─────────────────────────────────── */
 .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:46px 20px; gap:7px; text-align:center; border:1px dashed var(--border); border-radius:var(--r-s); margin-top:16px; }
@@ -772,26 +776,58 @@ function floatFundedOrders() {
   return state.orders.filter(o => o.storeInventory && o.fundedByFloat);
 }
 
-function floatBreakdownData() {
+/* Pure cash-pool tracking: how much of the floating capital "loan" is
+   currently deployed into store purchases, and how much is free. Deliberately
+   does NOT net in any refund/balance projections — those are a separate cash
+   flow (distributor <-> store, or store <-> client), not a subtraction from
+   this pool, and mixing them in here is what made "Available Now" confusing. */
+function floatPoolData() {
   const funded = floatFundedOrders();
-  let committed = 0, projectedReturn = 0;
-  funded.forEach(o => {
-    const fin = orderFin(o);       // orderFin() already exists — reuse it, don't reinvent
-    committed += fin.paid;
-    projectedReturn += fin.diff;   // NET sum — can legitimately go negative
-  });
-
-  let clientRefundLiability = 0;
-  state.orders.filter(o => !o.storeInventory).forEach(o => {
-    const fin = orderFin(o);
-    if (fin.diff > 0.005) clientRefundLiability += fin.diff;  // LIABILITY ONLY —
-    // do NOT net in orders where diff<0 (client owes more); those are a separate
-    // collections matter, not float consumption, and must not offset this figure.
-  });
-
+  let committed = 0;
+  funded.forEach(o => { committed += Number(o.amountPaid)||0; });
   const totalFloat = dashMetrics().float;
-  const availableNow = totalFloat - committed + projectedReturn - clientRefundLiability;
-  return { totalFloat, committed, projectedReturn, clientRefundLiability, availableNow, funded };
+  const available = totalFloat - committed;
+  return { totalFloat, committed, available, funded };
+}
+
+/* Per-item settlement projection, split into the two DIFFERENT cash flows
+   that were previously conflated:
+   - distributorDiff: COST basis, driven by allocation%, across ALL orders
+     (client + store) for this item. This is what the distributor will
+     refund you (positive) or what you still owe them (negative) — it has
+     nothing to do with which orders happened to be funded by float; the
+     distributor relationship is the same either way.
+   - clientDiff: SRP basis, across CLIENT (non-store) orders only. This is
+     what you'll refund clients (positive) or what they still owe you
+     (negative). */
+function itemSettlementData(item) {
+  const orders = itemOrders(item.id);
+  let qtyOrdered = 0, qtyAlloc = 0;
+  orders.forEach(o => { qtyOrdered += Number(o.qtyOrdered)||0; qtyAlloc += allocQty(o); });
+  const cost = Number(item.costPrice)||0;
+  const dpReqOrdered = cost*0.30*qtyOrdered;
+  const dpReqAlloc = cost*0.30*qtyAlloc;
+  const distributorDiff = dpReqOrdered - dpReqAlloc;   // + = distributor owes you, - = you owe distributor
+
+  let clientPaid = 0, clientValueAlloc = 0;
+  orders.filter(o=>!o.storeInventory).forEach(o => {
+    const f = orderFin(o);              // valueAlloc already uses dpPrice() = item.srp for non-store orders
+    clientPaid += f.paid; clientValueAlloc += f.valueAlloc;
+  });
+  const clientDiff = clientPaid - clientValueAlloc;    // + = you owe clients, - = clients owe you
+
+  return { item, orderCount: orders.length, qtyOrdered, qtyAlloc, dpReqOrdered, dpReqAlloc, distributorDiff, clientPaid, clientValueAlloc, clientDiff };
+}
+
+function allItemSettlements() {
+  const rows = state.items
+    .map(itemSettlementData)
+    .filter(r => r.orderCount > 0);
+  const totals = rows.reduce((t,r)=>({
+    distributorDiff: t.distributorDiff+r.distributorDiff,
+    clientDiff: t.clientDiff+r.clientDiff
+  }), {distributorDiff:0, clientDiff:0});
+  return { rows, totals };
 }
 function ensureValidTab() { if(ui.activeTab!=='clients'&&!getItem(ui.activeTab)) ui.activeTab='clients'; }
 
@@ -803,27 +839,28 @@ function renderDash() {
 }
 
 /* ── RENDER: FLOATING CAPITAL BREAKDOWN ───────────
-   Itemized on purpose — every line stays visible, never collapsed into one
-   opaque "Available Now" figure. Recalculates live as part of renderAll(). */
+   Two sections, each on its own price basis, kept deliberately separate:
+   1) Floating Capital Pool — plain cash tracking (loan out / loan free).
+   2) Per-Item Settlement Projection — distributor (cost) vs client (SRP)
+      refund/balance, side by side, so the markup gap is visible instead
+      of confusing. Recalculates live as part of renderAll(). */
 function renderFloatBreakdown() {
   const area=$e('floatBreakdownArea'); if(!area) return;
-  const d=floatBreakdownData();
-  const retCls=d.projectedReturn>0.005?'kpi-pos':d.projectedReturn<-0.005?'kpi-neg':'td-dim';
-  const availCls=d.availableNow>=0?'kpi-pos':'kpi-neg';
+  const pool=floatPoolData();
+  const availCls=pool.available>=0?'kpi-pos':'kpi-neg';
 
-  let html=`<div class="fcb-summary">
-    <div class="fcb-row"><span class="fcb-label">Total Floating Capital</span><span class="fcb-val">${php(d.totalFloat)}</span></div>
-    <div class="fcb-row"><span class="fcb-label">Committed to Store Purchases</span><span class="fcb-val kpi-neg">−${php(d.committed)}</span></div>
-    <div class="fcb-row fcb-sub"><span class="fcb-label">↳ Projected to Return</span><span class="fcb-val ${retCls}">${d.projectedReturn>=0?'+':'−'}${php(Math.abs(d.projectedReturn))}</span></div>
-    <div class="fcb-row"><span class="fcb-label">Projected Client Refunds Owed</span><span class="fcb-val kpi-neg">−${php(d.clientRefundLiability)}</span></div>
-    <div class="fcb-row fcb-total"><span class="fcb-label">Available Now</span><span class="fcb-val ${availCls}">${php(d.availableNow)}</span></div>
+  let html=`<div class="fcb-section-head">Floating Capital Pool</div>
+  <div class="fcb-summary">
+    <div class="fcb-row"><span class="fcb-label">Total Floating Capital</span><span class="fcb-val">${php(pool.totalFloat)}</span></div>
+    <div class="fcb-row"><span class="fcb-label">Committed to Store Purchases</span><span class="fcb-val kpi-neg">−${php(pool.committed)}</span></div>
+    <div class="fcb-row fcb-total"><span class="fcb-label">Available (Uncommitted)</span><span class="fcb-val ${availCls}">${php(pool.available)}</span></div>
   </div>`;
 
-  if(!d.funded.length){
+  if(!pool.funded.length){
     html+=`<div class="empty"><div class="empty-ico">💰</div><strong>No float-funded orders yet</strong><span>Check "Funded by Floating Capital" on a Store Inventory order to track it here.</span></div>`;
   } else {
     let rows='';
-    d.funded.forEach(order=>{
+    pool.funded.forEach(order=>{
       const item=getItem(order.itemId), fin=orderFin(order);
       const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
       const iEta=item?esc(item.eta||'—'):'—';
@@ -844,6 +881,45 @@ function renderFloatBreakdown() {
     html+=`<div class="tbl-wrap" style="margin-top:16px"><table class="item-tbl">
       <thead><tr><th>Item</th><th>ETA</th><th class="r">Qty Ordered</th><th class="r">Qty Allocated</th><th class="r">DP Paid</th><th class="r">Value of Allocated Goods</th><th class="r">Status</th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
+  }
+
+  const settle=allItemSettlements();
+  html+=`<div class="fcb-section-head">Per-Item Settlement Projection<span class="fcb-section-sub">Distributor is always cost basis · Clients are always SRP basis · 🟢 money coming in · 🔴 money going out</span></div>`;
+
+  if(!settle.rows.length){
+    html+=`<div class="empty"><div class="empty-ico">📊</div><strong>No orders yet</strong><span>Once items have orders, their allocation-based settlement projections will appear here.</span></div>`;
+  } else {
+    /* posIsIncoming: does a POSITIVE diff mean money flowing IN to the store?
+       true for the distributor column (distributor owes you = incoming),
+       false for the client column (you owe clients = outgoing) — keeping
+       green=incoming/red=outgoing consistent across both columns, rather
+       than tying color to the raw sign of diff, is exactly what removes
+       the confusion between the two different cash flows. */
+    const pill=(diff, posLabel, negLabel, posIsIncoming)=>{
+      if(Math.abs(diff)<0.005) return `<span class="pill pill-ok">Settled</span>`;
+      const incoming = posIsIncoming ? diff>0 : diff<0;
+      const cls = incoming ? 'pill-ref' : 'pill-bal';
+      const label = diff>0 ? posLabel : negLabel;
+      return `<span class="pill ${cls}">${label} ${php(Math.abs(diff))}</span>`;
+    };
+    let rows='';
+    settle.rows.forEach(r=>{
+      rows+=`<tr>
+        <td class="td-bold">${esc(r.item.name)}</td>
+        <td class="td-r mono">${r.qtyOrdered}</td>
+        <td class="td-r mono">${r.qtyAlloc}</td>
+        <td class="td-r">${pill(r.distributorDiff,'Distributor Owes You','You Owe Distributor',true)}</td>
+        <td class="td-r">${pill(r.clientDiff,'You Owe Clients','Clients Owe You',false)}</td>
+      </tr>`;
+    });
+    html+=`<div class="tbl-wrap" style="margin-top:16px"><table class="item-tbl">
+      <thead><tr><th>Item</th><th class="r">Qty Ordered</th><th class="r">Qty Allocated</th><th class="r">Distributor (Cost)</th><th class="r">Clients (SRP)</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr class="fcb-totals-row">
+        <td colspan="3" class="td-bold">Totals</td>
+        <td class="td-r">${pill(settle.totals.distributorDiff,'Distributor Owes You','You Owe Distributor',true)}</td>
+        <td class="td-r">${pill(settle.totals.clientDiff,'You Owe Clients','Clients Owe You',false)}</td>
+      </tr></tfoot></table></div>`;
   }
   area.innerHTML=html;
 }
