@@ -238,6 +238,15 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 .brk-delta-neg  { background:var(--red-s);   color:var(--red); }
 .brk-delta-zero { background:var(--surf-3);  color:var(--text-d); }
 
+.brk-profit { border-top:1px solid var(--border-s); padding-top:12px; display:flex; flex-direction:column; gap:4px; }
+.brk-profit-label { font-size:11.5px; color:var(--text-d); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.brk-profit-value { font-family:var(--fd); font-size:20px; font-weight:700; color:var(--green); }
+.brk-profit-value.brk-profit-neg { color:var(--red); }
+.brk-profit-sub { font-size:11px; color:var(--text-f); font-family:var(--fm); }
+.brk-profit-tag { font-family:var(--fm); font-size:9.5px; font-weight:700; padding:1px 7px; border-radius:20px; text-transform:uppercase; letter-spacing:0.04em; }
+.brk-profit-tag.confirmed { background:var(--green-s); color:var(--green); border:1px solid rgba(79,209,160,0.25); }
+.brk-profit-tag.estimated { background:var(--gold-s); color:var(--gold); border:1px solid rgba(244,197,83,0.25); }
+
 /* ── PILLS ────────────────────────────────────────── */
 .pill { display:inline-flex; align-items:center; padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:600; font-family:var(--fm); white-space:nowrap; }
 .pill-ref { background:var(--green-s); color:var(--green); border:1px solid rgba(79,209,160,0.2); }
@@ -246,6 +255,18 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 
 /* ── STORE BADGE ──────────────────────────────────── */
 .si-badge { display:inline-flex; align-items:center; background:var(--gold-s); color:var(--gold); border:1px solid rgba(244,197,83,0.25); font-size:9.5px; font-weight:700; font-family:var(--fm); padding:1px 6px; border-radius:3px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
+.float-badge { display:inline-flex; align-items:center; background:var(--gold-s); color:var(--gold); border:1px solid rgba(244,197,83,0.25); font-size:9.5px; font-weight:700; font-family:var(--fm); padding:1px 6px; border-radius:3px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
+
+/* ── FLOATING CAPITAL BREAKDOWN ───────────────────── */
+.fcb-summary { display:flex; flex-direction:column; gap:0; border:1px solid var(--border); border-radius:var(--r-s); overflow:hidden; }
+.fcb-row { display:flex; align-items:center; justify-content:space-between; padding:11px 16px; background:var(--surf-2); border-bottom:1px solid var(--border-s); font-size:13px; }
+.fcb-row .fcb-label { color:var(--text-d); }
+.fcb-row .fcb-val { font-family:var(--fm); font-weight:600; }
+.fcb-row.fcb-sub { padding-left:30px; background:var(--surf); }
+.fcb-row.fcb-sub .fcb-label { font-size:12px; }
+.fcb-row.fcb-total { background:var(--surf-3); border-bottom:none; padding:14px 16px; }
+.fcb-row.fcb-total .fcb-label { color:var(--text); font-weight:700; font-family:var(--fd); font-size:14px; }
+.fcb-row.fcb-total .fcb-val { font-size:19px; }
 
 /* ── EMPTY STATES ─────────────────────────────────── */
 .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:46px 20px; gap:7px; text-align:center; border:1px dashed var(--border); border-radius:var(--r-s); margin-top:16px; }
@@ -293,6 +314,16 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 
 .raffle-empty-pool { text-align:center; color:var(--text-f); font-size:12.5px; padding:24px 10px; font-style:italic; border:1px dashed var(--border); border-radius:var(--r-xs); }
 
+.raffle-sound-toggle { background:var(--surf-3); border:1px solid var(--border); color:var(--text-d); border-radius:20px; padding:5px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all 0.14s; }
+.raffle-sound-toggle:hover { border-color:var(--accent); color:var(--text); }
+
+/* ── RAFFLE WINNER POPUP ──────────────────────────── */
+.raffle-winner-overlay { position:fixed; inset:0; z-index:300; display:flex; align-items:center; justify-content:center; background:rgba(13,17,23,0.75); animation:fcbFadeIn 0.16s ease; }
+@keyframes fcbFadeIn { from { opacity:0; } to { opacity:1; } }
+.raffle-winner-card { border:2px solid var(--gold); border-radius:16px; padding:36px 44px; text-align:center; max-width:420px; background:var(--surf); box-shadow:0 20px 60px -10px rgba(0,0,0,0.6); animation:fcbPopIn 0.24s cubic-bezier(0.2,0.9,0.3,1.3); }
+@keyframes fcbPopIn { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:scale(1); } }
+.raffle-winner-name { font-size:28px; font-weight:800; color:var(--gold); font-family:var(--fd); margin:10px 0 4px; }
+
 /* ── RESPONSIVE ───────────────────────────────────── */
 @media (max-width:900px) { .dashboard { grid-template-columns:1fr 1fr; } .raffle-grid { grid-template-columns:1fr; } }
 @media (max-width:580px) { .app { padding:14px 14px 60px; } .dashboard { grid-template-columns:1fr; } .form-grid { flex-direction:column; } .ff { min-width:100%; } }
@@ -319,6 +350,13 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
     <div class="kpi"><div class="k-label">Distributor DP Required</div><div class="k-value mono" id="kpiDistDP">₱0.00</div><div class="k-hint">∑ (Cost × 30%) × Qty ordered, all orders</div></div>
     <div class="kpi"><div class="k-label">Public DP Collected</div><div class="k-value mono kpi-gold" id="kpiPubDP">₱0.00</div><div class="k-hint">Total amount paid across all clients &amp; store orders</div></div>
   </section>
+
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">💰 Floating Capital Breakdown</div></div>
+    <div class="panel-body">
+      <div id="floatBreakdownArea"></div>
+    </div>
+  </div>
 
   <div class="panel">
     <div class="panel-head"><div class="panel-title">📦 Item Master List <span class="badge" id="itemBadge">0 items</span></div></div>
@@ -359,6 +397,9 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
         <div class="ff fxs" style="align-self:flex-end">
           <label class="store-check" id="storeCheckLabel"><input type="checkbox" id="oStore"> 🏪 Store Inventory</label>
         </div>
+        <div class="ff fxs" style="align-self:flex-end;display:none" id="fundedFloatWrap">
+          <label class="store-check" id="fundedFloatLabel"><input type="checkbox" id="oFundedFloat"> 💰 Funded by Floating Capital</label>
+        </div>
         <div class="ff fxs" style="justify-content:flex-end;align-self:flex-end">
           <button type="submit" class="btn btn-primary">+ Add to Basket</button>
         </div>
@@ -374,7 +415,7 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
   </div>
 
   <div class="panel">
-    <div class="panel-head"><div class="panel-title">🎡 Raffle Wheel <span class="badge" id="raffleBadge">0 items</span></div></div>
+    <div class="panel-head"><div class="panel-title">🎡 Raffle Wheel <span class="badge" id="raffleBadge">0 items</span></div><button type="button" class="raffle-sound-toggle" id="raffleSoundToggle" data-a="toggle-raffle-sound">🔊 Sound On</button></div>
     <div class="panel-body">
       <div class="ff" style="max-width:360px;margin-bottom:18px">
         <label for="raffleItemSelect">Select Item</label>
@@ -386,6 +427,7 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 </div>
 
 <div id="colPickerOverlay"></div>
+<div id="raffleWinnerPopup"></div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -421,7 +463,8 @@ let ui = {
   collapsedClients: new Set(),
   showColPicker:    false,
   raffleSelectedItem: null,    /* itemId currently shown in the Raffle Wheel panel */
-  raffleSpinning:   {}         /* itemId+poolKey -> true while a spin animation is in flight, guards double-clicks */
+  raffleSpinning:   {},        /* itemId+poolKey -> true while a spin animation is in flight, guards double-clicks */
+  raffleSoundMuted: false
 };
 
 /* ── UTILITIES ──────────────────────────────────── */
@@ -553,6 +596,84 @@ function raffleWeightedPick(entries) {
   for(const e of entries){ if(r<e.remainder) return e; r-=e.remainder; }
   return entries[entries.length-1];
 }
+
+/* ── RAFFLE SOUND EFFECTS (Web Audio API — no external audio files) ─────
+   Synthesized programmatically so the app stays a single dependency-free
+   HTML file, consistent with its existing architecture. */
+let _audioCtx = null;
+function getRaffleAudioCtx() {
+  if (ui.raffleSoundMuted) return null;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!_audioCtx) _audioCtx = new AC();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
+function playRaffleTone(ctx, freq, t, dur, type, peak) {
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.linearRampToValueAtTime(peak || 0.15, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t); osc.stop(t + dur + 0.02);
+}
+
+function playRaffleTick() {
+  const ctx = getRaffleAudioCtx(); if (!ctx) return;
+  playRaffleTone(ctx, 1200, ctx.currentTime, 0.045, 'square', 0.08);
+}
+
+function playRaffleWhoosh() {
+  const ctx = getRaffleAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(180, t);
+  osc.frequency.exponentialRampToValueAtTime(900, t + 0.35);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t); osc.stop(t + 0.45);
+}
+
+function playRaffleFanfare() {
+  const ctx = getRaffleAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+  notes.forEach((freq, i) => { playRaffleTone(ctx, freq, t + i * 0.11, 0.28, 'triangle', 0.18); });
+}
+
+function playRaffleTickSequence(totalMs) {
+  if (ui.raffleSoundMuted) return;
+  let elapsed = 0, interval = 60;
+  const growth = 1.09;
+  while (elapsed < totalMs - 150) {
+    setTimeout(playRaffleTick, elapsed);
+    elapsed += interval;
+    interval *= growth;
+  }
+}
+
+/* ── RAFFLE WINNER POPUP ──────────────────────────────────────────────── */
+let _raffleWinnerTimeout = null;
+function showRaffleWinnerPopup(name, itemName, poolLabel) {
+  const overlay = $e('raffleWinnerPopup'); if (!overlay) return;
+  clearTimeout(_raffleWinnerTimeout);
+  overlay.innerHTML = `<div class="raffle-winner-overlay" data-a="close-raffle-popup">
+    <div class="raffle-winner-card">
+      <div style="font-size:44px">🎉</div>
+      <div class="raffle-winner-name">${esc(name)}</div>
+      <div style="color:var(--text-d);margin:8px 0 20px">wins <strong style="color:var(--text)">${esc(itemName)}</strong><br>(${esc(poolLabel)})</div>
+      <button type="button" data-a="close-raffle-popup" class="btn btn-ghost">Close</button>
+    </div>
+  </div>`;
+  _raffleWinnerTimeout = setTimeout(() => { overlay.innerHTML = ''; }, 5000);
+}
+
 function raffleSpinRotation(mid, spins) {
   spins = spins==null ? 6 : spins;
   return spins*360 + ((360 - mid) % 360);
@@ -565,11 +686,11 @@ function ralPolarToCartesian(cx,cy,r,angleDeg) {
   const rad=(angleDeg-90)*Math.PI/180;
   return { x:cx+r*Math.cos(rad), y:cy+r*Math.sin(rad) };
 }
-function raffleBuildWheelSVG(entries, size) {
+function raffleBuildWheelSVG(entries, size, elId) {
   size = size || 220;
   const cx=size/2, cy=size/2, r=size/2-4;
   if(!entries.length){
-    return `<svg id="raffleWheelSvg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="raffle-wheel-svg"><circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--surf-3)" stroke="var(--border)" stroke-width="2"/></svg>`;
+    return `<svg id="${elId}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="raffle-wheel-svg"><circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--surf-3)" stroke="var(--border)" stroke-width="2"/></svg>`;
   }
   const ranges=raffleSliceRanges(entries);
   let paths='';
@@ -579,7 +700,7 @@ function raffleBuildWheelSVG(entries, size) {
     const d=`M ${cx} ${cy} L ${startPt.x.toFixed(2)} ${startPt.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${endPt.x.toFixed(2)} ${endPt.y.toFixed(2)} Z`;
     paths+=`<path d="${d}" fill="${raffleSliceColor(i)}" stroke="var(--surf-2)" stroke-width="1.5"/>`;
   });
-  return `<svg id="raffleWheelSvg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="raffle-wheel-svg" style="transform:rotate(0deg)">${paths}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="2"/></svg>`;
+  return `<svg id="${elId}" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="raffle-wheel-svg" style="transform:rotate(0deg)">${paths}<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="2"/></svg>`;
 }
 function itemSummary(itemId) {
   const orders=itemOrders(itemId); let qtyOrd=0,qtyAlloc=0,paid=0,fc=0,val=0,srpVal=0;
@@ -610,10 +731,55 @@ function getActualAllocQty(item) {
   const v=Number(item.actualAllocQty);
   return isNaN(v)?naturalFloor:Math.max(0,Math.floor(v));
 }
+/* Client-only projected profit for an item: of the Actual Allocated units, only the share
+   originally ordered by clients (as opposed to store-inventory restock) is treated as a sale —
+   store-bound stock hasn't been sold to anyone, so it contributes no profit here. That client
+   share is estimated from how the item's total order volume split between clients and store
+   at order time (Client Ordered ÷ Total Ordered), applied to whatever the real/estimated
+   allocation turns out to be. Deliberately built from getActualAllocQty/naturalItemAllocation,
+   which already read the item's live allocationPct and override state — so this recalculates
+   automatically wherever those inputs change, with no extra wiring needed. isConfirmed mirrors
+   whether the distributor-actual override is set, exactly like the Calculated/Actual distinction
+   already shown elsewhere on these cards. */
+function itemClientProfit(item) {
+  const b=itemOrderedBreakdown(item.id);
+  const actual=getActualAllocQty(item);
+  const clientShare=b.totalQty>0?(b.clientQty/b.totalQty):0;
+  const clientAllocQty=actual*clientShare;
+  const margin=(Number(item.srp)||0)-(Number(item.costPrice)||0);
+  return { profit:clientAllocQty*margin, clientAllocQty, margin, isConfirmed:!!item.actualAllocOverride };
+}
 function dashMetrics() {
   let pubDP=0,distDP=0;
   state.orders.forEach(o=>{ const item=getItem(o.itemId); if(!item) return; pubDP+=Number(o.amountPaid)||0; distDP+=(Number(item.costPrice)||0)*0.30*(Number(o.qtyOrdered)||0); });
   return {pubDP,distDP,float:pubDP-distDP};
+}
+
+/* ── FLOATING CAPITAL BREAKDOWN ────────────────────────────────────────── */
+function floatFundedOrders() {
+  return state.orders.filter(o => o.storeInventory && o.fundedByFloat);
+}
+
+function floatBreakdownData() {
+  const funded = floatFundedOrders();
+  let committed = 0, projectedReturn = 0;
+  funded.forEach(o => {
+    const fin = orderFin(o);       // orderFin() already exists — reuse it, don't reinvent
+    committed += fin.paid;
+    projectedReturn += fin.diff;   // NET sum — can legitimately go negative
+  });
+
+  let clientRefundLiability = 0;
+  state.orders.filter(o => !o.storeInventory).forEach(o => {
+    const fin = orderFin(o);
+    if (fin.diff > 0.005) clientRefundLiability += fin.diff;  // LIABILITY ONLY —
+    // do NOT net in orders where diff<0 (client owes more); those are a separate
+    // collections matter, not float consumption, and must not offset this figure.
+  });
+
+  const totalFloat = dashMetrics().float;
+  const availableNow = totalFloat - committed + projectedReturn - clientRefundLiability;
+  return { totalFloat, committed, projectedReturn, clientRefundLiability, availableNow, funded };
 }
 function ensureValidTab() { if(ui.activeTab!=='clients'&&!getItem(ui.activeTab)) ui.activeTab='clients'; }
 
@@ -622,6 +788,52 @@ function renderDash() {
   const m=dashMetrics(), fe=$e('kpiFloat');
   fe.textContent=php(m.float); fe.className='k-value mono '+(m.float>=0?'kpi-pos':'kpi-neg');
   $e('kpiDistDP').textContent=php(m.distDP); $e('kpiPubDP').textContent=php(m.pubDP);
+}
+
+/* ── RENDER: FLOATING CAPITAL BREAKDOWN ───────────
+   Itemized on purpose — every line stays visible, never collapsed into one
+   opaque "Available Now" figure. Recalculates live as part of renderAll(). */
+function renderFloatBreakdown() {
+  const area=$e('floatBreakdownArea'); if(!area) return;
+  const d=floatBreakdownData();
+  const retCls=d.projectedReturn>0.005?'kpi-pos':d.projectedReturn<-0.005?'kpi-neg':'td-dim';
+  const availCls=d.availableNow>=0?'kpi-pos':'kpi-neg';
+
+  let html=`<div class="fcb-summary">
+    <div class="fcb-row"><span class="fcb-label">Total Floating Capital</span><span class="fcb-val">${php(d.totalFloat)}</span></div>
+    <div class="fcb-row"><span class="fcb-label">Committed to Store Purchases</span><span class="fcb-val kpi-neg">−${php(d.committed)}</span></div>
+    <div class="fcb-row fcb-sub"><span class="fcb-label">↳ Projected to Return</span><span class="fcb-val ${retCls}">${d.projectedReturn>=0?'+':'−'}${php(Math.abs(d.projectedReturn))}</span></div>
+    <div class="fcb-row"><span class="fcb-label">Projected Client Refunds Owed</span><span class="fcb-val kpi-neg">−${php(d.clientRefundLiability)}</span></div>
+    <div class="fcb-row fcb-total"><span class="fcb-label">Available Now</span><span class="fcb-val ${availCls}">${php(d.availableNow)}</span></div>
+  </div>`;
+
+  if(!d.funded.length){
+    html+=`<div class="empty"><div class="empty-ico">💰</div><strong>No float-funded orders yet</strong><span>Check "Funded by Floating Capital" on a Store Inventory order to track it here.</span></div>`;
+  } else {
+    let rows='';
+    d.funded.forEach(order=>{
+      const item=getItem(order.itemId), fin=orderFin(order);
+      const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
+      const iEta=item?esc(item.eta||'—'):'—';
+      let statusCell;
+      if(fin.diff>0.005) statusCell=`<span class="pill pill-ref">Coming Back ${php(fin.diff)}</span>`;
+      else if(fin.diff<-0.005) statusCell=`<span class="pill pill-bal">${php(Math.abs(fin.diff))} More Needed</span>`;
+      else statusCell=`<span class="pill pill-ok">Settled</span>`;
+      rows+=`<tr>
+        <td class="td-bold">${iName}</td>
+        <td class="td-dim">${iEta}</td>
+        <td class="td-r mono">${esc(order.qtyOrdered)}</td>
+        <td class="td-r mono">${allocQty(order)}</td>
+        <td class="td-r mono">${php(fin.paid)}</td>
+        <td class="td-r mono td-dim">${php(fin.valueAlloc)}</td>
+        <td class="td-r">${statusCell}</td>
+      </tr>`;
+    });
+    html+=`<div class="tbl-wrap" style="margin-top:16px"><table class="item-tbl">
+      <thead><tr><th>Item</th><th>ETA</th><th class="r">Qty Ordered</th><th class="r">Qty Allocated</th><th class="r">DP Paid</th><th class="r">Value of Allocated Goods</th><th class="r">Status</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+  }
+  area.innerHTML=html;
 }
 
 /* ── RENDER: ITEMS TABLE ────────────────────────── */
@@ -710,6 +922,12 @@ function renderItemBreakdown() {
       else deltaBadge=`<span class="brk-delta brk-delta-zero">matches calculated</span>`;
     }
 
+    const cp=itemClientProfit(item);
+    const profitTag=cp.isConfirmed
+      ? `<span class="brk-profit-tag confirmed">Confirmed</span>`
+      : `<span class="brk-profit-tag estimated">Estimated</span>`;
+    const profitValClass=cp.profit<0?'brk-profit-value brk-profit-neg':'brk-profit-value';
+
     const barSection=b.totalQty>0
       ? `<div class="brk-bar">
           <div class="brk-bar-seg brk-bar-client" style="width:${clientPct}%" title="Client: ${b.clientQty}"></div>
@@ -755,6 +973,12 @@ function renderItemBreakdown() {
           ${deltaBadge}
         </div>`:''}
       </div>
+
+      <div class="brk-profit">
+        <div class="brk-profit-label">Projected Client Profit ${profitTag}</div>
+        <div class="${profitValClass}">${php(cp.profit)}</div>
+        <div class="brk-profit-sub" title="Client-only: excludes store-inventory stock, which hasn't been sold to anyone">${cp.clientAllocQty.toFixed(2)} client-bound units × ${php(cp.margin)} margin</div>
+      </div>
     </div>`;
   });
   html+='</div>';
@@ -788,6 +1012,10 @@ function updateOrderHint() {
 }
 
 /* ── RENDER: RAFFLE WHEEL ────────────────────────── */
+function syncRaffleSoundToggle() {
+  const btn=$e('raffleSoundToggle'); if(!btn) return;
+  btn.textContent = ui.raffleSoundMuted ? '🔇 Sound Off' : '🔊 Sound On';
+}
 function syncRaffleItemSelect() {
   const sel=$e('raffleItemSelect'); if(!sel) return;
   const prev=sel.value;
@@ -849,13 +1077,17 @@ function renderRafflePool(itemId, poolKey, title, subtitle) {
 
   const spinKey=itemId+'_'+poolKey;
   const spinDisabled = eligible.length===0 || !!ui.raffleSpinning[spinKey];
-  const wheelSvg = raffleBuildWheelSVG(eligible, 210);
+  const wheelSvg = raffleBuildWheelSVG(eligible, 210, 'raffleWheelSvg_'+poolKey);
+  const decimalSum = allEntries.reduce((s,e)=>s+e.remainder,0);
 
   container.innerHTML = `<div class="raffle-pool">
     <div class="raffle-pool-hd">
       <div><div class="raffle-pool-title">${title}</div><div class="raffle-pool-sub">${subtitle}</div></div>
     </div>
 
+    <div class="raffle-count-row">
+      <span>Sum of decimals: <strong class="mono" style="color:var(--text)">${decimalSum.toFixed(2)}</strong></span>
+    </div>
     <div class="raffle-count-row">
       <span>Units to raffle:</span>
       <input type="number" class="raffle-count-input" min="0" step="1" value="${targetCount}" data-a="raffle-count" data-item="${esc(itemId)}" data-pool="${poolKey}">
@@ -892,7 +1124,7 @@ function raffleSpin(itemId, poolKey) {
   const winnerRange=ranges.find(r=>r.name===winner.name);
   if(!winnerRange){ toast('Could not compute raffle result — please try again.','err'); return; }
 
-  const svg=$e('raffleWheelSvg');
+  const svg=$e('raffleWheelSvg_'+poolKey);
   if(!svg){ toast('Wheel not ready — please try again.','err'); return; }
 
   ui.raffleSpinning[key]=true;
@@ -902,6 +1134,7 @@ function raffleSpin(itemId, poolKey) {
   const rotation=raffleSpinRotation(winnerRange.mid,6);
   svg.getBoundingClientRect(); /* force reflow so the transition reliably re-triggers */
   svg.style.transform=`rotate(${rotation}deg)`;
+  playRaffleWhoosh(); playRaffleTickSequence(4200);
 
   setTimeout(()=>{
     const pool=getRafflePoolState(itemId,poolKey);
@@ -909,7 +1142,10 @@ function raffleSpin(itemId, poolKey) {
     ui.raffleSpinning[key]=false;
     save();
     renderRaffleArea();
-    toast(`🎉 ${winner.name} wins!`,'ok');
+    playRaffleFanfare();
+    const item = getItem(itemId);
+    const poolLabel = poolKey === 'allocated' ? 'Pool A — Has Allocation' : 'Pool B — No Allocation';
+    showRaffleWinnerPopup(winner.name, item ? item.name : 'this item', poolLabel);
   },4300);
 }
 
@@ -1060,7 +1296,11 @@ function renderClientTab() {
             👤 ${esc(name)} <span class="badge">${orders.length} item${orders.length===1?'':'s'}</span>
           </span>
           ${collapsedInfo}
-          <button type="button" class="btn btn-ghost" data-a="download-receipt" data-client="${esc(name)}">⬇ Receipt</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost" data-a="quick-add-item" data-client="${esc(name)}">+ Add Item</button>
+            <button type="button" class="btn btn-ghost" data-a="copy-client-message" data-client="${esc(name)}">📋 Copy Update</button>
+            <button type="button" class="btn btn-ghost" data-a="download-receipt" data-client="${esc(name)}">⬇ Receipt</button>
+          </div>
         </div>
       </td></tr>`;
 
@@ -1069,6 +1309,7 @@ function renderClientTab() {
         const item=getItem(order.itemId), fin=orderFin(order), raw=allocQtyRaw(order);
         const isEdit=ui.editOrderId===order.id;
         const siBadge=order.storeInventory?`<span class="si-badge">Store</span>`:'';
+        const floatBadge=order.fundedByFloat?`<span class="float-badge">💰 Float</span>`:'';
         const fcCls=fin.fc>0.005?'kpi-pos':fin.fc<-0.005?'kpi-neg':'td-dim';
         const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
         const iEta=item?esc(item.eta||'—'):'—';
@@ -1097,7 +1338,7 @@ function renderClientTab() {
         }
 
         const cellMap={
-          item:     `<td class="${item?'td-bold':''}">${iName} ${siBadge}</td>`,
+          item:     `<td class="${item?'td-bold':''}">${iName} ${siBadge} ${floatBadge}</td>`,
           eta:      `<td class="td-dim">${iEta}</td>`,
           qty:      isEdit?`<td class="td-r"><input id="eq_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.qtyOrdered)}" min="1"></td>`:`<td class="td-r mono">${esc(order.qtyOrdered)}</td>`,
           alloc:    `<td class="td-c">${allocInner}</td>`,
@@ -1167,6 +1408,7 @@ function renderItemTab(itemId) {
   orders.forEach(order=>{
     const fin=orderFin(order), raw=allocQtyRaw(order);
     const siBadge=order.storeInventory?`<span class="si-badge">Store</span>`:'';
+    const floatBadge=order.fundedByFloat?`<span class="float-badge">💰 Float</span>`:'';
     const fcCls=fin.fc>0.005?'kpi-pos':fin.fc<-0.005?'kpi-neg':'td-dim';
     const isEdit=ui.editOrderId===order.id;
 
@@ -1198,7 +1440,7 @@ function renderItemTab(itemId) {
 
     if(isEdit){
       html+=`<tr data-oid="${esc(order.id)}">
-        <td class="td-bold">${esc(order.clientName)} ${siBadge}</td>
+        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge}</td>
         <td class="td-r"><input id="eq_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.qtyOrdered)}" min="1"></td>
         <td class="td-c">${allocInner}</td>
         <td class="td-r"><input id="ep_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.amountPaid)}" min="0" step="0.01"></td>
@@ -1209,7 +1451,7 @@ function renderItemTab(itemId) {
       </tr>`;
     } else {
       html+=`<tr data-oid="${esc(order.id)}">
-        <td class="td-bold">${esc(order.clientName)} ${siBadge}</td>
+        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge}</td>
         <td class="td-r mono">${esc(order.qtyOrdered)}</td>
         <td class="td-c">${allocInner}</td>
         <td class="td-r mono">${php(order.amountPaid)}</td>
@@ -1251,7 +1493,7 @@ function renderItemTab(itemId) {
   area.innerHTML=html;
 }
 
-function renderAll(){renderDash();renderItems();syncOrderForm();renderLedger();renderBasket();syncRaffleItemSelect();renderRaffleArea();}
+function renderAll(){renderDash();renderFloatBreakdown();renderItems();syncOrderForm();renderLedger();renderBasket();syncRaffleItemSelect();syncRaffleSoundToggle();renderRaffleArea();}
 
 /* ── ACTIONS: ITEMS ─────────────────────────────── */
 $e('itemForm').addEventListener('submit',function(e){
@@ -1298,8 +1540,30 @@ function delItem(id){
 /* ── ACTIONS: ORDERS ────────────────────────────── */
 $e('oItem').addEventListener('change',autoFillDP);
 $e('oQty').addEventListener('input',autoFillDP);
-$e('oStore').addEventListener('change',function(){ $e('storeCheckLabel').classList.toggle('is-store',this.checked); autoFillDP(); });
+$e('oStore').addEventListener('change',function(){
+  $e('storeCheckLabel').classList.toggle('is-store',this.checked);
+  $e('fundedFloatWrap').style.display=this.checked?'':'none';
+  if(!this.checked){ $e('oFundedFloat').checked=false; $e('fundedFloatLabel').classList.remove('is-store'); }
+  autoFillDP();
+});
+$e('oFundedFloat').addEventListener('change',function(){ $e('fundedFloatLabel').classList.toggle('is-store',this.checked); });
 $e('oClient').addEventListener('input',function(){ if(ui.basket.length) renderBasket(); });
+
+/* Mirrors autoFillDP's behavior for the inline edit-mode Qty field: as the shop owner
+   corrects an order's quantity, the Amount Paid field recalculates to the 30% DP for the
+   new quantity — same as when adding a new order. Delegated on document since eq_/ep_
+   inputs are freshly created on every render, not present at page-load time. The user can
+   still manually adjust Amount Paid afterward before clicking Save, exactly as in the Add
+   Order form, so a real, already-recorded payment is never silently locked in as "wrong". */
+document.addEventListener('input',function(e){
+  const id=e.target.id;
+  if(!id||!id.startsWith('eq_')) return;
+  const orderId=id.slice(3);
+  const order=state.orders.find(o=>o.id===orderId); if(!order) return;
+  const paidInput=$e('ep_'+orderId); if(!paidInput) return; /* Amount Paid column hidden -- nothing to fill */
+  const qty=parseInt(e.target.value,10)||0;
+  if(qty>0) paidInput.value=requiredDP(order.itemId,qty,order.storeInventory).toFixed(2);
+});
 $e('orderForm').addEventListener('submit',function(e){ e.preventDefault(); addToBasket(); });
 
 /* ── ACTIONS: RAFFLE WHEEL ──────────────────────── */
@@ -1311,10 +1575,17 @@ $e('raffleItemSelect').addEventListener('change',function(){
 
 function saveOrderEdit(id){
   const order=state.orders.find(o=>o.id===id); if(!order) return;
-  const qEl=$e('eq_'+id), pEl=$e('ep_'+id); if(!qEl||!pEl) return;
-  const qty=parseInt(qEl.value,10)||1, paid=parseFloat(pEl.value)||0;
-  if(qty<=0){toast('Quantity must be at least 1.','err');return;}
-  order.qtyOrdered=qty; order.amountPaid=paid; ui.editOrderId=null;
+  const qEl=$e('eq_'+id), pEl=$e('ep_'+id);
+  if(!qEl && !pEl){ toast('Could not save — Qty and Amount Paid are both hidden. Show at least one column to edit.','err'); return; }
+  if(qEl){
+    const qty=parseInt(qEl.value,10)||1;
+    if(qty<=0){ toast('Quantity must be at least 1.','err'); return; }
+    order.qtyOrdered=qty;
+  }
+  if(pEl){
+    order.amountPaid=parseFloat(pEl.value)||0;
+  }
+  ui.editOrderId=null;
   renderLedger(); renderDash(); save(); toast('Order updated.','ok');
 }
 function delOrder(id){
@@ -1335,17 +1606,37 @@ function toggleOverride(id){
 }
 function setOverrideQty(id,val){ const order=state.orders.find(o=>o.id===id); if(!order) return; order.overriddenQty=Math.max(0,Math.floor(Number(val)||0)); save(); }
 
+/* Lets the shop owner quickly start a new order for a client who already has orders,
+   without needing to scroll up and retype their name. Guards against silently reassigning
+   an in-progress, uncommitted basket to the wrong client if one is already pending. */
+function quickAddItemForClient(name){
+  if(ui.basket.length){
+    const currentBasketClient=$e('oClient').value.trim();
+    if(currentBasketClient && currentBasketClient!==name){
+      toast(`You have unconfirmed items in the basket for "${currentBasketClient}" — commit or clear that basket first.`,'err');
+      return;
+    }
+  }
+  $e('oClient').value=name;
+  if(ui.basket.length) renderBasket();
+  $e('orderForm').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{ const sel=$e('oItem'); if(sel && !sel.disabled) sel.focus(); },350);
+  toast(`Ready to add an item for "${name}" — pick an item above.`,'ok');
+}
+
 /* ── BASKET ─────────────────────────────────────── */
 function addToBasket(){
   const itemId=$e('oItem').value, qty=parseInt($e('oQty').value,10)||0;
   const paid=parseFloat($e('oPaid').value)||0, isStore=$e('oStore').checked;
+  const fundedFloat=isStore && $e('oFundedFloat').checked;
   if(!itemId){toast('Select an item first.','err');return;}
   if(qty<=0){toast('Quantity must be at least 1.','err');return;}
   const dupe=ui.basket.find(b=>b.itemId===itemId);
   if(dupe) toast(`Note: "${getItem(itemId)?.name}" already has a line in this basket.`,'ok');
-  ui.basket.push({tempId:uid(),itemId,qty,amountPaid:paid,storeInventory:isStore});
-  $e('oItem').value=''; $e('oQty').value=1; $e('oPaid').value=''; $e('oStore').checked=false;
-  $e('storeCheckLabel').classList.remove('is-store'); updateOrderHint(); renderBasket();
+  ui.basket.push({tempId:uid(),itemId,qty,amountPaid:paid,storeInventory:isStore,fundedByFloat:fundedFloat});
+  $e('oItem').value=''; $e('oQty').value=1; $e('oPaid').value=''; $e('oStore').checked=false; $e('oFundedFloat').checked=false;
+  $e('storeCheckLabel').classList.remove('is-store'); $e('fundedFloatWrap').style.display='none'; $e('fundedFloatLabel').classList.remove('is-store');
+  updateOrderHint(); renderBasket();
   $e('oItem').focus(); toast(`Item added to basket (${ui.basket.length} total).`,'ok');
 }
 function confirmBasket(){
@@ -1353,7 +1644,7 @@ function confirmBasket(){
   const client=$e('oClient').value.trim();
   if(!client){toast('Enter a client name before confirming.','err');$e('oClient').focus();return;}
   const ts=Date.now();
-  ui.basket.forEach((b,i)=>{ state.orders.push({id:uid(),clientName:client,itemId:b.itemId,qtyOrdered:b.qty,amountPaid:b.amountPaid,storeInventory:b.storeInventory,manualOverride:false,overriddenQty:0,createdAt:ts+i}); });
+  ui.basket.forEach((b,i)=>{ state.orders.push({id:uid(),clientName:client,itemId:b.itemId,qtyOrdered:b.qty,amountPaid:b.amountPaid,storeInventory:b.storeInventory,fundedByFloat:!!b.fundedByFloat,manualOverride:false,overriddenQty:0,createdAt:ts+i}); });
   const count=ui.basket.length; ui.basket=[]; $e('oClient').value=''; ui.activeTab='clients';
   renderAll(); save(); toast(`${count} order${count===1?'':'s'} committed for "${client}".`,'ok');
 }
@@ -1372,9 +1663,10 @@ function renderBasket(){
   let rows='';
   ui.basket.forEach((b,idx)=>{
     const item=getItem(b.itemId), siBadge=b.storeInventory?`<span class="si-badge">Store</span>`:'';
+    const floatBadge=b.fundedByFloat?`<span class="si-badge" style="background:var(--gold-s);color:var(--gold);border-color:rgba(244,197,83,0.25)">💰 Float</span>`:'';
     const ac=idx===ui.basket.length-1?'class="basket-row-enter"':'';
     rows+=`<tr ${ac}>
-      <td class="td-bold">${item?esc(item.name):'<em style="color:var(--red)">item deleted</em>'} ${siBadge}</td>
+      <td class="td-bold">${item?esc(item.name):'<em style="color:var(--red)">item deleted</em>'} ${siBadge} ${floatBadge}</td>
       <td class="td-r mono">${b.qty}</td>
       <td class="td-r mono">${php(b.amountPaid)}</td>
       <td class="td-r td-dim" style="font-size:12px">${item?php((b.storeInventory?Number(item.costPrice):Number(item.srp))*0.30)+'/unit':'—'}</td>
@@ -1438,9 +1730,10 @@ function refundBalanceFormula(paidRef,valueRef){
 }
 
 /* Builds a ready-to-copy-paste message summarizing one client's allocation, payment, and
-   refund/balance status. Used ONLY in the Excel export's Client Message column — never
-   shown anywhere in the live UI. Deleted-item orders are silently omitted from the itemized
-   list (matching the receipt generator's behavior) since this text is meant to be sent as-is. */
+   refund/balance status. Shared by the Excel export's Client Message column AND the live
+   ledger's "📋 Copy Update" button, so both always say exactly the same thing. Deleted-item
+   orders are silently omitted from the itemized list (matching the receipt generator's
+   behavior) since this text is meant to be sent to the client as-is. */
 function buildClientMessageText(name) {
   const orders=ordersForClient(name).filter(o=>getItem(o.itemId));
   const summary=clientSummary(name);
@@ -1455,6 +1748,32 @@ function buildClientMessageText(name) {
   else lines.push(`You have a remaining BALANCE of ${php(Math.abs(summary.net))} to settle upon pickup.`);
   lines.push('','Thank you for your pre-order!');
   return lines.join('\n');
+}
+
+/* Standard modern-API + fallback clipboard write, since navigator.clipboard requires a
+   secure context and isn't available in every embedding (some webviews, plain http, etc). */
+function copyTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve,reject)=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok?resolve():reject(new Error('execCommand copy failed'));
+    }catch(e){ reject(e); }
+  });
+}
+function copyClientMessage(name){
+  const orders=ordersForClient(name);
+  if(!orders.length){ toast('No orders found for this client.','err'); return; }
+  const text=buildClientMessageText(name);
+  copyTextToClipboard(text)
+    .then(()=>toast(`Update copied for "${name}" — paste it wherever you message them.`,'ok'))
+    .catch(()=>toast('Could not copy to clipboard. Please copy manually.','err'));
 }
 
 function exportToExcel(){
@@ -1730,6 +2049,8 @@ document.addEventListener('click',function(e){
     case 'cancel-order':   ui.editOrderId=null; renderLedger(); break;
     case 'del-order':      delOrder(id); break;
     case 'download-receipt': generateReceipt(btn.dataset.client); break;
+    case 'quick-add-item': quickAddItemForClient(btn.dataset.client); break;
+    case 'copy-client-message': copyClientMessage(btn.dataset.client); break;
     case 'rm-basket':      removeBasketItem(btn.dataset.tid); break;
     case 'clear-basket':   clearBasket(); break;
     case 'confirm-basket': confirmBasket(); break;
@@ -1753,6 +2074,10 @@ document.addEventListener('click',function(e){
     case 'download-all-receipts': generateAllReceipts(); break;
     case 'raffle-spin':  raffleSpin(btn.dataset.item, btn.dataset.pool); break;
     case 'raffle-reset': raffleReset(btn.dataset.item, btn.dataset.pool); break;
+    case 'close-raffle-popup':
+      clearTimeout(_raffleWinnerTimeout); $e('raffleWinnerPopup').innerHTML=''; break;
+    case 'toggle-raffle-sound':
+      ui.raffleSoundMuted=!ui.raffleSoundMuted; save(); syncRaffleSoundToggle(); break;
     case 'undo-action':
       if(_undoCb){clearTimeout(_tt);_undoCb();_undoCb=null;$e('toast').classList.remove('show');} break;
   }
@@ -1957,7 +2282,7 @@ async function generateAllReceipts() {
 
 /* ── EXPORT / IMPORT ────────────────────────────── */
 $e('exportBtn').addEventListener('click',function(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), a=Object.assign(document.createElement('a'),{href:url,download:'preorder-session-'+new Date().toISOString().slice(0,10)+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),1000); toast('Session exported.','ok');
@@ -1971,11 +2296,12 @@ $e('importInput').addEventListener('change',function(e){
       if(!Array.isArray(d.items)||!Array.isArray(d.orders)) throw new Error('Invalid session file.');
       if(!confirm(`Load ${d.items.length} item(s) and ${d.orders.length} order(s)? Current session will be replaced.`)) return;
       state.items=d.items.map(i=>Object.assign({allocationPct:100,actualAllocOverride:false,actualAllocQty:0},i));
-      state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0},o));
+      state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false},o));
       state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
       if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
       if(d.sortClients) ui.sortClients=d.sortClients;
       if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
+      if(typeof d.raffleSoundMuted==='boolean') ui.raffleSoundMuted=d.raffleSoundMuted;
       ui.activeTab='clients'; ui.basket=[]; ui.raffleSelectedItem=null; renderAll(); save();
       toast(`Loaded: ${state.items.length} items, ${state.orders.length} orders.`,'ok');
     }catch(err){toast('Load failed: '+err.message,'err');}
@@ -1985,16 +2311,17 @@ $e('importInput').addEventListener('change',function(e){
 
 /* ── LOCAL STORAGE ──────────────────────────────── */
 const SK='tcgPreOrderV5';
-function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort}));}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted}));}catch(e){}}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(SK)||'null'); if(!d) return;
     if(Array.isArray(d.items))  state.items=d.items.map(i=>Object.assign({allocationPct:100,actualAllocOverride:false,actualAllocQty:0},i));
-    if(Array.isArray(d.orders)) state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0},o));
+    if(Array.isArray(d.orders)) state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false},o));
     state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
     if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
     if(d.sortClients) ui.sortClients=d.sortClients;
     if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
+    if(typeof d.raffleSoundMuted==='boolean') ui.raffleSoundMuted=d.raffleSoundMuted;
   }catch(e){}
 }
 
