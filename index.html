@@ -747,21 +747,26 @@ function getActualAllocQty(item) {
   const v=Number(item.actualAllocQty);
   return isNaN(v)?naturalFloor:Math.max(0,Math.floor(v));
 }
-/* Client-only projected profit for an item: of the Actual Allocated units, only the share
-   originally ordered by clients (as opposed to store-inventory restock) is treated as a sale —
-   store-bound stock hasn't been sold to anyone, so it contributes no profit here. That client
-   share is estimated from how the item's total order volume split between clients and store
-   at order time (Client Ordered ÷ Total Ordered), applied to whatever the real/estimated
-   allocation turns out to be. Deliberately built from getActualAllocQty/naturalItemAllocation,
-   which already read the item's live allocationPct and override state — so this recalculates
-   automatically wherever those inputs change, with no extra wiring needed. isConfirmed mirrors
-   whether the distributor-actual override is set, exactly like the Calculated/Actual distinction
-   already shown elsewhere on these cards. */
+/* Client-only projected profit for an item: a pure projection that assumes
+   ALL client-ordered units will eventually be served according to the
+   item's allocation % — floor(total client qty ordered × allocation %) —
+   regardless of which specific client order wins the raffle for any
+   leftover fractional units, and without needing every order's manual
+   override resolved first. Client and store are floored independently
+   (client's own total, on its own) rather than flooring the combined
+   client+store total and then splitting proportionally — that proportional
+   split is what previously shortchanged the client figure, since store's
+   own small fractional remainder got entangled into the shared floor.
+   Store orders are excluded outright — store-bound stock hasn't been sold
+   to anyone, so it contributes no profit here. isConfirmed still mirrors
+   whether the distributor-actual override is set, exactly like the
+   Calculated/Actual distinction shown elsewhere on these cards — that
+   item-level override is a separate, coarser total and isn't factored into
+   this client-only figure. */
 function itemClientProfit(item) {
-  const b=itemOrderedBreakdown(item.id);
-  const actual=getActualAllocQty(item);
-  const clientShare=b.totalQty>0?(b.clientQty/b.totalQty):0;
-  const clientAllocQty=actual*clientShare;
+  const clientQty=itemOrderedBreakdown(item.id).clientQty;
+  const pct=clamp(Number(item.allocationPct),0,100);
+  const clientAllocQty=Math.floor(clientQty*pct/100);
   const margin=(Number(item.srp)||0)-(Number(item.costPrice)||0);
   return { profit:clientAllocQty*margin, clientAllocQty, margin, isConfirmed:!!item.actualAllocOverride };
 }
@@ -793,10 +798,12 @@ function floatPoolData() {
 /* Per-item settlement projection, split into the two DIFFERENT cash flows
    that were previously conflated:
    - distributorDiff: COST basis, driven by allocation%, across ALL orders
-     (client + store) for this item. This is what the distributor will
-     refund you (positive) or what you still owe them (negative) — it has
-     nothing to do with which orders happened to be funded by float; the
-     distributor relationship is the same either way.
+     (client + store) for this item. The 30% DP is real money actually
+     remitted to the distributor for the qty ORDERED — but once allocation
+     is final, the distributor settles against the FULL cost of whatever
+     qty is actually ALLOCATED (not a shrunken 30% figure): if the DP
+     already covers that full cost, the excess is refunded; if it falls
+     short, the remaining balance is still owed to complete the purchase.
    - clientDiff: SRP basis, across CLIENT (non-store) orders only. This is
      what you'll refund clients (positive) or what they still owe you
      (negative). */
@@ -805,9 +812,9 @@ function itemSettlementData(item) {
   let qtyOrdered = 0, qtyAlloc = 0;
   orders.forEach(o => { qtyOrdered += Number(o.qtyOrdered)||0; qtyAlloc += allocQty(o); });
   const cost = Number(item.costPrice)||0;
-  const dpReqOrdered = cost*0.30*qtyOrdered;
-  const dpReqAlloc = cost*0.30*qtyAlloc;
-  const distributorDiff = dpReqOrdered - dpReqAlloc;   // + = distributor owes you, - = you owe distributor
+  const dpSentToDistributor = cost*0.30*qtyOrdered;   // actual 30% DP money remitted, based on qty ordered
+  const costOfAllocated = cost*qtyAlloc;               // FULL cost owed for what's actually being delivered
+  const distributorDiff = dpSentToDistributor - costOfAllocated;   // + = distributor refunds you, - = you owe the remaining balance
 
   let clientPaid = 0, clientValueAlloc = 0;
   orders.filter(o=>!o.storeInventory).forEach(o => {
@@ -816,7 +823,7 @@ function itemSettlementData(item) {
   });
   const clientDiff = clientPaid - clientValueAlloc;    // + = you owe clients, - = clients owe you
 
-  return { item, orderCount: orders.length, qtyOrdered, qtyAlloc, dpReqOrdered, dpReqAlloc, distributorDiff, clientPaid, clientValueAlloc, clientDiff };
+  return { item, orderCount: orders.length, qtyOrdered, qtyAlloc, dpSentToDistributor, costOfAllocated, distributorDiff, clientPaid, clientValueAlloc, clientDiff };
 }
 
 function allItemSettlements() {
