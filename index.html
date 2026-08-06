@@ -256,6 +256,7 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 /* ── STORE BADGE ──────────────────────────────────── */
 .si-badge { display:inline-flex; align-items:center; background:var(--gold-s); color:var(--gold); border:1px solid rgba(244,197,83,0.25); font-size:9.5px; font-weight:700; font-family:var(--fm); padding:1px 6px; border-radius:3px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
 .float-badge { display:inline-flex; align-items:center; background:var(--gold-s); color:var(--gold); border:1px solid rgba(244,197,83,0.25); font-size:9.5px; font-weight:700; font-family:var(--fm); padding:1px 6px; border-radius:3px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
+.raffle-winner-badge { display:inline-flex; align-items:center; background:var(--green-s); color:var(--green); border:1px solid rgba(79,209,160,0.25); font-size:9.5px; font-weight:700; font-family:var(--fm); padding:1px 6px; border-radius:3px; margin-left:6px; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; }
 
 /* ── FLOATING CAPITAL BREAKDOWN ───────────────────── */
 .fcb-summary { display:flex; flex-direction:column; gap:0; border:1px solid var(--border); border-radius:var(--r-s); overflow:hidden; }
@@ -310,6 +311,10 @@ tbody tr:hover td { background:rgba(255,255,255,0.012); }
 .btn-raffle-spin { background:var(--accent); color:#fff; border:1px solid var(--accent); border-radius:var(--r-s); padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; transition:background 0.14s; flex:1; }
 .btn-raffle-spin:hover:not(:disabled) { background:var(--accent-l); }
 .btn-raffle-spin:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-raffle-finalize { background:var(--green-s); color:var(--green); border:1px solid rgba(79,209,160,0.3); border-radius:var(--r-s); padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.14s; }
+.btn-raffle-finalize:hover:not(:disabled) { border-color:var(--green); }
+.btn-raffle-finalize:disabled { opacity:0.35; cursor:not-allowed; }
+.raffle-finalized-badge { align-self:flex-start; }
 
 .raffle-winners-hd { font-size:10.5px; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-d); font-weight:600; }
 .raffle-winners-list { display:flex; flex-direction:column; gap:5px; }
@@ -429,6 +434,28 @@ body.presentation-mode #raffleWheelPanel { max-width:900px; margin:0 auto; }
     </div>
   </div>
 
+  <div class="panel" id="storeSalesPanel">
+    <div class="panel-head"><div class="panel-title">🛍️ Store Sales &amp; Inventory <span class="badge" id="salesBadge">0 sales</span></div></div>
+    <div class="panel-body">
+      <form id="saleForm" class="form-grid">
+        <div class="ff f2"><label for="sItem">Item</label><select id="sItem" class="fi" required><option value="">— Select item —</option></select></div>
+        <div class="ff fsm"><label for="sQty">Qty Sold</label><input type="number" id="sQty" class="fi num" min="1" step="1" value="1" required></div>
+        <div class="ff fsm"><label for="sPrice">Price Sold</label><input type="number" id="sPrice" class="fi num" min="0" step="0.01" placeholder="0.00" required></div>
+        <div class="ff f2"><label for="sBuyer">Buyer</label><input type="text" id="sBuyer" class="fi" placeholder="Walk-in"></div>
+        <div class="ff f2"><label for="sNotes">Notes</label><input type="text" id="sNotes" class="fi" placeholder="optional note"></div>
+        <div class="ff fxs" style="align-self:flex-end">
+          <label class="store-check" id="saleShippedLabel"><input type="checkbox" id="sShipped"> ✅ Shipped / Picked Up</label>
+        </div>
+        <div class="ff fxs" style="justify-content:flex-end;align-self:flex-end">
+          <button type="submit" class="btn btn-primary">+ Log Sale</button>
+        </div>
+      </form>
+      <div class="form-hint" id="saleHint"></div>
+      <div id="salesStockArea"></div>
+      <div id="salesTableArea"></div>
+    </div>
+  </div>
+
   <div class="panel" id="raffleWheelPanel">
     <div class="panel-head"><div class="panel-title">🎡 Raffle Wheel <span class="badge" id="raffleBadge">0 items</span></div><button type="button" class="raffle-sound-toggle" id="raffleSoundToggle" data-a="toggle-raffle-sound">🔊 Sound On</button></div>
     <div class="panel-body">
@@ -466,12 +493,15 @@ const COL_ALIGN = { qty:'r', alloc:'c', paid:'r', amtAlloc:'r', float:'r', refun
 const COL_STYLE = { alloc:'min-width:160px', amtAlloc:'min-width:135px', float:'min-width:130px', refund:'min-width:160px', act:'min-width:70px' };
 
 /* ── STATE ──────────────────────────────────────── */
-let state = { items:[], orders:[], raffles:{} };
+let state = { items:[], orders:[], raffles:{}, sales:[] };
 let ui = {
   activeTab:        'clients',
   editItemId:       null,
   editOrderId:      null,
+  editSaleId:       null,
   basket:           [],
+  fulfillmentStatusFilter: 'all',  /* 'all' | 'pending' | 'ready' | 'shipped' — Fulfillment tab status filter */
+  fulfillmentItemFilter:   'all',  /* 'all' or an itemId — Fulfillment tab item filter */
   hiddenCols:       new Set(['float']),   /* Float Generated hidden by default; user can re-enable via column picker */
   sortClients:      'alpha',   /* 'alpha' | 'date' */
   itemTabSort:      'date',    /* 'date' | 'qtyDesc' — order of client rows within an Item tab */
@@ -552,6 +582,43 @@ function itemOrdersSorted(itemId) {
   return orders;
 }
 
+/* ── FULFILLMENT TRACKING ──────────────────────────────────────────────
+   Tracks physical prep/ship status for CLIENT orders only (store-inventory
+   orders are stock for the shelf, not something shipped to a client — those
+   are tracked separately once sold, in the Store Sales & Inventory ledger
+   below). Deliberately reuses state.orders (prepared/shipped/shippedAt/
+   fulfillmentNote fields added to each order) rather than a separate list,
+   so it can never drift out of sync with the allocation ledger it reads. */
+function fulfillmentEligibleOrders() {
+  return state.orders.filter(o=>!o.storeInventory);
+}
+function fulfillmentSummary() {
+  const orders=fulfillmentEligibleOrders();
+  let totalUnits=0, shippedUnits=0, preparedCount=0, shippedCount=0;
+  const perItem={};
+  orders.forEach(o=>{
+    const aq=allocQty(o);
+    totalUnits+=aq;
+    if(o.prepared) preparedCount++;
+    if(o.shipped){ shippedUnits+=aq; shippedCount++; }
+    if(!perItem[o.itemId]) perItem[o.itemId]={ordered:0,shipped:0};
+    perItem[o.itemId].ordered+=aq;
+    if(o.shipped) perItem[o.itemId].shipped+=aq;
+  });
+  return {count:orders.length,totalUnits,shippedUnits,outstandingUnits:totalUnits-shippedUnits,preparedCount,shippedCount,perItem};
+}
+function fulfillmentFilteredOrders() {
+  let list=fulfillmentEligibleOrders();
+  if(ui.fulfillmentItemFilter!=='all') list=list.filter(o=>o.itemId===ui.fulfillmentItemFilter);
+  if(ui.fulfillmentStatusFilter==='pending') list=list.filter(o=>!o.prepared);
+  else if(ui.fulfillmentStatusFilter==='ready') list=list.filter(o=>o.prepared&&!o.shipped);
+  else if(ui.fulfillmentStatusFilter==='shipped') list=list.filter(o=>o.shipped);
+  return list.slice().sort((a,b)=>{
+    if(!!a.shipped!==!!b.shipped) return a.shipped?1:-1;
+    return a.clientName.localeCompare(b.clientName);
+  });
+}
+
 /* ── RAFFLE WHEEL ────────────────────────────────────────────────────────
    Two independent pools per item — clients with an allocation >0 ("allocated")
    and clients with exactly 0 ("zero") — each raffled separately. Store-inventory
@@ -567,8 +634,11 @@ function itemOrdersSorted(itemId) {
    in here. */
 function getRafflePoolState(itemId, poolKey) {
   if(!state.raffles[itemId]) state.raffles[itemId]={};
-  if(!state.raffles[itemId][poolKey]) state.raffles[itemId][poolKey]={winners:[],manualCount:null};
-  return state.raffles[itemId][poolKey];
+  if(!state.raffles[itemId][poolKey]) state.raffles[itemId][poolKey]={winners:[],manualCount:null,finalized:false,finalizedOrders:[]};
+  const pool=state.raffles[itemId][poolKey];
+  if(pool.finalized===undefined) pool.finalized=false;         // backward-compat for pools saved before this feature existed
+  if(!Array.isArray(pool.finalizedOrders)) pool.finalizedOrders=[];
+  return pool;
 }
 function raffleEligibleEntries(itemId, poolKey) {
   const orders=itemOrders(itemId).filter(o=>!o.storeInventory && !o.manualOverride);
@@ -592,6 +662,20 @@ function raffleCurrentEligible(itemId, poolKey) {
   const pool=getRafflePoolState(itemId,poolKey);
   const won=new Set(pool.winners.map(w=>w.name));
   return all.filter(e=>!won.has(e.name));
+}
+/* Whether a client has won (and had it FINALIZED — i.e. actually applied to the
+   ledger) a raffle for this item, in either pool. Deliberately name-based and
+   checked against BOTH pools, rather than reading any single order's own
+   raffleWinner flag — a client can have several separate orders for the same
+   item, and the badge should show consistently on all of them regardless of
+   which specific order happened to receive the +1 bump. Only true once
+   finalized, since before that the win hasn't actually been applied yet. */
+function isRaffleWinnerForItem(clientName, itemId) {
+  const raffles=state.raffles[itemId]; if(!raffles) return false;
+  return ['allocated','zero'].some(k=>{
+    const pool=raffles[k];
+    return !!(pool && pool.finalized && pool.winners.some(w=>w.name===clientName));
+  });
 }
 /* Cumulative angle ranges for a set of entries, 0deg = top, increasing clockwise —
    shared by both the SVG slice drawing and the spin-landing calculation so they
@@ -776,6 +860,36 @@ function dashMetrics() {
   return {pubDP,distDP,float:pubDP-distDP};
 }
 
+/* ── STORE SALES & INVENTORY ──────────────────────────────────────────────
+   Tracks retail sales of store-inventory stock (items ordered with the
+   "Store Inventory" checkbox — stock for the shelf, not a specific client's
+   pre-order). Kept as its own state.sales log rather than folded into
+   state.orders, since a sale is a different kind of transaction (a walk-in
+   / retail sale, at a price that may differ from SRP) than a pre-order
+   allocation. "Units received into store stock" is computed the same way
+   the rest of the app already treats an order's actual allocation
+   (allocQty() per order, summed across storeInventory orders for this
+   item) — deliberately NOT the item-level distributor-actual-count
+   override, which is a coarser total that doesn't say how much of it is
+   store vs client. */
+function itemStoreOrderedQty(itemId) {
+  return itemOrders(itemId).filter(o=>o.storeInventory).reduce((s,o)=>s+allocQty(o),0);
+}
+function itemSalesFor(itemId) { return state.sales.filter(s=>s.itemId===itemId).sort((a,b)=>a.createdAt-b.createdAt); }
+function itemSoldQty(itemId) { return itemSalesFor(itemId).reduce((s,sale)=>s+(Number(sale.qty)||0),0); }
+function itemRemainingStock(itemId) { return itemStoreOrderedQty(itemId)-itemSoldQty(itemId); }
+function saleLineTotal(sale) { return (Number(sale.qty)||0)*(Number(sale.priceSold)||0); }
+function saleLineProfit(sale) {
+  const item=getItem(sale.itemId); if(!item) return 0;
+  return (Number(sale.qty)||0)*((Number(sale.priceSold)||0)-(Number(item.costPrice)||0));
+}
+function salesSummary() {
+  let unitsSold=0, revenue=0, profit=0, unitsInStock=0;
+  state.items.forEach(item=>{ unitsInStock+=Math.max(0,itemRemainingStock(item.id)); });
+  state.sales.forEach(sale=>{ unitsSold+=Number(sale.qty)||0; revenue+=saleLineTotal(sale); profit+=saleLineProfit(sale); });
+  return {unitsSold,revenue,profit,unitsInStock,count:state.sales.length};
+}
+
 /* ── FLOATING CAPITAL BREAKDOWN ────────────────────────────────────────── */
 function floatFundedOrders() {
   return state.orders.filter(o => o.storeInventory && o.fundedByFloat);
@@ -836,7 +950,7 @@ function allItemSettlements() {
   }), {distributorDiff:0, clientDiff:0});
   return { rows, totals };
 }
-function ensureValidTab() { if(ui.activeTab!=='clients'&&!getItem(ui.activeTab)) ui.activeTab='clients'; }
+function ensureValidTab() { if(ui.activeTab!=='clients'&&ui.activeTab!=='fulfillment'&&!getItem(ui.activeTab)) ui.activeTab='clients'; }
 
 /* ── RENDER: DASHBOARD ──────────────────────────── */
 function renderDash() {
@@ -1179,13 +1293,16 @@ function renderRafflePool(itemId, poolKey, title, subtitle) {
     : '<div class="raffle-pool-sub">No winners drawn yet.</div>';
 
   const spinKey=itemId+'_'+poolKey;
-  const spinDisabled = eligible.length===0 || !!ui.raffleSpinning[spinKey];
+  const spinDisabled = eligible.length===0 || !!ui.raffleSpinning[spinKey] || pool.finalized;
+  const finalizeDisabled = !pool.winners.length || pool.finalized;
   const wheelSvg = raffleBuildWheelSVG(eligible, 210, 'raffleWheelSvg_'+poolKey);
   const decimalSum = allEntries.reduce((s,e)=>s+e.remainder,0);
+  const finalizedBadge = pool.finalized ? `<span class="pill pill-ok raffle-finalized-badge">✓ Finalized</span>` : '';
 
   container.innerHTML = `<div class="raffle-pool">
     <div class="raffle-pool-hd">
       <div><div class="raffle-pool-title">${title}</div><div class="raffle-pool-sub">${subtitle}</div></div>
+      ${finalizedBadge}
     </div>
 
     <div class="raffle-count-row">
@@ -1193,7 +1310,7 @@ function renderRafflePool(itemId, poolKey, title, subtitle) {
     </div>
     <div class="raffle-count-row">
       <span>Units to raffle:</span>
-      <input type="number" class="raffle-count-input" min="0" step="1" value="${targetCount}" data-a="raffle-count" data-item="${esc(itemId)}" data-pool="${poolKey}">
+      <input type="number" class="raffle-count-input" min="0" step="1" value="${targetCount}" data-a="raffle-count" data-item="${esc(itemId)}" data-pool="${poolKey}" ${pool.finalized?'disabled':''}>
       <span class="raffle-progress">${pool.winners.length} of ${targetCount} drawn</span>
     </div>
 
@@ -1206,6 +1323,7 @@ function renderRafflePool(itemId, poolKey, title, subtitle) {
 
     <div class="raffle-actions-row">
       <button type="button" class="btn-raffle-spin" data-a="raffle-spin" data-item="${esc(itemId)}" data-pool="${poolKey}" ${spinDisabled?'disabled':''}>🎡 Spin</button>
+      <button type="button" class="btn btn-raffle-finalize" data-a="raffle-finalize" data-item="${esc(itemId)}" data-pool="${poolKey}" ${finalizeDisabled?'disabled':''}>✓ Finalize Winners</button>
       <button type="button" class="btn btn-ghost" data-a="raffle-reset" data-item="${esc(itemId)}" data-pool="${poolKey}">↺ Reset</button>
     </div>
 
@@ -1252,18 +1370,233 @@ function raffleSpin(itemId, poolKey) {
   },4300);
 }
 
+/* Applies each drawn winner's +1 bonus unit to an actual order in the ledger.
+   Deliberately a separate, explicit step from spinning itself — the live
+   wheel never touches order data, so drawing winners can never shift the
+   pool's own target count mid-session. Only Finalize writes to the ledger,
+   and only once per pool (guarded by pool.finalized) so clicking it twice
+   can't double-bump the same winners. */
+function raffleFinalize(itemId, poolKey) {
+  const pool=getRafflePoolState(itemId,poolKey);
+  if(!pool.winners.length){ toast('No winners to finalize for this pool.','err'); return; }
+  if(pool.finalized){ toast('This pool has already been finalized.','err'); return; }
+
+  const touched=[], skipped=[];
+  pool.winners.forEach(w=>{
+    /* Only this client's non-store, not-already-overridden orders for this item
+       are candidates — those are exactly the orders that contributed to their
+       raffle eligibility in the first place. Which specific one gets the +1
+       doesn't change any total (a client's orders for an item are always
+       summed together downstream) — largest remainder is just a tiebreak. */
+    const candidates=itemOrders(itemId).filter(o=>!o.storeInventory && !o.manualOverride && o.clientName===w.name);
+    if(!candidates.length){ skipped.push(w.name); return; }
+    let target=candidates[0], targetRemainder=allocQtyRaw(target)-Math.floor(allocQtyRaw(target));
+    candidates.forEach(o=>{
+      const rem=allocQtyRaw(o)-Math.floor(allocQtyRaw(o));
+      if(rem>targetRemainder){ target=o; targetRemainder=rem; }
+    });
+    const prev={manualOverride:target.manualOverride,overriddenQty:target.overriddenQty,raffleWinner:target.raffleWinner};
+    const next={manualOverride:true,overriddenQty:allocQty(target)+1,raffleWinner:true};
+    target.manualOverride=next.manualOverride; target.overriddenQty=next.overriddenQty; target.raffleWinner=next.raffleWinner;
+    touched.push({orderId:target.id,prev,next});
+  });
+
+  pool.finalized=true;
+  pool.finalizedOrders=touched;
+  renderAll(); save();
+  if(skipped.length){
+    toast(`Finalized ${touched.length} winner${touched.length===1?'':'s'} — no matching order found for: ${skipped.join(', ')}.`,'err');
+  } else {
+    toast(`Finalized ${touched.length} winner${touched.length===1?'':'s'} — allocations bumped and ledger updated.`,'ok');
+  }
+}
+
 function raffleReset(itemId, poolKey) {
   const pool=getRafflePoolState(itemId,poolKey);
   if(!pool.winners.length){ toast('No winners to reset for this pool.','err'); return; }
-  const snapshot=pool.winners.slice();
-  pool.winners=[];
-  renderRaffleArea();
+  const winnersSnapshot=pool.winners.slice();
+  const wasFinalized=pool.finalized;
+  const finalizedSnapshot=pool.finalizedOrders.slice();
+
+  /* If this pool had already been finalized, revert every touched order back
+     to its pre-bump state BEFORE clearing anything — reset always undoes
+     both the drawing and any ledger changes it produced. */
+  if(wasFinalized){
+    finalizedSnapshot.forEach(entry=>{
+      const order=state.orders.find(o=>o.id===entry.orderId);
+      if(order){ order.manualOverride=entry.prev.manualOverride; order.overriddenQty=entry.prev.overriddenQty; order.raffleWinner=entry.prev.raffleWinner; }
+    });
+  }
+  pool.winners=[]; pool.finalized=false; pool.finalizedOrders=[];
+  renderAll();
   save();
-  toastUndo(`Raffle pool reset (${snapshot.length} winner${snapshot.length===1?'':'s'} cleared).`,()=>{
-    pool.winners=snapshot;
-    renderRaffleArea();
+  toastUndo(`Raffle pool reset (${winnersSnapshot.length} winner${winnersSnapshot.length===1?'':'s'} cleared${wasFinalized?', ledger changes reverted':''}).`,()=>{
+    pool.winners=winnersSnapshot;
+    if(wasFinalized){
+      pool.finalized=true;
+      pool.finalizedOrders=finalizedSnapshot;
+      finalizedSnapshot.forEach(entry=>{
+        const order=state.orders.find(o=>o.id===entry.orderId);
+        if(order){ order.manualOverride=entry.next.manualOverride; order.overriddenQty=entry.next.overriddenQty; order.raffleWinner=entry.next.raffleWinner; }
+      });
+    }
+    renderAll();
     save();
     toast('Winners restored.','ok');
+  });
+}
+
+/* ── RENDER: STORE SALES & INVENTORY ────────────────────────────────── */
+function syncSaleItemSelect() {
+  const sel=$e('sItem'); if(!sel) return;
+  const prev=sel.value;
+  const eligible=state.items.filter(item=>itemStoreOrderedQty(item.id)>0);
+  sel.innerHTML='<option value="">— Select item —</option>';
+  eligible.forEach(item=>{ sel.innerHTML+=`<option value="${esc(item.id)}">${esc(item.name)} (${itemRemainingStock(item.id)} in stock)</option>`; });
+  if(prev && eligible.some(i=>i.id===prev)) sel.value=prev;
+  const has=eligible.length>0;
+  $e('saleForm').querySelectorAll('input,select,button[type="submit"]').forEach(el=>el.disabled=!has);
+  updateSaleHint();
+}
+function autoFillSalePrice() {
+  const itemId=$e('sItem').value, item=getItem(itemId);
+  if(item) $e('sPrice').value=Number(item.srp||0).toFixed(2);
+  updateSaleHint();
+}
+function updateSaleHint() {
+  const hint=$e('saleHint'); if(!hint) return;
+  const itemId=$e('sItem').value, item=getItem(itemId);
+  if(!state.items.some(i=>itemStoreOrderedQty(i.id)>0)){
+    hint.textContent='No store-inventory stock yet — check "Store Inventory" on an order to bring stock in.';
+    hint.className='form-hint warn';
+    return;
+  }
+  if(item){
+    const remaining=itemRemainingStock(item.id);
+    hint.textContent=`${remaining} unit${remaining===1?'':'s'} remaining in stock for this item.`;
+    hint.className='form-hint'+(remaining<=0?' warn':'');
+  } else { hint.textContent=''; hint.className='form-hint'; }
+}
+
+function renderStoreSalesPanel() {
+  renderSalesStockSummary();
+  renderSalesTable();
+  const summary=salesSummary();
+  $e('salesBadge').textContent=summary.count+' sale'+(summary.count===1?'':'s');
+}
+
+function renderSalesStockSummary() {
+  const area=$e('salesStockArea'); if(!area) return;
+  const summary=salesSummary();
+  let html=`<div class="brk-summary">
+    <div class="brk-stat"><span class="brk-stat-label">Units in Stock</span><span class="brk-stat-val mono">${summary.unitsInStock}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label">Units Sold</span><span class="brk-stat-val mono">${summary.unitsSold}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--gold)">Revenue</span><span class="brk-stat-val mono kpi-gold">${php(summary.revenue)}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--green)">Profit</span><span class="brk-stat-val mono ${summary.profit>=0?'kpi-pos':'kpi-neg'}">${php(summary.profit)}</span></div>
+  </div>`;
+
+  const stockRows=state.items.filter(item=>itemStoreOrderedQty(item.id)>0||itemSoldQty(item.id)>0);
+  if(stockRows.length){
+    html+=`<div class="tbl-wrap" style="margin-top:0"><table class="item-tbl">
+      <thead><tr><th>Item</th><th class="r">Store Stock Received</th><th class="r">Sold</th><th class="r">Remaining</th></tr></thead>
+      <tbody>${stockRows.map(item=>{
+        const received=itemStoreOrderedQty(item.id), sold=itemSoldQty(item.id), remaining=received-sold;
+        return `<tr>
+          <td class="td-bold">${esc(item.name)}</td>
+          <td class="td-r mono">${received}</td>
+          <td class="td-r mono td-dim">${sold}</td>
+          <td class="td-r mono ${remaining<0?'kpi-neg':''}">${remaining}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  }
+  area.innerHTML=html;
+}
+
+function renderSalesTable() {
+  const area=$e('salesTableArea'); if(!area) return;
+  if(!state.sales.length){
+    area.innerHTML='<div class="empty"><div class="empty-ico">🛍️</div><strong>No sales logged yet</strong><span>Use the form above to log a retail sale from your store inventory.</span></div>';
+    return;
+  }
+  const sorted=state.sales.slice().sort((a,b)=>b.createdAt-a.createdAt);
+  let rows='';
+  sorted.forEach(sale=>{
+    const item=getItem(sale.itemId), isEdit=ui.editSaleId===sale.id;
+    const iName=item?esc(item.name):'<span style="color:var(--red)">⚠ deleted</span>';
+    const lineTotal=saleLineTotal(sale);
+    const dateStr=new Date(sale.createdAt).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+
+    if(isEdit){
+      rows+=`<tr data-sid="${esc(sale.id)}">
+        <td class="td-dim">${dateStr}</td>
+        <td class="td-bold">${iName}</td>
+        <td><input class="ci md" id="es_buyer_${esc(sale.id)}" value="${esc(sale.buyerName||'')}" placeholder="Walk-in"></td>
+        <td class="td-r"><input class="ci num sm" id="es_qty_${esc(sale.id)}" type="number" value="${esc(sale.qty)}" min="1" step="1"></td>
+        <td class="td-r"><input class="ci num sm" id="es_price_${esc(sale.id)}" type="number" value="${esc(sale.priceSold)}" min="0" step="0.01"></td>
+        <td class="td-r mono td-dim">${php(lineTotal)}</td>
+        <td class="td-c"><input type="checkbox" id="es_shipped_${esc(sale.id)}" ${sale.shipped?'checked':''} style="width:16px;height:16px;accent-color:var(--green);cursor:pointer"></td>
+        <td><input class="ci" id="es_notes_${esc(sale.id)}" style="min-width:140px" value="${esc(sale.notes||'')}" placeholder="note"></td>
+        <td class="td-r" style="white-space:nowrap"><button type="button" class="icon-btn save" data-a="save-sale" data-id="${esc(sale.id)}">✓</button> <button type="button" class="icon-btn" data-a="cancel-sale">✕</button></td>
+      </tr>`;
+    } else {
+      const shippedPill=sale.shipped?`<span class="pill pill-ok">✓ Shipped</span>`:`<span class="pill pill-bal">Pending</span>`;
+      rows+=`<tr data-sid="${esc(sale.id)}">
+        <td class="td-dim">${dateStr}</td>
+        <td class="td-bold">${iName}</td>
+        <td>${esc(sale.buyerName||'Walk-in')}</td>
+        <td class="td-r mono">${esc(sale.qty)}</td>
+        <td class="td-r mono">${php(sale.priceSold)}</td>
+        <td class="td-r mono">${php(lineTotal)}</td>
+        <td class="td-c">${shippedPill}</td>
+        <td class="td-dim">${esc(sale.notes||'—')}</td>
+        <td class="td-r" style="white-space:nowrap"><button type="button" class="icon-btn" data-a="edit-sale" data-id="${esc(sale.id)}" title="Edit">✏</button> <button type="button" class="icon-btn del" data-a="del-sale" data-id="${esc(sale.id)}" title="Delete">✕</button></td>
+      </tr>`;
+    }
+  });
+  area.innerHTML=`<div class="tbl-wrap"><table class="item-tbl">
+    <thead><tr><th>Date</th><th>Item</th><th>Buyer</th><th class="r">Qty</th><th class="r">Price</th><th class="r">Total</th><th class="c">Shipped</th><th>Notes</th><th class="r">Actions</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+function addSale(){
+  const itemId=$e('sItem').value, qty=parseInt($e('sQty').value,10)||0;
+  const price=parseFloat($e('sPrice').value)||0, buyer=$e('sBuyer').value.trim()||'Walk-in';
+  const notes=$e('sNotes').value.trim(), shipped=$e('sShipped').checked;
+  if(!itemId){ toast('Select an item first.','err'); return; }
+  if(qty<=0){ toast('Quantity must be at least 1.','err'); return; }
+  const remaining=itemRemainingStock(itemId);
+  if(qty>remaining){ toast(`Only ${remaining} unit${remaining===1?'':'s'} left in stock for this item.`,'err'); return; }
+  state.sales.push({id:uid(),itemId,qty,priceSold:price,buyerName:buyer,shipped,notes,createdAt:Date.now()});
+  $e('saleForm').reset(); $e('sQty').value=1; $e('sShipped').checked=false;
+  renderStoreSalesPanel(); syncSaleItemSelect(); save();
+  toast('Sale logged.','ok');
+}
+function editSale(id){ ui.editSaleId=id; renderSalesTable(); }
+function cancelSaleEdit(){ ui.editSaleId=null; renderSalesTable(); }
+function saveSaleEdit(id){
+  const sale=state.sales.find(s=>s.id===id); if(!sale) return;
+  const buyerEl=$e('es_buyer_'+id), qtyEl=$e('es_qty_'+id), priceEl=$e('es_price_'+id), shippedEl=$e('es_shipped_'+id), notesEl=$e('es_notes_'+id);
+  const qty=parseInt(qtyEl.value,10)||1;
+  if(qty<=0){ toast('Quantity must be at least 1.','err'); return; }
+  const otherSold=itemSoldQty(sale.itemId)-(Number(sale.qty)||0);
+  const available=itemStoreOrderedQty(sale.itemId)-otherSold;
+  if(qty>available){ toast(`Only ${available} unit${available===1?'':'s'} available for this item.`,'err'); return; }
+  sale.qty=qty;
+  sale.priceSold=parseFloat(priceEl.value)||0;
+  sale.buyerName=buyerEl.value.trim()||'Walk-in';
+  sale.shipped=shippedEl.checked;
+  sale.notes=notesEl.value.trim();
+  ui.editSaleId=null;
+  renderStoreSalesPanel(); syncSaleItemSelect(); save(); toast('Sale updated.','ok');
+}
+function delSale(id){
+  const idx=state.sales.findIndex(s=>s.id===id); if(idx===-1) return;
+  const sale=state.sales[idx], item=getItem(sale.itemId);
+  state.sales.splice(idx,1);
+  renderStoreSalesPanel(); syncSaleItemSelect(); save();
+  toastUndo(`Sale removed${item?' — '+item.name:''}.`,()=>{
+    state.sales.splice(idx,0,sale); renderStoreSalesPanel(); syncSaleItemSelect(); save(); toast('Sale restored.','ok');
   });
 }
 
@@ -1343,8 +1676,10 @@ function renderLedger() {
   renderItemBreakdown();   /* orders & item-alloc changes always affect this dashboard too */
 }
 function renderTabNav() {
-  const nav=$e('tabNav'), isC=ui.activeTab==='clients';
+  const nav=$e('tabNav'), isC=ui.activeTab==='clients', isF=ui.activeTab==='fulfillment';
+  const fSummary=fulfillmentSummary(), fPending=fSummary.count-fSummary.shippedCount;
   let html=`<button type="button" class="tab-btn${isC?' active':''}" data-a="switch-tab" data-tab="clients">👥 Client Overview</button>`;
+  html+=`<button type="button" class="tab-btn${isF?' active':''}" data-a="switch-tab" data-tab="fulfillment">✅ Fulfillment${fPending>0?`<span class="tab-count">${fPending}</span>`:''}</button>`;
   state.items.forEach(item=>{
     const active=ui.activeTab===item.id, cnt=itemOrders(item.id).length;
     const label=item.name.length>24?item.name.slice(0,22)+'…':item.name;
@@ -1353,7 +1688,9 @@ function renderTabNav() {
   nav.innerHTML=html;
 }
 function renderTabContent() {
-  if(ui.activeTab==='clients') renderClientTab(); else renderItemTab(ui.activeTab);
+  if(ui.activeTab==='clients') renderClientTab();
+  else if(ui.activeTab==='fulfillment') renderFulfillmentTab();
+  else renderItemTab(ui.activeTab);
 }
 
 /* ── RENDER: CLIENT OVERVIEW TAB ────────────────── */
@@ -1413,6 +1750,7 @@ function renderClientTab() {
         const isEdit=ui.editOrderId===order.id;
         const siBadge=order.storeInventory?`<span class="si-badge">Store</span>`:'';
         const floatBadge=order.fundedByFloat?`<span class="float-badge">💰 Float</span>`:'';
+        const raffleWinnerBadge=isRaffleWinnerForItem(order.clientName,order.itemId)?`<span class="raffle-winner-badge">🎉 Raffle Winner</span>`:'';
         const fcCls=fin.fc>0.005?'kpi-pos':fin.fc<-0.005?'kpi-neg':'td-dim';
         const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
         const iEta=item?esc(item.eta||'—'):'—';
@@ -1441,7 +1779,7 @@ function renderClientTab() {
         }
 
         const cellMap={
-          item:     `<td class="${item?'td-bold':''}">${iName} ${siBadge} ${floatBadge}</td>`,
+          item:     `<td class="${item?'td-bold':''}">${iName} ${siBadge} ${floatBadge} ${raffleWinnerBadge}</td>`,
           eta:      `<td class="td-dim">${iEta}</td>`,
           qty:      isEdit?`<td class="td-r"><input id="eq_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.qtyOrdered)}" min="1"></td>`:`<td class="td-r mono">${esc(order.qtyOrdered)}</td>`,
           alloc:    `<td class="td-c">${allocInner}</td>`,
@@ -1474,6 +1812,82 @@ function renderClientTab() {
   });
   tbody+='</tbody>';
   area.innerHTML=`<div class="tbl-wrap"><table class="ledger-tbl">${thead}${tbody}</table></div>`;
+}
+
+/* ── RENDER: FULFILLMENT TAB ─────────────────────── */
+function renderFulfillmentTab() {
+  const area=$e('tabContent'), summary=fulfillmentSummary();
+  if(!summary.count){
+    area.innerHTML='<div class="empty"><div class="empty-ico">✅</div><strong>No client orders yet</strong><span>Once you have client pre-orders, track packing and shipping progress here.</span></div>';
+    return;
+  }
+
+  let html=`<div class="brk-summary">
+    <div class="brk-stat"><span class="brk-stat-label">Client Orders</span><span class="brk-stat-val mono">${summary.count}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label">Units Allocated</span><span class="brk-stat-val mono">${summary.totalUnits}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--green)">Units Shipped</span><span class="brk-stat-val mono kpi-pos">${summary.shippedUnits}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--gold)">Units Outstanding</span><span class="brk-stat-val mono${summary.outstandingUnits>0?' kpi-gold':''}">${summary.outstandingUnits}</span></div>
+  </div>`;
+
+  /* Per-item outstanding breakdown — surfaces exactly what's still owed per item, sorted worst-first,
+     so nothing slips through unnoticed (this is the part aimed directly at not missing sold items). */
+  const itemRows=Object.entries(summary.perItem)
+    .map(([itemId,v])=>({itemId,item:getItem(itemId),ordered:v.ordered,shipped:v.shipped,outstanding:v.ordered-v.shipped}))
+    .filter(r=>r.outstanding>0)
+    .sort((a,b)=>b.outstanding-a.outstanding);
+  if(itemRows.length){
+    html+=`<div class="tbl-wrap" style="margin-top:0"><table class="item-tbl">
+      <thead><tr><th>Item</th><th class="r">Allocated</th><th class="r">Shipped</th><th class="r">Outstanding</th></tr></thead>
+      <tbody>${itemRows.map(r=>`<tr>
+        <td class="td-bold">${r.item?esc(r.item.name):'<span style="color:var(--red)">⚠ deleted</span>'}</td>
+        <td class="td-r mono">${r.ordered}</td>
+        <td class="td-r mono td-dim">${r.shipped}</td>
+        <td class="td-r mono kpi-gold">${r.outstanding}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  } else {
+    html+=`<div class="empty" style="margin-top:0"><div class="empty-ico">🎉</div><strong>Everything's shipped</strong><span>No outstanding units across any item.</span></div>`;
+  }
+
+  const itemIdsInPlay=[...new Set(fulfillmentEligibleOrders().map(o=>o.itemId))];
+  const statusFilters=[['all','All'],['pending','Not Prepared'],['ready','Ready to Ship'],['shipped','Shipped']];
+  html+=`<div class="ledger-toolbar" style="margin-top:18px">
+    <div class="lt-left">
+      ${statusFilters.map(([key,label])=>`<button type="button" class="lt-btn${ui.fulfillmentStatusFilter===key?' active':''}" data-a="fulfillment-filter-status" data-val="${key}">${esc(label)}</button>`).join('')}
+    </div>
+    <div class="lt-right">
+      <select class="fi" data-a="fulfillment-filter-item" style="max-width:220px">
+        <option value="all"${ui.fulfillmentItemFilter==='all'?' selected':''}>All Items</option>
+        ${itemIdsInPlay.map(id=>{ const it=getItem(id); return it?`<option value="${esc(id)}"${ui.fulfillmentItemFilter===id?' selected':''}>${esc(it.name)}</option>`:''; }).join('')}
+      </select>
+    </div>
+  </div>`;
+
+  const rows=fulfillmentFilteredOrders();
+  if(!rows.length){
+    html+=`<div class="empty"><div class="empty-ico">🔍</div><strong>No orders match this filter</strong><span>Try a different status or item filter above.</span></div>`;
+    area.innerHTML=html;
+    return;
+  }
+
+  html+=`<div class="tbl-wrap"><table class="item-tbl">
+    <thead><tr><th>Client</th><th>Item</th><th class="r">Qty Allocated</th><th class="c">Prepared</th><th class="c">Shipped</th><th>Note</th></tr></thead>
+    <tbody>${rows.map(order=>{
+      const item=getItem(order.itemId), aq=allocQty(order);
+      const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
+      const shippedDate=order.shipped&&order.shippedAt?`<div class="brk-unit" style="margin-top:2px">${new Date(order.shippedAt).toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>`:'';
+      return `<tr data-oid="${esc(order.id)}">
+        <td class="td-bold">${esc(order.clientName)}</td>
+        <td>${iName}</td>
+        <td class="td-r mono">${aq}</td>
+        <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-prepared" data-id="${esc(order.id)}" ${order.prepared?'checked':''} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"></td>
+        <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-shipped" data-id="${esc(order.id)}" ${order.shipped?'checked':''} style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">${shippedDate}</td>
+        <td><input class="ci" style="width:100%;min-width:160px" data-a="fulfillment-note" data-id="${esc(order.id)}" value="${esc(order.fulfillmentNote||'')}" placeholder="Add note…"></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+
+  area.innerHTML=html;
 }
 
 /* ── RENDER: ITEM TAB ───────────────────────────── */
@@ -1512,6 +1926,7 @@ function renderItemTab(itemId) {
     const fin=orderFin(order), raw=allocQtyRaw(order);
     const siBadge=order.storeInventory?`<span class="si-badge">Store</span>`:'';
     const floatBadge=order.fundedByFloat?`<span class="float-badge">💰 Float</span>`:'';
+    const raffleWinnerBadge=isRaffleWinnerForItem(order.clientName,order.itemId)?`<span class="raffle-winner-badge">🎉 Raffle Winner</span>`:'';
     const fcCls=fin.fc>0.005?'kpi-pos':fin.fc<-0.005?'kpi-neg':'td-dim';
     const isEdit=ui.editOrderId===order.id;
 
@@ -1543,7 +1958,7 @@ function renderItemTab(itemId) {
 
     if(isEdit){
       html+=`<tr data-oid="${esc(order.id)}">
-        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge}</td>
+        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge} ${raffleWinnerBadge}</td>
         <td class="td-r"><input id="eq_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.qtyOrdered)}" min="1"></td>
         <td class="td-c">${allocInner}</td>
         <td class="td-r"><input id="ep_${esc(order.id)}" class="ci num sm" type="number" value="${esc(order.amountPaid)}" min="0" step="0.01"></td>
@@ -1554,7 +1969,7 @@ function renderItemTab(itemId) {
       </tr>`;
     } else {
       html+=`<tr data-oid="${esc(order.id)}">
-        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge}</td>
+        <td class="td-bold">${esc(order.clientName)} ${siBadge} ${floatBadge} ${raffleWinnerBadge}</td>
         <td class="td-r mono">${esc(order.qtyOrdered)}</td>
         <td class="td-c">${allocInner}</td>
         <td class="td-r mono">${php(order.amountPaid)}</td>
@@ -1596,7 +2011,7 @@ function renderItemTab(itemId) {
   area.innerHTML=html;
 }
 
-function renderAll(){renderDash();renderFloatBreakdown();renderItems();syncOrderForm();renderLedger();renderBasket();syncRaffleItemSelect();syncRaffleSoundToggle();syncPresentationMode();renderRaffleArea();}
+function renderAll(){renderDash();renderFloatBreakdown();renderItems();syncOrderForm();renderLedger();renderBasket();syncSaleItemSelect();renderStoreSalesPanel();syncRaffleItemSelect();syncRaffleSoundToggle();syncPresentationMode();renderRaffleArea();}
 
 /* ── ACTIONS: ITEMS ─────────────────────────────── */
 $e('itemForm').addEventListener('submit',function(e){
@@ -1747,7 +2162,7 @@ function confirmBasket(){
   const client=$e('oClient').value.trim();
   if(!client){toast('Enter a client name before confirming.','err');$e('oClient').focus();return;}
   const ts=Date.now();
-  ui.basket.forEach((b,i)=>{ state.orders.push({id:uid(),clientName:client,itemId:b.itemId,qtyOrdered:b.qty,amountPaid:b.amountPaid,storeInventory:b.storeInventory,fundedByFloat:!!b.fundedByFloat,manualOverride:false,overriddenQty:0,createdAt:ts+i}); });
+  ui.basket.forEach((b,i)=>{ state.orders.push({id:uid(),clientName:client,itemId:b.itemId,qtyOrdered:b.qty,amountPaid:b.amountPaid,storeInventory:b.storeInventory,fundedByFloat:!!b.fundedByFloat,manualOverride:false,overriddenQty:0,raffleWinner:false,prepared:false,shipped:false,shippedAt:null,fulfillmentNote:'',createdAt:ts+i}); });
   const count=ui.basket.length; ui.basket=[]; $e('oClient').value=''; ui.activeTab='clients';
   renderAll(); save(); toast(`${count} order${count===1?'':'s'} committed for "${client}".`,'ok');
 }
@@ -1795,6 +2210,10 @@ function renderBasket(){
   </div>`;
 }
 
+/* ── ACTIONS: STORE SALES ───────────────────────── */
+$e('sItem').addEventListener('change',autoFillSalePrice);
+$e('saleForm').addEventListener('submit',function(e){ e.preventDefault(); addSale(); });
+
 /* ── EXCEL EXPORT ───────────────────────────────── */
 function sanitizeSheetName(name){return name.slice(0,31).replace(/[\[\]:*?/\\]/g,'_');}
 /* Guarantees a unique sheet name even if two items sanitize to the same string — critical now
@@ -1841,9 +2260,18 @@ function buildClientMessageText(name) {
   const orders=ordersForClient(name).filter(o=>getItem(o.itemId));
   const summary=clientSummary(name);
   const lines=[`Hi ${name}! Here's your pre-order allocation summary:`,''];
+  const announcedWinItems=new Set();
   orders.forEach(order=>{
     const item=getItem(order.itemId), fin=orderFin(order);
     lines.push(`- ${item.name}: Ordered ${order.qtyOrdered}, Allocated ${fin.aq} (${php(item.srp)} each)`);
+    /* Same item-level winner check used for the ledger badge — a client's win is
+       tied to the item, not to whichever specific order happened to receive the
+       ledger bump, so this is deduped per item in case they have more than one
+       order for it. */
+    if(isRaffleWinnerForItem(name,order.itemId) && !announcedWinItems.has(order.itemId)){
+      announcedWinItems.add(order.itemId);
+      lines.push(`  🎉 Congrats — you won our raffle for ${item.name}! Your allocation above already includes a bonus unit.`);
+    }
   });
   lines.push('',`Total downpayment received: ${php(summary.paid)}`,`Total value of allocated items: ${php(summary.val)}`,'');
   if(summary.isZero) lines.push('Your account is fully settled — no refund or balance due.');
@@ -2175,8 +2603,15 @@ document.addEventListener('click',function(e){
       ui.hiddenCols=new Set(['eta','float','act']); ui.showColPicker=false; renderLedger(); save(); break;
     case 'export-excel':   exportToExcel(); break;
     case 'download-all-receipts': generateAllReceipts(); break;
+    case 'fulfillment-filter-status':
+      ui.fulfillmentStatusFilter=btn.dataset.val; renderTabContent(); renderTabNav(); save(); break;
+    case 'edit-sale':   editSale(id); break;
+    case 'save-sale':   saveSaleEdit(id); break;
+    case 'cancel-sale': cancelSaleEdit(); break;
+    case 'del-sale':    delSale(id); break;
     case 'raffle-spin':  raffleSpin(btn.dataset.item, btn.dataset.pool); break;
     case 'raffle-reset': raffleReset(btn.dataset.item, btn.dataset.pool); break;
+    case 'raffle-finalize': raffleFinalize(btn.dataset.item, btn.dataset.pool); break;
     case 'close-raffle-popup':
       clearTimeout(_raffleWinnerTimeout); $e('raffleWinnerPopup').innerHTML=''; break;
     case 'toggle-raffle-sound':
@@ -2220,6 +2655,26 @@ document.addEventListener('change',function(e){
     const v=parseInt(el.value,10);
     pool.manualCount=isNaN(v)?null:Math.max(0,v);
     renderRaffleArea(); save();
+  }
+  if(a==='fulfillment-toggle-prepared'){
+    const order=state.orders.find(o=>o.id===el.dataset.id); if(!order) return;
+    order.prepared=el.checked;
+    renderLedger(); save();
+  }
+  if(a==='fulfillment-toggle-shipped'){
+    const order=state.orders.find(o=>o.id===el.dataset.id); if(!order) return;
+    order.shipped=el.checked;
+    order.shippedAt=el.checked?Date.now():null;
+    if(el.checked && !order.prepared) order.prepared=true;   /* can't ship what wasn't prepared */
+    renderLedger(); save();
+  }
+  if(a==='fulfillment-note'){
+    const order=state.orders.find(o=>o.id===el.dataset.id); if(!order) return;
+    order.fulfillmentNote=el.value;
+    save();   /* no re-render — avoids losing focus mid-edit */
+  }
+  if(a==='fulfillment-filter-item'){
+    ui.fulfillmentItemFilter=el.value; renderTabContent(); save();
   }
 });
 
@@ -2389,7 +2844,7 @@ async function generateAllReceipts() {
 
 /* ── EXPORT / IMPORT ────────────────────────────── */
 $e('exportBtn').addEventListener('click',function(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), a=Object.assign(document.createElement('a'),{href:url,download:'preorder-session-'+new Date().toISOString().slice(0,10)+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),1000); toast('Session exported.','ok');
@@ -2403,8 +2858,9 @@ $e('importInput').addEventListener('change',function(e){
       if(!Array.isArray(d.items)||!Array.isArray(d.orders)) throw new Error('Invalid session file.');
       if(!confirm(`Load ${d.items.length} item(s) and ${d.orders.length} order(s)? Current session will be replaced.`)) return;
       state.items=d.items.map(i=>Object.assign({allocationPct:100,actualAllocOverride:false,actualAllocQty:0},i));
-      state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false},o));
+      state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false,raffleWinner:false,prepared:false,shipped:false,shippedAt:null,fulfillmentNote:''},o));
       state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
+      state.sales=Array.isArray(d.sales)?d.sales.map(s=>Object.assign({shipped:false,notes:'',buyerName:'Walk-in'},s)):[];
       if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
       if(d.sortClients) ui.sortClients=d.sortClients;
       if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
@@ -2418,13 +2874,14 @@ $e('importInput').addEventListener('change',function(e){
 
 /* ── LOCAL STORAGE ──────────────────────────────── */
 const SK='tcgPreOrderV5';
-function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted,presentationMode:ui.presentationMode}));}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted,presentationMode:ui.presentationMode}));}catch(e){}}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(SK)||'null'); if(!d) return;
     if(Array.isArray(d.items))  state.items=d.items.map(i=>Object.assign({allocationPct:100,actualAllocOverride:false,actualAllocQty:0},i));
-    if(Array.isArray(d.orders)) state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false},o));
+    if(Array.isArray(d.orders)) state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false,raffleWinner:false,prepared:false,shipped:false,shippedAt:null,fulfillmentNote:''},o));
     state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
+    state.sales=Array.isArray(d.sales)?d.sales.map(s=>Object.assign({shipped:false,notes:'',buyerName:'Walk-in'},s)):[];
     if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
     if(d.sortClients) ui.sortClients=d.sortClients;
     if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
