@@ -493,7 +493,7 @@ const COL_ALIGN = { qty:'r', alloc:'c', paid:'r', amtAlloc:'r', float:'r', refun
 const COL_STYLE = { alloc:'min-width:160px', amtAlloc:'min-width:135px', float:'min-width:130px', refund:'min-width:160px', act:'min-width:70px' };
 
 /* ── STATE ──────────────────────────────────────── */
-let state = { items:[], orders:[], raffles:{}, sales:[] };
+let state = { items:[], orders:[], raffles:{}, sales:[], clientFulfillmentData:{} };
 let ui = {
   activeTab:        'clients',
   editItemId:       null,
@@ -502,6 +502,8 @@ let ui = {
   basket:           [],
   fulfillmentStatusFilter: 'all',  /* 'all' | 'pending' | 'ready' | 'shipped' — Fulfillment tab status filter */
   fulfillmentItemFilter:   'all',  /* 'all' or an itemId — Fulfillment tab item filter */
+  fulfillmentLbcOnly:      false,  /* true = show only clients with an unshipped LBC batch pending */
+  collapsedFulfillmentClients: new Set(),   /* independent from Client Overview's own collapse state */
   hiddenCols:       new Set(['float']),   /* Float Generated hidden by default; user can re-enable via column picker */
   sortClients:      'alpha',   /* 'alpha' | 'date' */
   itemTabSort:      'date',    /* 'date' | 'qtyDesc' — order of client rows within an Item tab */
@@ -607,16 +609,42 @@ function fulfillmentSummary() {
   });
   return {count:orders.length,totalUnits,shippedUnits,outstandingUnits:totalUnits-shippedUnits,preparedCount,shippedCount,perItem};
 }
-function fulfillmentFilteredOrders() {
-  let list=fulfillmentEligibleOrders();
-  if(ui.fulfillmentItemFilter!=='all') list=list.filter(o=>o.itemId===ui.fulfillmentItemFilter);
-  if(ui.fulfillmentStatusFilter==='pending') list=list.filter(o=>!o.prepared);
-  else if(ui.fulfillmentStatusFilter==='ready') list=list.filter(o=>o.prepared&&!o.shipped);
-  else if(ui.fulfillmentStatusFilter==='shipped') list=list.filter(o=>o.shipped);
-  return list.slice().sort((a,b)=>{
-    if(!!a.shipped!==!!b.shipped) return a.shipped?1:-1;
-    return a.clientName.localeCompare(b.clientName);
-  });
+/* Per-client LBC shipping details (batch courier drop-off) — recipient name, contact
+   number, and address, plus whether this client ships via LBC at all. Keyed by client
+   name (like the rest of the app's client-grouping, which has no separate client
+   entity — clientName is the identity). Read-only lookups never mutate state; only an
+   actual field edit creates/updates the record, so clients who never touch LBC don't
+   clutter the saved session. */
+function fulfillmentClientLBCInfo(name) {
+  return state.clientFulfillmentData[name] || {viaLBC:false,recipientName:name,contactNumber:'',address:''};
+}
+function setClientLBCField(name,field,value) {
+  if(!state.clientFulfillmentData[name]) state.clientFulfillmentData[name]={viaLBC:false,recipientName:name,contactNumber:'',address:''};
+  state.clientFulfillmentData[name][field]=value;
+}
+/* Groups fulfillment-eligible (non-store) orders per client for the Fulfillment tab,
+   applying the active item/status filters to which ORDER ROWS show within a client,
+   while computing each client's overall progress and LBC-pending status from their
+   FULL unfiltered order set — so a status filter narrowing which rows are visible
+   never makes a client's shipped/total progress pill or LBC highlight look wrong. */
+function fulfillmentGroupedByClient() {
+  const names=clientNames().filter(name=>ordersForClient(name).some(o=>!o.storeInventory));
+  const groups=names.map(name=>{
+    const allOrders=ordersForClient(name).filter(o=>!o.storeInventory);
+    let orders=allOrders;
+    if(ui.fulfillmentItemFilter!=='all') orders=orders.filter(o=>o.itemId===ui.fulfillmentItemFilter);
+    if(ui.fulfillmentStatusFilter==='pending') orders=orders.filter(o=>!o.prepared);
+    else if(ui.fulfillmentStatusFilter==='ready') orders=orders.filter(o=>o.prepared&&!o.shipped);
+    else if(ui.fulfillmentStatusFilter==='shipped') orders=orders.filter(o=>o.shipped);
+
+    const lbcInfo=fulfillmentClientLBCInfo(name);
+    const totalUnits=allOrders.reduce((s,o)=>s+allocQty(o),0);
+    const shippedUnits=allOrders.filter(o=>o.shipped).reduce((s,o)=>s+allocQty(o),0);
+    const fullyShipped=allOrders.length>0 && allOrders.every(o=>o.shipped);
+    const lbcPending=lbcInfo.viaLBC && !fullyShipped;
+    return {name,orders,lbcInfo,totalUnits,shippedUnits,fullyShipped,lbcPending,orderCount:allOrders.length};
+  }).filter(g=>g.orders.length>0);
+  return ui.fulfillmentLbcOnly ? groups.filter(g=>g.lbcPending) : groups;
 }
 
 /* ── RAFFLE WHEEL ────────────────────────────────────────────────────────
@@ -1826,18 +1854,19 @@ function renderFulfillmentTab() {
     <div class="brk-stat"><span class="brk-stat-label">Client Orders</span><span class="brk-stat-val mono">${summary.count}</span></div>
     <div class="brk-stat"><span class="brk-stat-label">Units Allocated</span><span class="brk-stat-val mono">${summary.totalUnits}</span></div>
     <div class="brk-stat"><span class="brk-stat-label" style="color:var(--green)">Units Shipped</span><span class="brk-stat-val mono kpi-pos">${summary.shippedUnits}</span></div>
-    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--gold)">Units Outstanding</span><span class="brk-stat-val mono${summary.outstandingUnits>0?' kpi-gold':''}">${summary.outstandingUnits}</span></div>
+    <div class="brk-stat"><span class="brk-stat-label" style="color:var(--gold)">Remaining in Pool</span><span class="brk-stat-val mono${summary.outstandingUnits>0?' kpi-gold':''}">${summary.outstandingUnits}</span></div>
   </div>`;
 
-  /* Per-item outstanding breakdown — surfaces exactly what's still owed per item, sorted worst-first,
-     so nothing slips through unnoticed (this is the part aimed directly at not missing sold items). */
+  /* Per-item pool breakdown — units already allocated to clients that haven't shipped
+     yet. Sorted worst-first. This is the "pool of available pre-ordered items" the
+     per-client rows below draw down from every time a Shipped box gets checked. */
   const itemRows=Object.entries(summary.perItem)
     .map(([itemId,v])=>({itemId,item:getItem(itemId),ordered:v.ordered,shipped:v.shipped,outstanding:v.ordered-v.shipped}))
     .filter(r=>r.outstanding>0)
     .sort((a,b)=>b.outstanding-a.outstanding);
   if(itemRows.length){
     html+=`<div class="tbl-wrap" style="margin-top:0"><table class="item-tbl">
-      <thead><tr><th>Item</th><th class="r">Allocated</th><th class="r">Shipped</th><th class="r">Outstanding</th></tr></thead>
+      <thead><tr><th>Item</th><th class="r">Allocated</th><th class="r">Shipped</th><th class="r">Remaining in Pool</th></tr></thead>
       <tbody>${itemRows.map(r=>`<tr>
         <td class="td-bold">${r.item?esc(r.item.name):'<span style="color:var(--red)">⚠ deleted</span>'}</td>
         <td class="td-r mono">${r.ordered}</td>
@@ -1854,6 +1883,8 @@ function renderFulfillmentTab() {
   html+=`<div class="ledger-toolbar" style="margin-top:18px">
     <div class="lt-left">
       ${statusFilters.map(([key,label])=>`<button type="button" class="lt-btn${ui.fulfillmentStatusFilter===key?' active':''}" data-a="fulfillment-filter-status" data-val="${key}">${esc(label)}</button>`).join('')}
+      <div class="lt-divider"></div>
+      <button type="button" class="lt-btn${ui.fulfillmentLbcOnly?' active':''}" data-a="fulfillment-toggle-lbc-only" title="Show only clients with an unshipped LBC batch">🚚 LBC Pending Only</button>
     </div>
     <div class="lt-right">
       <select class="fi" data-a="fulfillment-filter-item" style="max-width:220px">
@@ -1863,29 +1894,81 @@ function renderFulfillmentTab() {
     </div>
   </div>`;
 
-  const rows=fulfillmentFilteredOrders();
-  if(!rows.length){
-    html+=`<div class="empty"><div class="empty-ico">🔍</div><strong>No orders match this filter</strong><span>Try a different status or item filter above.</span></div>`;
+  const groups=fulfillmentGroupedByClient();
+  if(!groups.length){
+    html+=`<div class="empty"><div class="empty-ico">🔍</div><strong>No orders match this filter</strong><span>Try a different status, item, or LBC filter above.</span></div>`;
     area.innerHTML=html;
     return;
   }
 
-  html+=`<div class="tbl-wrap"><table class="item-tbl">
-    <thead><tr><th>Client</th><th>Item</th><th class="r">Qty Allocated</th><th class="c">Prepared</th><th class="c">Shipped</th><th>Note</th></tr></thead>
-    <tbody>${rows.map(order=>{
-      const item=getItem(order.itemId), aq=allocQty(order);
-      const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
-      const shippedDate=order.shipped&&order.shippedAt?`<div class="brk-unit" style="margin-top:2px">${new Date(order.shippedAt).toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>`:'';
-      return `<tr data-oid="${esc(order.id)}">
-        <td class="td-bold">${esc(order.clientName)}</td>
-        <td>${iName}</td>
-        <td class="td-r mono">${aq}</td>
-        <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-prepared" data-id="${esc(order.id)}" ${order.prepared?'checked':''} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"></td>
-        <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-shipped" data-id="${esc(order.id)}" ${order.shipped?'checked':''} style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">${shippedDate}</td>
-        <td><input class="ci" style="width:100%;min-width:160px" data-a="fulfillment-note" data-id="${esc(order.id)}" value="${esc(order.fulfillmentNote||'')}" placeholder="Add note…"></td>
+  const nCols=6; /* Item, ETA, Qty Allocated, Prepared, Shipped, Note */
+  let tbody='';
+  groups.forEach(g=>{
+    const collapsed=ui.collapsedFulfillmentClients.has(g.name);
+    const chevron=collapsed?'▶':'▼';
+    const progressPill=g.fullyShipped
+      ? `<span class="pill pill-ok">✓ Fully Shipped</span>`
+      : `<span class="pill pill-bal">${g.shippedUnits}/${g.totalUnits} shipped</span>`;
+    const lbcBadge=g.lbcPending
+      ? `<span class="pill" style="background:var(--gold-s);color:var(--gold);border:1px solid rgba(244,197,83,0.3)">🚚 LBC Batch Pending</span>`
+      : (g.lbcInfo.viaLBC?`<span class="pill pill-ok">🚚 LBC</span>`:'');
+    const highlightAttr=g.lbcPending?' style="box-shadow:inset 4px 0 0 var(--gold)"':'';
+
+    tbody+=`<tr class="c-head${collapsed?' collapsed':''}">
+      <td colspan="${nCols}"${highlightAttr}>
+        <div class="c-head-inner">
+          <span class="c-name">
+            <button type="button" class="collapse-btn" data-a="toggle-fulfillment-collapse" data-client="${esc(g.name)}" title="${collapsed?'Expand':'Collapse'}">${chevron}</button>
+            👤 ${esc(g.name)} <span class="badge">${g.orderCount} item${g.orderCount===1?'':'s'}</span>
+            ${progressPill} ${lbcBadge}
+          </span>
+          <label class="store-check${g.lbcInfo.viaLBC?' is-store':''}">
+            <input type="checkbox" data-a="client-lbc-toggle" data-client="${esc(g.name)}" ${g.lbcInfo.viaLBC?'checked':''}> 🚚 Ship via LBC
+          </label>
+        </div>
+      </td>
+    </tr>`;
+
+    if(g.lbcInfo.viaLBC){
+      tbody+=`<tr class="c-sub">
+        <td colspan="${nCols}">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="ff" style="min-width:160px"><label>Recipient Name</label><input class="fi" data-a="lbc-field" data-client="${esc(g.name)}" data-field="recipientName" value="${esc(g.lbcInfo.recipientName||'')}"></div>
+            <div class="ff" style="min-width:160px"><label>Contact Number</label><input class="fi" data-a="lbc-field" data-client="${esc(g.name)}" data-field="contactNumber" value="${esc(g.lbcInfo.contactNumber||'')}" placeholder="09xx xxx xxxx"></div>
+            <div class="ff f2" style="min-width:220px"><label>Address</label><input class="fi" data-a="lbc-field" data-client="${esc(g.name)}" data-field="address" value="${esc(g.lbcInfo.address||'')}" placeholder="Full shipping address"></div>
+          </div>
+        </td>
       </tr>`;
-    }).join('')}</tbody>
-  </table></div>`;
+    }
+
+    if(!collapsed){
+      g.orders.forEach(order=>{
+        const item=getItem(order.itemId), aq=allocQty(order);
+        const iName=item?esc(item.name):`<span style="color:var(--red)">⚠ deleted</span>`;
+        const iEta=item?esc(item.eta||'—'):'—';
+        const shippedDate=order.shipped&&order.shippedAt?`<div class="brk-unit" style="margin-top:2px">${new Date(order.shippedAt).toLocaleDateString('en-PH',{month:'short',day:'numeric'})}</div>`:'';
+        tbody+=`<tr data-oid="${esc(order.id)}">
+          <td class="td-bold">${iName}</td>
+          <td class="td-dim">${iEta}</td>
+          <td class="td-r mono">${aq}</td>
+          <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-prepared" data-id="${esc(order.id)}" ${order.prepared?'checked':''} style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"></td>
+          <td class="td-c"><input type="checkbox" data-a="fulfillment-toggle-shipped" data-id="${esc(order.id)}" ${order.shipped?'checked':''} style="width:16px;height:16px;accent-color:var(--green);cursor:pointer">${shippedDate}</td>
+          <td><input class="ci" style="width:100%;min-width:140px" data-a="fulfillment-note" data-id="${esc(order.id)}" value="${esc(order.fulfillmentNote||'')}" placeholder="Add note…"></td>
+        </tr>`;
+      });
+
+      tbody+=`<tr class="c-sub">
+        <td><span class="sub-label">Subtotal — ${esc(g.name)}</span></td>
+        <td></td>
+        <td class="td-r mono">${g.totalUnits}</td>
+        <td class="td-c" colspan="3">${g.fullyShipped?`<span class="pill pill-ok">✓ Fully Shipped</span>`:`<span class="pill pill-bal">${g.shippedUnits}/${g.totalUnits} units shipped</span>`}</td>
+      </tr>`;
+    }
+  });
+
+  html+=`<div class="tbl-wrap"><table class="ledger-tbl">
+    <thead><tr><th>Item / SKU</th><th>ETA</th><th class="r">Qty Allocated</th><th class="c">Prepared</th><th class="c">Shipped</th><th>Note</th></tr></thead>
+    <tbody>${tbody}</tbody></table></div>`;
 
   area.innerHTML=html;
 }
@@ -2605,6 +2688,12 @@ document.addEventListener('click',function(e){
     case 'download-all-receipts': generateAllReceipts(); break;
     case 'fulfillment-filter-status':
       ui.fulfillmentStatusFilter=btn.dataset.val; renderTabContent(); renderTabNav(); save(); break;
+    case 'fulfillment-toggle-lbc-only':
+      ui.fulfillmentLbcOnly=!ui.fulfillmentLbcOnly; renderTabContent(); save(); break;
+    case 'toggle-fulfillment-collapse':
+      const ffc=btn.dataset.client;
+      if(ui.collapsedFulfillmentClients.has(ffc)) ui.collapsedFulfillmentClients.delete(ffc); else ui.collapsedFulfillmentClients.add(ffc);
+      renderTabContent(); break;
     case 'edit-sale':   editSale(id); break;
     case 'save-sale':   saveSaleEdit(id); break;
     case 'cancel-sale': cancelSaleEdit(); break;
@@ -2675,6 +2764,14 @@ document.addEventListener('change',function(e){
   }
   if(a==='fulfillment-filter-item'){
     ui.fulfillmentItemFilter=el.value; renderTabContent(); save();
+  }
+  if(a==='client-lbc-toggle'){
+    setClientLBCField(el.dataset.client,'viaLBC',el.checked);
+    renderTabContent(); renderTabNav(); save();
+  }
+  if(a==='lbc-field'){
+    setClientLBCField(el.dataset.client,el.dataset.field,el.value);
+    save();   /* no re-render — avoids losing focus mid-edit */
   }
 });
 
@@ -2844,7 +2941,7 @@ async function generateAllReceipts() {
 
 /* ── EXPORT / IMPORT ────────────────────────────── */
 $e('exportBtn').addEventListener('click',function(){
-  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,clientFulfillmentData:state.clientFulfillmentData,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), a=Object.assign(document.createElement('a'),{href:url,download:'preorder-session-'+new Date().toISOString().slice(0,10)+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(url),1000); toast('Session exported.','ok');
@@ -2861,6 +2958,7 @@ $e('importInput').addEventListener('change',function(e){
       state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false,raffleWinner:false,prepared:false,shipped:false,shippedAt:null,fulfillmentNote:''},o));
       state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
       state.sales=Array.isArray(d.sales)?d.sales.map(s=>Object.assign({shipped:false,notes:'',buyerName:'Walk-in'},s)):[];
+      state.clientFulfillmentData=(d.clientFulfillmentData&&typeof d.clientFulfillmentData==='object')?d.clientFulfillmentData:{};
       if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
       if(d.sortClients) ui.sortClients=d.sortClients;
       if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
@@ -2874,7 +2972,7 @@ $e('importInput').addEventListener('change',function(e){
 
 /* ── LOCAL STORAGE ──────────────────────────────── */
 const SK='tcgPreOrderV5';
-function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted,presentationMode:ui.presentationMode}));}catch(e){}}
+function save(){try{localStorage.setItem(SK,JSON.stringify({items:state.items,orders:state.orders,raffles:state.raffles,sales:state.sales,clientFulfillmentData:state.clientFulfillmentData,hiddenCols:[...ui.hiddenCols],sortClients:ui.sortClients,itemTabSort:ui.itemTabSort,raffleSoundMuted:ui.raffleSoundMuted,presentationMode:ui.presentationMode}));}catch(e){}}
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(SK)||'null'); if(!d) return;
@@ -2882,6 +2980,7 @@ function load(){
     if(Array.isArray(d.orders)) state.orders=d.orders.map(o=>Object.assign({storeInventory:false,manualOverride:false,overriddenQty:0,fundedByFloat:false,raffleWinner:false,prepared:false,shipped:false,shippedAt:null,fulfillmentNote:''},o));
     state.raffles=(d.raffles&&typeof d.raffles==='object')?d.raffles:{};
     state.sales=Array.isArray(d.sales)?d.sales.map(s=>Object.assign({shipped:false,notes:'',buyerName:'Walk-in'},s)):[];
+    state.clientFulfillmentData=(d.clientFulfillmentData&&typeof d.clientFulfillmentData==='object')?d.clientFulfillmentData:{};
     if(Array.isArray(d.hiddenCols)) ui.hiddenCols=new Set(d.hiddenCols);
     if(d.sortClients) ui.sortClients=d.sortClients;
     if(d.itemTabSort) ui.itemTabSort=d.itemTabSort;
