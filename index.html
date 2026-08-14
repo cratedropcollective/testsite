@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Welcome</title>
+    <title>Crate Drop Collective | Pre-orders</title>
+
+    <meta property="og:title" content="Crate Drop Collective | Pre-orders">
+    <meta property="og:description" content="Secure your TCG and Collectible pre-orders. Plan your allocations and manage your downpayments.">
+    <meta property="og:image" content="https://www.image2url.com/r2/default/images/1783493369886-febf507b-8811-4c77-b830-f093891a43b7.png">
+    <meta property="og:url" content="https://cratedropcollective.github.io/preorder">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Crate Drop Collective | Pre-orders">
+    <meta name="twitter:image" content="YOUR_NEW_IMAGE_URL_HERE.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -27,23 +38,52 @@
         }
       }
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
+        [x-cloak] { display: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { font-family: 'Poppins', sans-serif; }
 
+        /* --- Signature geometry: diagonal-cut corners, pulled from the logo's own construction --- */
         .panel-cut { clip-path: polygon(0 14px, 14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
         .panel-cut-sm { clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
 
+        /* --- Slanted grade-badge tags, echoing HG/MG/RG style tags --- */
         .tag-slant { transform: skewX(-12deg); display: inline-block; }
         .tag-slant > span { display: inline-block; transform: skewX(12deg); }
 
+        /* --- Tri-color signal stripe: blue/red/gold, from the wordmark split --- */
         .signal-stripe { display: flex; height: 5px; width: 100%; }
         .signal-stripe > div { flex: 1; transform: skewX(-25deg); margin: 0 -3px; }
+
+        input[type=range].brand-range { -webkit-appearance: none; appearance: none; background: transparent; }
+        input[type=range].brand-range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: rgba(255,199,44,0.35); }
+        input[type=range].brand-range::-webkit-slider-thumb {
+            -webkit-appearance: none; margin-top: -5px;
+            width: 14px; height: 14px; border-radius: 2px; transform: rotate(45deg);
+            background: #FFC72C; box-shadow: 0 0 0 4px rgba(255,199,44,0.2);
+            cursor: pointer;
+        }
+        input[type=range].brand-range::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255,199,44,0.35); }
+        input[type=range].brand-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 2px; background: #FFC72C; border: none; }
+
+        .cta-shimmer { position: relative; overflow: hidden; }
+        .cta-shimmer::after {
+            content: "";
+            position: absolute; top: 0; left: -60%;
+            width: 40%; height: 100%;
+            background: linear-gradient(115deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: left 0.6s ease;
+        }
+        .cta-shimmer:hover::after { left: 130%; }
     </style>
 </head>
-<body class="bg-paper text-ink font-body min-h-screen flex flex-col">
+<body class="bg-paper font-body text-ink" x-data="shop()" x-cloak>
 
     <!-- Tri-color signature strip -->
     <div class="signal-stripe">
@@ -52,87 +92,571 @@
         <div class="bg-brandgold"></div>
     </div>
 
-    <nav class="p-6">
-        <div class="container mx-auto flex justify-center">
-            <div class="flex flex-col items-center">
-                <span class="text-3xl md:text-4xl font-display font-bold tracking-tight leading-none uppercase">
+    <!-- Navigation -->
+    <nav class="bg-ink text-white p-4 sticky top-0 z-50 shadow-xl">
+        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
+            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
+                <span class="text-lg md:text-xl font-display font-bold tracking-tight leading-none uppercase">
                     <span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span>
                 </span>
+            </a>
+
+            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
+                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Home</a>
+                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Products</a>
+                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-ink bg-brandgold px-4 py-1.5 uppercase tracking-wider panel-cut-sm">Preorder</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button @click="cartOpen = true" class="bg-brandred hover:bg-red-600 px-4 py-2 panel-cut-sm flex items-center transition-all relative">
+                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
+                    <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
+                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-brandgold text-ink text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-ink" x-text="totalItems"></span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 flex items-center justify-center p-4 md:p-8">
-        <div class="max-w-5xl w-full">
+    <!-- Hero -->
+    <section class="bg-ink text-white relative overflow-hidden">
+        <div class="container mx-auto px-4 py-10 md:py-14 text-center relative z-10">
+            <p class="font-mono text-[10px] tracking-[0.35em] text-brandgold uppercase mb-3">Open Preorders</p>
+            <h1 class="font-display text-4xl md:text-6xl font-bold leading-tight mb-3 uppercase tracking-tight">Reserve The Drop</h1>
+            <p class="text-gray-400 text-xs md:text-sm max-w-xl mx-auto font-medium">
+                Every listing below ships with a 30% downpayment lock-in. Final quantities confirm once distributor allocation lands — run the simulator before you commit.
+            </p>
+        </div>
+        <div class="absolute -right-10 -bottom-10 w-56 h-56 border-8 border-brandblue/20 rotate-12 hidden md:block"></div>
+        <div class="absolute -left-10 -top-10 w-40 h-40 border-8 border-brandred/20 -rotate-12 hidden md:block"></div>
+    </section>
+    <div class="signal-stripe">
+        <div class="bg-brandblue"></div>
+        <div class="bg-brandred"></div>
+        <div class="bg-brandgold"></div>
+    </div>
 
-            <div class="text-center mb-12">
-                <p class="font-mono text-[10px] md:text-xs text-steel uppercase tracking-[0.3em] mb-3">Choose Your Destination</p>
-                <div class="h-[3px] w-16 mx-auto signal-stripe">
-                    <div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div>
+    <!-- Search & Planner Toggle -->
+    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
+        <div class="py-4 px-4 container mx-auto">
+            <div class="flex gap-2">
+                <div class="relative flex-1">
+                    <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none text-sm focus:ring-2 focus:ring-brandblue outline-none panel-cut-sm">
+                    <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
                 </div>
+                <button @click="showPlanner = !showPlanner" class="bg-ink text-white px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-ink2 transition-colors flex items-center justify-center shrink-0 shadow-sm panel-cut-sm">
+                    <i class="fas fa-calculator md:mr-2 text-brandgold"></i>
+                    <span x-text="showPlanner ? 'Hide Planner' : 'Allocation Planner'" class="hidden md:inline"></span>
+                    <span x-text="showPlanner ? 'Hide' : 'Planner'" class="md:hidden ml-1"></span>
+                </button>
+            </div>
+        </div>
+        <div class="container mx-auto">
+            <div class="flex flex-wrap gap-2 px-4 py-3">
+                <template x-for="cat in availableCategories" :key="cat">
+                    <button @click="currentCategory = cat"
+                            :class="currentCategory === cat ? 'bg-brandred text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                            class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all flex items-center">
+                        <span x-text="cat"></span>
+                        <span class="ml-2 opacity-60 text-[9px]" x-text="`(${getCategoryCount(cat)})`"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allocation Planner Section -->
+    <section x-show="showPlanner"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="container mx-auto px-2 md:px-4 mt-4 mb-4" style="display: none;">
+        <div class="bg-ink panel-cut overflow-hidden shadow-xl">
+            <div class="bg-ink2 p-4 flex justify-between items-center border-b-2 border-brandgold/40">
+                <div>
+                    <p class="font-mono text-[9px] text-brandgold tracking-[0.3em] uppercase mb-1">Plan Your Order</p>
+                    <h2 class="text-white text-sm font-display font-bold tracking-tight uppercase">Allocation &amp; Downpayment Simulator</h2>
+                </div>
+                <i class="fas fa-chart-pie text-brandgold"></i>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
-
-                <a href="/preorder" class="group relative overflow-hidden bg-ink panel-cut p-8 md:p-12 transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-2xl flex flex-col justify-between min-h-[350px]">
-                    <div class="absolute -right-8 -top-8 text-white/5 text-9xl font-display font-black uppercase select-none group-hover:text-brandgold/10 transition-colors">PRE</div>
-                    <div class="absolute -right-10 -bottom-10 w-40 h-40 border-8 border-brandblue/10 rotate-12 hidden md:block"></div>
-
-                    <div class="relative z-10">
-                        <div class="tag-slant bg-brandgold mb-6 inline-block">
-                            <span class="font-mono text-[9px] font-bold text-ink uppercase tracking-widest px-2 py-1">Live Preorders</span>
-                        </div>
-                        <div class="w-14 h-14 bg-brandred rounded-2xl flex items-center justify-center mb-6 transform group-hover:rotate-12 transition-transform">
-                            <i class="fas fa-clock text-white text-2xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-display font-bold text-white uppercase tracking-tight mb-4">
-                            Pre-Order <br><span class="text-brandgold">Drops</span>
-                        </h3>
-                        <p class="text-gray-400 text-sm font-medium leading-relaxed max-w-[240px]">
-                            Secure upcoming releases and exclusive sets before they hit the shelves.
+            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase text-brandgold/90 mb-1 tracking-wider">1. Select Product</label>
+                        <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
+                            <template x-for="item in products" :key="item.id">
+                                <option :value="item.id" x-text="item.name + ' (' + item.set + ')'" class="text-ink"></option>
+                            </template>
+                        </select>
+                        <p class="mt-1 text-[9px] font-mono text-brandgold uppercase tracking-wide">
+                            Standard Pack: <span x-text="products.find(p => p.id == calcSelectedId)?.unitsPerCase"></span> units per case
                         </p>
                     </div>
 
-                    <div class="relative z-10 mt-8 flex items-center text-white text-xs font-black uppercase tracking-widest">
-                        Enter Shop <i class="fas fa-arrow-right ml-2 text-brandgold group-hover:translate-x-2 transition-transform"></i>
+                    <div class="flex bg-white/5 p-1 border border-white/10">
+                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-brandblue text-white' : 'text-gray-400'" class="flex-1 text-[10px] font-black py-2 transition-all uppercase">By Unit</button>
+                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-brandblue text-white' : 'text-gray-400'" class="flex-1 text-[10px] font-black py-2 transition-all uppercase">By Case</button>
                     </div>
-                </a>
 
-                <a href="/products" class="group relative overflow-hidden bg-white border border-gray-200 panel-cut p-8 md:p-12 transition-all duration-500 hover:scale-[1.02] active:scale-95 shadow-xl hover:shadow-2xl flex flex-col justify-between min-h-[350px]">
-                    <div class="absolute -right-8 -top-8 text-gray-100 text-9xl font-display font-black uppercase select-none group-hover:text-gray-200 transition-colors">LIVE</div>
-                    <div class="absolute -right-10 -bottom-10 w-40 h-40 border-8 border-brandred/10 -rotate-12 hidden md:block"></div>
-
-                    <div class="relative z-10">
-                        <div class="tag-slant bg-brandred mb-6 inline-block">
-                            <span class="font-mono text-[9px] font-bold text-white uppercase tracking-widest px-2 py-1">Ready Stock</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider" x-text="calcIsCase ? 'Target Cases' : 'Target Units'"></label>
+                            <input type="number" x-model.number="calcInputQty" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
                         </div>
-                        <div class="w-14 h-14 bg-brandblue rounded-2xl flex items-center justify-center mb-6 transform group-hover:-rotate-12 transition-transform">
-                            <i class="fas fa-box-open text-white text-2xl"></i>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Allocation (%)</label>
+                            <input type="number" x-model.number="calcFillRate" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
                         </div>
-                        <h3 class="text-3xl font-display font-bold text-ink uppercase tracking-tight mb-4">
-                            On-Hand <br><span class="text-brandred">Stock</span>
-                        </h3>
-                        <p class="text-steel text-sm font-medium leading-relaxed max-w-[240px]">
-                            Ready to ship immediately. Browse our current inventory of sealed products.
-                        </p>
                     </div>
 
-                    <div class="relative z-10 mt-8 flex items-center text-ink text-xs font-black uppercase tracking-widest">
-                        Enter Shop <i class="fas fa-arrow-right ml-2 text-brandred group-hover:translate-x-2 transition-transform"></i>
-                    </div>
-                </a>
-
-            </div>
-
-            <div class="mt-16 text-center">
-                <div class="flex justify-center space-x-6 mb-4 text-steel">
-                    <a href="https://facebook.com/cratedropcollective" class="hover:text-brandred transition-colors"><i class="fab fa-facebook-messenger text-xl"></i></a>
-                    <a href="#" class="hover:text-brandred transition-colors"><i class="fab fa-instagram text-xl"></i></a>
+                    <input type="range" min="1" max="100" step="1" x-model="calcFillRate" class="brand-range w-full">
+                    <p class="text-[9px] text-gray-500 italic">Adjust fill rate based on historical allocation cuts (e.g., 50% means you get half of what you order).</p>
                 </div>
-                <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-[0.2em]">© 2026 Crate Drop Collective</p>
+
+                <div class="bg-white/5 p-5 border border-white/10 flex flex-col justify-center space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-ink2 border-l-2 border-brandblue">
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Est. Units Received</p>
+                            <p class="text-xl font-display font-bold text-white"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40 font-body">PCS</small></p>
+                        </div>
+                        <div class="p-3 bg-ink2 border-l-2 border-brandred">
+                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Est. Total Value</p>
+                            <p class="text-xl font-display font-bold text-white">₱<span x-text="calculatedTotalValue"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-brandgold text-ink relative overflow-hidden panel-cut-sm">
+                        <div class="relative z-10">
+                            <p class="text-[10px] font-bold uppercase opacity-70 mb-1 tracking-wide">Total Downpayment Required (30% DP)</p>
+                            <p class="text-3xl font-display font-black tracking-tight">₱<span x-text="calculatedDownpayment"></span></p>
+                            <p class="text-[9px] font-medium mt-2 leading-tight opacity-80">
+                                Based on your Target Order of
+                                <span x-text="calcInputQty"></span> <span x-text="calcIsCase ? 'Case(s)' : 'Unit(s)'"></span>.
+                            </p>
+                        </div>
+                        <i class="fas fa-wallet absolute -bottom-2 -right-2 text-6xl opacity-10 rotate-12"></i>
+                    </div>
+                </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Product Grid -->
+    <main class="container mx-auto py-6 px-2 md:px-4">
+        <div x-show="isLoading" class="text-center py-12">
+            <p class="text-brandred font-bold animate-pulse uppercase tracking-widest font-mono text-xs">Loading Drops...</p>
+        </div>
+
+        <div class="flex items-center justify-between mb-4 px-1" x-show="!isLoading">
+            <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Live Lineup <span class="text-steel font-body font-normal text-xs">(<span x-text="filteredProducts.length"></span>)</span></p>
+            <div class="h-[3px] flex-1 ml-4 signal-stripe">
+                <div class="bg-brandblue/30"></div><div class="bg-brandred/30"></div><div class="bg-brandgold/30"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
+            <template x-for="product in filteredProducts" :key="product.id">
+                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 saturate-50' : 'hover:shadow-xl hover:-translate-y-1'" class="panel-cut bg-white border border-gray-200 overflow-hidden transition-all duration-300 flex flex-col">
+
+                    <div class="flex items-center justify-between px-3 pt-3">
+                        <div class="tag-slant bg-brandred"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5" x-text="product.type"></span></div>
+                        <div class="tag-slant bg-brandgold"><span class="font-mono text-[8px] text-ink font-bold uppercase tracking-widest px-2 py-0.5" x-text="'ETA ' + product.eta"></span></div>
+                    </div>
+
+                    <div class="relative aspect-square bg-[#F5F6F8] flex items-center justify-center p-6 mt-2">
+                        <img :src="product.image" class="max-h-full max-w-full object-contain">
+                    </div>
+
+                    <div class="border-t border-b border-dashed border-gray-200 px-3 py-1.5 bg-gray-50">
+                        <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-widest text-center" x-text="product.set"></p>
+                    </div>
+
+                    <div class="p-3 md:p-5 flex-1 flex flex-col">
+                        <h2 class="text-xs md:text-base font-semibold font-display leading-tight mb-2 h-8 md:h-12 uppercase tracking-tight" x-text="product.name"></h2>
+
+                        <div class="flex bg-gray-100 p-1 mb-3">
+                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-brandblue' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1">UNIT</button>
+                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-brandblue' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
+                        </div>
+
+                        <template x-if="product.deadline">
+                            <div class="mb-3">
+                                <p class="text-[8px] font-mono text-steel uppercase tracking-widest mb-1 text-center">Launch Window</p>
+                                <div class="text-[9px] font-bold p-2 flex items-center justify-center gap-2 uppercase tracking-tight"
+                                     :class="isExpired(product.deadline) ? 'bg-brandred/10 text-brandred' : 'bg-brandblue/10 text-brandblue'">
+                                    <span x-text="isExpired(product.deadline) ? 'LAUNCH CLOSED' : 'T-MINUS ' + getCountdown(product.deadline)"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="space-y-1 mb-4">
+                            <div class="text-sm md:text-xl font-display font-bold text-ink">₱<span x-text="calculateFullPrice(product).toLocaleString()"></span></div>
+                            <div class="text-[10px] font-bold uppercase text-steel tracking-wide">30% Downpayment:</div>
+                            <div class="text-sm md:text-lg font-display font-bold text-brandred">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
+                        </div>
+
+                        <div class="flex items-center space-x-2 mb-3">
+                            <div class="flex items-center border border-gray-300 h-7 bg-gray-50">
+                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold text-ink">-</button>
+                                <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
+                                <button @click="product.selectedQty++" class="px-2 font-bold text-ink">+</button>
+                            </div>
+                        </div>
+
+                        <button
+                            @click="addToCart(product)"
+                            :disabled="product.soldOut || isExpired(product.deadline)"
+                            :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : (product.justAdded ? 'bg-emerald-600' : 'bg-brandred hover:bg-red-600 cta-shimmer')"
+                            class="w-full h-9 panel-cut-sm text-white text-[10px] font-bold uppercase transition-all mt-auto tracking-wider">
+                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
+                        </button>
+                    </div>
+                </div>
+            </template>
         </div>
     </main>
 
+    <!-- Cart Sidebar -->
+    <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
+        <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
+            <div class="flex justify-between items-center mb-6 border-b-2 border-brandgold pb-4">
+                <h2 class="text-xl font-display font-bold text-ink uppercase">Your Crate</h2>
+                <button @click="cartOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
+            </div>
+
+            <div class="flex-1 space-y-6">
+                <template x-for="(item, index) in cart" :key="index">
+                    <div class="flex items-start border-b border-gray-100 pb-4">
+                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-[#F5F6F8] p-1 border border-gray-200">
+                        <div class="flex-1">
+                            <p class="font-bold text-xs"><span x-text="item.name"></span> <span class="text-brandred text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span></p>
+                            <p class="text-[9px] text-steel font-mono uppercase mb-2">ETA: <span x-text="item.eta"></span></p>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center border border-gray-300 h-6 bg-gray-50">
+                                    <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
+                                    <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
+                                    <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[10px] text-brandred font-bold block uppercase">30% DP:</span>
+                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mt-6 pt-6 border-t-2 border-gray-100 space-y-4" x-show="cart.length > 0">
+                <div class="bg-gray-50 p-3 border border-dashed border-gray-300">
+                    <div class="flex justify-between text-[10px] font-bold text-steel uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
+                    <div class="flex justify-between text-sm font-black text-brandred uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2">
+                    <button @click="confirmAndRedirect()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
+                        <i class="fab fa-facebook-messenger mr-2 text-brandgold"></i> Assisted Checkout (Paste Order)
+                    </button>
+                    <button @click="checkoutSelf()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
+                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
+        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white p-6 shadow-2xl flex flex-col max-h-[90vh] panel-cut">
+            <div class="flex justify-between items-center mb-4 border-b-2 border-brandgold pb-4">
+                <div>
+                    <p class="font-mono text-[9px] text-brandred uppercase tracking-[0.25em] mb-0.5">Order Manifest</p>
+                    <h2 class="text-xl font-display font-bold text-ink uppercase">Order Breakdown</h2>
+                </div>
+                <button @click="paymentModalOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
+                <div class="bg-gray-50 p-4 border border-gray-200">
+                    <template x-for="item in cart">
+                        <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
+                            <div class="flex justify-between text-xs font-bold">
+                                <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span></span>
+                                <span>₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
+                            </div>
+                            <div class="flex justify-between text-[9px] font-bold text-steel uppercase mt-1 font-mono">
+                                <span x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span>
+                                <span>ETA: <span x-text="item.eta"></span></span>
+                                <span>Balance: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="p-4 bg-ink text-white space-y-1 panel-cut-sm">
+                    <div class="flex justify-between text-[10px] font-bold uppercase text-brandgold"><span>Total Downpayment Due (30%)</span></div>
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-2xl font-display font-black tracking-tight">₱<span x-text="cartDepositTotal"></span></span>
+                        <span class="text-[10px] font-black uppercase text-gray-400">To be paid now</span>
+                    </div>
+                    <div class="pt-2 mt-2 border-t border-white/15 flex justify-between text-[10px] font-black uppercase text-gray-400">
+                        <span>Balance Remaining Later:</span>
+                        <span>₱<span x-text="cartBalanceTotal"></span></span>
+                    </div>
+                </div>
+
+                <div class="text-center py-6 px-4 border border-gray-200 relative mt-2">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandgold text-ink text-[8px] font-black uppercase tracking-widest px-3 py-1 flex items-center gap-1 panel-cut-sm">
+                        <i class="fas fa-check-circle"></i> Verified Deposit
+                    </div>
+                    <p class="text-[11px] text-steel mb-4 font-medium px-2 mt-2">Pay via Instapay. <strong class="text-ink">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
+                    <img src="https://www.image2url.com/r2/default/images/1783494876265-bc690fba-d1e1-44bf-bd84-48323fc518aa.png" class="w-40 h-40 mx-auto border border-gray-200 p-1 bg-white">
+                    <p class="text-[10px] text-steel font-medium px-2 mt-4 pt-4 border-t border-dashed border-gray-300">Pre-Orders are subject to country allocation. By placing a pre-order, I acknowledge there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
+                </div>
+            </div>
+
+            <button @click="confirmAndRedirect()" class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase mt-4 shadow-lg cta-shimmer tracking-wide">
+                Send Proof to Messenger
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function shop() {
+            return {
+                isLoading: true,
+                cartOpen: false,
+                paymentModalOpen: false,
+                searchQuery: '',
+                currentCategory: 'All Products',
+                cart: [],
+                products: [],
+                now: new Date().getTime(),
+
+                showPlanner: false,
+                calcSelectedId: null,
+                calcInputQty: 1,
+                calcFillRate: 100,
+                calcIsCase: false,
+
+                async init() {
+                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
+
+                    setInterval(() => {
+                        this.now = new Date().getTime();
+                    }, 1000);
+
+                    try {
+                        const response = await fetch(sheetUrl);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const data = await response.text();
+                        this.parseTSV(data);
+                    } catch (error) {
+                        console.error('Error fetching inventory:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                parseTSV(tsvText) {
+                    const lines = tsvText.split(/\r?\n/);
+                    if (lines.length < 2) return;
+
+                    const headers = lines[0].split('\t').map(h => h.trim());
+                    const items = [];
+
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue;
+
+                        const values = line.split('\t');
+                        let product = {};
+
+                        headers.forEach((header, index) => {
+                            let val = values[index] ? values[index].trim() : '';
+
+                            if (header === 'preorderDeadline') {
+                                product.deadline = val ? new Date(val).getTime() : null;
+                            } else if (['id', 'price', 'unitsPerCase'].includes(header)) {
+                                product[header] = Number(val) || 0;
+                            } else if (header === 'soldOut') {
+                                product[header] = (val.toUpperCase() === 'TRUE');
+                            } else {
+                                product[header] = val;
+                            }
+                        });
+
+                        product.selectedQty = 1;
+                        product.isCase = false;
+                        product.justAdded = false;
+                        items.push(product);
+                    }
+
+                    this.products = items;
+                    if (this.products.length > 0) {
+                        this.calcSelectedId = this.products[0].id;
+                    }
+                },
+
+                calculateFullPrice(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * (product.selectedQty || 1);
+                },
+
+                calculateLiveDeposit(product) {
+                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    return base * 0.3 * (product.selectedQty || 1);
+                },
+
+                getCountdown(deadline) {
+                    if (!deadline) return null;
+                    const distance = deadline - this.now;
+                    if (distance < 0) return "CLOSED";
+                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                },
+
+                isExpired(deadline) {
+                    return deadline && (deadline - this.now < 0);
+                },
+
+                get calculatedUnits() {
+                    if (!this.calcSelectedId) return 0;
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return 0;
+                    const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
+                    return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
+                },
+
+                get calculatedTotalValue() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    const units = this.calculatedUnits;
+                    return (units * (product ? product.price : 0)).toLocaleString();
+                },
+
+                get calculatedDownpayment() {
+                    if (!this.calcSelectedId) return "0";
+                    const product = this.products.find(p => p.id == this.calcSelectedId);
+                    if (!product) return "0";
+                    const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
+                    return (basePrice * this.calcInputQty * 0.3).toLocaleString();
+                },
+
+                get availableCategories() {
+                    const live = new Set();
+                    this.products.forEach(p => {
+                        if (p.category && !p.soldOut && !this.isExpired(p.deadline)) {
+                            live.add(p.category);
+                        }
+                    });
+                    return ['All Products', ...Array.from(live).sort()];
+                },
+
+                get filteredProducts() {
+                    return this.products
+                        .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
+                        .filter(p => this.currentCategory === 'All Products' || p.category === this.currentCategory)
+                        .sort((a, b) => {
+                            const aActive = !a.soldOut && !this.isExpired(a.deadline);
+                            const bActive = !b.soldOut && !this.isExpired(b.deadline);
+
+                            if (aActive !== bActive) {
+                                return aActive ? -1 : 1;
+                            }
+
+                            if (a.deadline && b.deadline) {
+                                return a.deadline - b.deadline;
+                            }
+
+                            if (a.deadline) return -1;
+                            if (b.deadline) return 1;
+
+                            return 0;
+                        });
+                },
+
+                get totalItems() {
+                    return this.cart.reduce((s, i) => s + i.quantity, 0);
+                },
+                get cartDepositTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();
+                },
+                get cartFullTotal() {
+                    return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString();
+                },
+                get cartBalanceTotal() {
+                    const full = this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0);
+                    const dp = this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0);
+                    return (full - dp).toLocaleString();
+                },
+
+                getCategoryCount(cat) {
+                    const live = this.products.filter(p => !p.soldOut && !this.isExpired(p.deadline));
+                    if (cat === 'All Products') return live.length;
+                    return live.filter(p => p.category === cat).length;
+                },
+
+                addToCart(product) {
+                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
+                    const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
+                    if (existing) {
+                        existing.quantity += product.selectedQty;
+                    } else {
+                        this.cart.push({
+                            ...product,
+                            productId: product.id,
+                            fullPrice: price,
+                            depositPrice: price * 0.3,
+                            quantity: product.selectedQty
+                        });
+                    }
+                    product.justAdded = true;
+                    setTimeout(() => product.justAdded = false, 1000);
+                },
+                updateCartQty(index, change) {
+                    this.cart[index].quantity += change;
+                    if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
+                },
+                checkoutSelf() {
+                    this.cartOpen = false;
+                    this.paymentModalOpen = true;
+                },
+                async confirmAndRedirect() {
+                    let summary = "🛒 PRE ORDER SUMMARY\n-----------------\n";
+                    this.cart.forEach(i => {
+                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
+                    });
+                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
+                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
+                    summary += `STATUS: Payment Pending\n\n`;
+                    summary += `Pre-Orders are subject to country allocation.`;
+
+                    try {
+                        await navigator.clipboard.writeText(summary);
+                    } catch (err) {
+                        console.error('Clipboard failed', err);
+                    }
+
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+                    if (isIOS) {
+                        window.location.href = "fb-messenger://user-thread/745474078647634";
+                    } else {
+                        window.open("https://m.me/cratedropcollective", "_blank");
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
