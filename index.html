@@ -657,35 +657,36 @@
                     this.paymentModalOpen = true;
                 },
 
-                async confirmAndRedirect() {
+                confirmAndRedirect() {
                     if (this.isSubmitting) return;
                     this.isSubmitting = true;
 
                     const orderId = 'CDC-' + Date.now().toString(36).toUpperCase();
-                    let sheetSaved = false;
 
+                    // Fire-and-forget order log. sendBeacon queues instantly and never
+                    // blocks — unlike an awaited fetch(), it can't delay the Messenger
+                    // redirect below, so the redirect stays inside the click's user
+                    // gesture and won't get popup-blocked.
+                    let queued = false;
                     try {
-                        const res = await fetch(this.ordersEndpoint, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                orderId,
-                                clientName: this.clientFacebookName,
-                                clientContact: '',
-                                items: this.cart.map(i => ({
-                                    name: i.name,
-                                    qty: i.quantity,
-                                    isCase: i.isCase,
-                                    eta: i.eta,
-                                    dp: i.depositPrice * i.quantity
-                                })),
-                                totalDP: this.cart.reduce((s, i) => s + i.depositPrice * i.quantity, 0),
-                                totalFull: this.cart.reduce((s, i) => s + i.fullPrice * i.quantity, 0)
-                            })
+                        const payload = JSON.stringify({
+                            orderId,
+                            clientName: this.clientFacebookName,
+                            clientContact: '',
+                            items: this.cart.map(i => ({
+                                name: i.name,
+                                qty: i.quantity,
+                                isCase: i.isCase,
+                                eta: i.eta,
+                                dp: i.depositPrice * i.quantity
+                            })),
+                            totalDP: this.cart.reduce((s, i) => s + i.depositPrice * i.quantity, 0),
+                            totalFull: this.cart.reduce((s, i) => s + i.fullPrice * i.quantity, 0)
                         });
-                        const result = await res.json();
-                        sheetSaved = result.status === 'ok';
+                        const blob = new Blob([payload], { type: 'text/plain' });
+                        queued = navigator.sendBeacon(this.ordersEndpoint, blob);
                     } catch (err) {
-                        console.error('Order log failed', err);
+                        console.error('Order log failed to queue', err);
                     }
 
                     let summary = `🛒 PRE ORDER SUMMARY (${orderId})\n`;
@@ -699,15 +700,13 @@
                     summary += `Pre-Orders are subject to country allocation.\n`;
                     summary += `QR Code to settle payment is attached below, kindly send a screenshot of the proof of payment once payment is made.\n\n`;
                     summary += `cratedropcollective.github.io/payment\n`;
-                    if (!sheetSaved) {
-                        summary += `\n\n⚠️ AUTO-LOG FAILED — please keep this message, this order needs manual entry.`;
+                    if (!queued) {
+                        summary += `\n\n⚠️ AUTO-LOG FAILED TO QUEUE — please keep this message, this order needs manual entry.`;
                     }
 
-                    try {
-                        await navigator.clipboard.writeText(summary);
-                    } catch (err) {
-                        console.error('Clipboard failed', err);
-                    }
+                    // Not awaited — clipboard write is fire-and-forget too, so nothing
+                    // stands between this click and the Messenger redirect below.
+                    navigator.clipboard.writeText(summary).catch(err => console.error('Clipboard failed', err));
 
                     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -718,7 +717,10 @@
                         window.open("https://m.me/cratedropcollective", "_blank");
                     }
 
-                    this.isSubmitting = false;
+                    // Reset after a short cooldown rather than immediately — since this
+                    // whole function is synchronous, resetting right away wouldn't
+                    // actually stop a fast double-tap from firing twice.
+                    setTimeout(() => { this.isSubmitting = false; }, 2000);
                 }
             }
         }
