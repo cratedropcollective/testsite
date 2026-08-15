@@ -353,16 +353,23 @@
             </div>
 
             <div class="mt-6 pt-6 border-t-2 border-gray-100 space-y-4" x-show="cart.length > 0">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-steel mb-1 tracking-wider">Facebook Name <span class="text-brandred">*</span></label>
+                    <input type="text" x-model="clientFacebookName" placeholder="e.g. Juan Dela Cruz"
+                           class="w-full p-2.5 bg-gray-50 border border-gray-300 text-xs font-bold outline-none focus:ring-2 focus:ring-brandblue panel-cut-sm">
+                    <p class="text-[9px] text-steel mt-1">So we can match your order to your Messenger thread.</p>
+                </div>
+
                 <div class="bg-gray-50 p-3 border border-dashed border-gray-300">
                     <div class="flex justify-between text-[10px] font-bold text-steel uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
                     <div class="flex justify-between text-sm font-black text-brandred uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-2">
-                    <button @click="confirmAndRedirect()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
+                    <button @click="proceedToPayment()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
                         <i class="fab fa-facebook-messenger mr-2 text-brandgold"></i> Assisted Checkout (Paste Order)
                     </button>
-                    <button @click="checkoutSelf()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
+                    <button @click="proceedToPayment()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
                         <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
                     </button>
                 </div>
@@ -384,6 +391,10 @@
 
             <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
                 <div class="bg-gray-50 p-4 border border-gray-200">
+                    <div class="flex justify-between text-[9px] font-bold text-steel uppercase mb-3 pb-3 border-b border-gray-200">
+                        <span>Facebook Name</span>
+                        <span class="text-ink" x-text="clientFacebookName"></span>
+                    </div>
                     <template x-for="item in cart">
                         <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
                             <div class="flex justify-between text-xs font-bold">
@@ -415,14 +426,18 @@
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandgold text-ink text-[8px] font-black uppercase tracking-widest px-3 py-1 flex items-center gap-1 panel-cut-sm">
                         <i class="fas fa-check-circle"></i> Verified Deposit
                     </div>
-                    <p class="text-[11px] text-steel mb-4 font-medium px-2 mt-2">Pay via Instapay. <strong class="text-ink">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
+                    <p class="text-[11px] text-steel mb-4 font-medium px-2 mt-2">
+                        <strong class="text-ink">Step 1:</strong> Tap the button below — it copies your order and opens Messenger. Paste it into the chat.<br>
+                        <strong class="text-ink">Step 2:</strong> Pay the downpayment via Instapay to the QR below, then screenshot both the paste and your receipt and send them over.
+                    </p>
                     <img src="https://www.image2url.com/r2/default/images/1783494876265-bc690fba-d1e1-44bf-bd84-48323fc518aa.png" class="w-40 h-40 mx-auto border border-gray-200 p-1 bg-white">
                     <p class="text-[10px] text-steel font-medium px-2 mt-4 pt-4 border-t border-dashed border-gray-300">Pre-Orders are subject to country allocation. By placing a pre-order, I acknowledge there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
                 </div>
             </div>
 
-            <button @click="confirmAndRedirect()" class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase mt-4 shadow-lg cta-shimmer tracking-wide">
-                Send Proof to Messenger
+            <button @click="confirmAndRedirect()" :disabled="isSubmitting"
+                    class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase mt-4 shadow-lg cta-shimmer tracking-wide disabled:opacity-50 disabled:cursor-not-allowed">
+                <span x-text="isSubmitting ? 'Logging Order...' : 'Send Proof to Messenger'"></span>
             </button>
         </div>
     </div>
@@ -444,6 +459,11 @@
                 calcInputQty: 1,
                 calcFillRate: 100,
                 calcIsCase: false,
+
+                // Order logging
+                clientFacebookName: '',
+                isSubmitting: false,
+                ordersEndpoint: 'https://script.google.com/macros/s/AKfycbxYXwkCT26TUXTmUp6x3h8le0sqmBF-fCxJ9DK8RAXjoXlz0O6BqGGUeZmYDyncwXvz1w/exec',
 
                 async init() {
                     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
@@ -627,12 +647,49 @@
                     this.cart[index].quantity += change;
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
-                checkoutSelf() {
+
+                proceedToPayment() {
+                    if (!this.clientFacebookName.trim()) {
+                        alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
+                        return;
+                    }
                     this.cartOpen = false;
                     this.paymentModalOpen = true;
                 },
+
                 async confirmAndRedirect() {
-                    let summary = "🛒 PRE ORDER SUMMARY\n-----------------\n";
+                    if (this.isSubmitting) return;
+                    this.isSubmitting = true;
+
+                    const orderId = 'CDC-' + Date.now().toString(36).toUpperCase();
+                    let sheetSaved = false;
+
+                    try {
+                        const res = await fetch(this.ordersEndpoint, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                orderId,
+                                clientName: this.clientFacebookName,
+                                clientContact: '',
+                                items: this.cart.map(i => ({
+                                    name: i.name,
+                                    qty: i.quantity,
+                                    isCase: i.isCase,
+                                    eta: i.eta,
+                                    dp: i.depositPrice * i.quantity
+                                })),
+                                totalDP: this.cart.reduce((s, i) => s + i.depositPrice * i.quantity, 0),
+                                totalFull: this.cart.reduce((s, i) => s + i.fullPrice * i.quantity, 0)
+                            })
+                        });
+                        const result = await res.json();
+                        sheetSaved = result.status === 'ok';
+                    } catch (err) {
+                        console.error('Order log failed', err);
+                    }
+
+                    let summary = `🛒 PRE ORDER SUMMARY (${orderId})\n`;
+                    summary += `FB Name: ${this.clientFacebookName}\n-----------------\n`;
                     this.cart.forEach(i => {
                         summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
                     });
@@ -642,6 +699,9 @@
                     summary += `Pre-Orders are subject to country allocation.\n`;
                     summary += `QR Code to settle payment is attached below, kindly send a screenshot of the proof of payment once payment is made.\n\n`;
                     summary += `cratedropcollective.github.io/payment\n`;
+                    if (!sheetSaved) {
+                        summary += `\n\n⚠️ AUTO-LOG FAILED — please keep this message, this order needs manual entry.`;
+                    }
 
                     try {
                         await navigator.clipboard.writeText(summary);
@@ -657,6 +717,8 @@
                     } else {
                         window.open("https://m.me/cratedropcollective", "_blank");
                     }
+
+                    this.isSubmitting = false;
                 }
             }
         }
