@@ -640,8 +640,8 @@
                     summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
                     summary += `STATUS: Payment Pending\n\n`;
                     summary += `Pre-Orders are subject to country allocation.\n`;
-                    summary += `QR Code to settle payment is attached below, kindly send a screenshot of the proof of payment\n`;
-                    summary += `cratedropcollective.github.io/payment\n\n`;
+                    summary += `QR Code to settle payment is attached below, kindly send a screenshot of the proof of payment once payment is made.\n\n`;
+                    summary += `cratedropcollective.github.io/payment\n`;
 
                     try {
                         await navigator.clipboard.writeText(summary);
