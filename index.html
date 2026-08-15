@@ -366,7 +366,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 gap-2">
-                    <button @click="proceedToPayment()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
+                    <button @click="startAssistedCheckout()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
                         <i class="fab fa-facebook-messenger mr-2 text-brandgold"></i> Assisted Checkout (Paste Order)
                     </button>
                     <button @click="proceedToPayment()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
@@ -648,11 +648,22 @@
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
 
-                proceedToPayment() {
+                validateCheckout() {
                     if (!this.clientFacebookName.trim()) {
                         alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
-                        return;
+                        return false;
                     }
+                    return true;
+                },
+
+                startAssistedCheckout() {
+                    if (!this.validateCheckout()) return;
+                    this.cartOpen = false;
+                    this.confirmAndRedirect();
+                },
+
+                proceedToPayment() {
+                    if (!this.validateCheckout()) return;
                     this.cartOpen = false;
                     this.paymentModalOpen = true;
                 },
