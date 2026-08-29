@@ -93,6 +93,18 @@
         <div class="bg-brandgold"></div>
     </div>
 
+    <!-- In-app browser notice (Facebook / Messenger webview) -->
+    <div x-show="showInAppBanner" x-cloak
+         class="bg-brandgold text-ink text-[10px] md:text-xs font-bold px-4 py-2.5 flex items-center justify-center gap-3 text-center relative">
+        <span class="max-w-2xl">
+            <i class="fas fa-triangle-exclamation mr-1"></i>
+            You're viewing this inside <span x-text="inAppBrowserName"></span>.
+            Checkout will still work here, but for the smoothest experience,
+            <button @click="openInExternalBrowser()" type="button" class="underline font-black">open this page in your browser</button>.
+        </span>
+        <button @click="showInAppBanner = false" type="button" aria-label="Dismiss" class="absolute right-3 text-base leading-none px-1">&times;</button>
+    </div>
+
     <!-- Navigation -->
     <nav class="bg-ink text-white p-4 sticky top-0 z-50 shadow-xl">
         <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
@@ -442,6 +454,21 @@
         </div>
     </div>
 
+    <!-- Manual Copy Fallback Modal (shown only if clipboard write is blocked, e.g. some in-app webviews) -->
+    <div x-show="showManualCopyModal" x-cloak class="fixed inset-0 z-[80]">
+        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm" @click="showManualCopyModal = false"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-white p-5 shadow-2xl panel-cut">
+            <h2 class="text-sm font-display font-bold text-ink uppercase mb-2">Couldn't Auto-Copy Your Order</h2>
+            <p class="text-[11px] text-steel mb-3">We opened Messenger for you, but this browser blocked the auto-copy. Please select the text below, copy it, and paste it into the chat manually.</p>
+            <textarea readonly x-ref="manualCopyBox" @click="$refs.manualCopyBox.select()" x-text="manualCopyText"
+                      class="w-full h-40 p-2.5 bg-gray-50 border border-gray-300 text-[10px] font-mono outline-none focus:ring-2 focus:ring-brandblue"></textarea>
+            <button @click="$refs.manualCopyBox.select(); showManualCopyModal = false"
+                    class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase mt-3 tracking-wide">
+                Select All &amp; Close
+            </button>
+        </div>
+    </div>
+
     <script>
         function shop() {
             return {
@@ -465,7 +492,24 @@
                 isSubmitting: false,
                 ordersEndpoint: 'https://script.google.com/macros/s/AKfycbxYXwkCT26TUXTmUp6x3h8le0sqmBF-fCxJ9DK8RAXjoXlz0O6BqGGUeZmYDyncwXvz1w/exec',
 
+                // In-app browser (Facebook/Messenger webview) handling
+                showInAppBanner: false,
+                inAppBrowserName: 'Facebook',
+                isAndroidUA: false,
+                showManualCopyModal: false,
+                manualCopyText: '',
+
                 async init() {
+                    // Facebook and Messenger's built-in webviews tag their user agent
+                    // with FBAN/FBAV/FBIOS/FB_IAB. Custom URL schemes (fb-messenger://)
+                    // and window.open() popups are unreliable inside these embedded
+                    // webviews, which is why checkout redirects silently no-op there.
+                    const ua = navigator.userAgent || '';
+                    const inApp = /FBAN|FBAV|FB_IAB|FBIOS/i.test(ua);
+                    this.isAndroidUA = /Android/i.test(ua);
+                    this.inAppBrowserName = /Messenger/i.test(ua) ? 'Messenger' : 'the Facebook app';
+                    this.showInAppBanner = inApp;
+
                     const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
 
                     setInterval(() => {
@@ -648,6 +692,17 @@
                     if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
                 },
 
+                openInExternalBrowser() {
+                    if (this.isAndroidUA) {
+                        // Android intent:// escape reliably relaunches the current
+                        // page inside Chrome, outside the FB/Messenger webview.
+                        const bare = location.href.replace(/^https?:\/\//, '');
+                        window.location.href = 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;end';
+                    } else {
+                        alert('Tap the ••• (More) icon at the top or bottom of the screen, then choose "Open in Safari" or "Open in Browser".');
+                    }
+                },
+
                 validateCheckout() {
                     if (!this.clientFacebookName.trim()) {
                         alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
@@ -717,16 +772,25 @@
 
                     // Not awaited — clipboard write is fire-and-forget too, so nothing
                     // stands between this click and the Messenger redirect below.
-                    navigator.clipboard.writeText(summary).catch(err => console.error('Clipboard failed', err));
+                    // Some webviews (notably Facebook's and Messenger's own in-app
+                    // browsers) block the Clipboard API silently — if that happens,
+                    // fall back to a manual copy box so the summary isn't lost.
+                    navigator.clipboard.writeText(summary).catch(err => {
+                        console.error('Clipboard failed', err);
+                        this.manualCopyText = summary;
+                        this.showManualCopyModal = true;
+                    });
 
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-                    if (isIOS) {
-                        window.location.href = "fb-messenger://user-thread/745474078647634";
-                    } else {
-                        window.open("https://m.me/cratedropcollective", "_blank");
-                    }
+                    // A single top-level navigation to the https m.me link — not a
+                    // window.open() popup, and not the fb-messenger:// custom scheme.
+                    // Both of those only work in a real system browser: popups get
+                    // silently blocked inside embedded webviews, and custom schemes
+                    // require the *host* app (Facebook/Messenger) to explicitly hand
+                    // them off to iOS/Android, which it doesn't for arbitrary page
+                    // navigations. A plain https link to Facebook's own m.me domain
+                    // is handled correctly everywhere: real Safari/Chrome, and inside
+                    // Facebook's or Messenger's own in-app browser alike.
+                    window.location.href = "https://m.me/cratedropcollective";
 
                     // Reset after a short cooldown rather than immediately — since this
                     // whole function is synchronous, resetting right away wouldn't
