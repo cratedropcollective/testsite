@@ -141,7 +141,8 @@
 
   <!-- Step 2: sets for the chosen game -->
   <section id="setsSection" class="mb-8 scroll-mt-36 hidden fade-in">
-    <div class="flex items-center justify-between mb-1 px-1">
+    <div class="flex items-center gap-2.5 mb-1 px-1">
+      <span id="setsSectionLogo"></span>
       <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Sets in <span id="setsSectionGame" class="text-brandred"></span></p>
     </div>
     <p class="text-[10px] text-steel px-1 mb-3 font-medium">Newest releases first — tap a set to see its sealed products.</p>
@@ -164,7 +165,17 @@
     <div id="presaleNotice" class="hidden mx-1 mb-4 text-[10px] text-ink bg-brandblue/10 border border-brandblue/30 px-3 py-2.5 panel-cut-sm">
       <i class="fas fa-circle-info text-brandblue mr-1"></i> This set is presale — rip value is based on partial, hype-priced singles data. Treat these numbers as a rough early read.
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5" id="productsGrid"></div>
+    <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-4 mx-1 px-3.5 py-3 bg-gray-50 border border-dashed border-gray-300 panel-cut-sm">
+      <div class="flex items-start gap-2 flex-1">
+        <i class="fas fa-scale-balanced text-brandred mt-0.5 text-xs shrink-0"></i>
+        <p class="text-[10.5px] text-steel leading-snug"><b class="text-ink">Rip Margin</b> — what you'd net cracking this open &amp; selling every card, vs. what you paid, after ~15% resale fees.</p>
+      </div>
+      <div class="flex items-start gap-2 flex-1">
+        <i class="fas fa-dice text-brandblue mt-0.5 text-xs shrink-0"></i>
+        <p class="text-[10.5px] text-steel leading-snug"><b class="text-ink">Profit Odds</b> — how often you'd actually come out ahead, since some packs hit big and some don't.</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" id="productsGrid"></div>
   </section>
 
   <!-- Search results (overrides the drill-down while active) -->
@@ -173,7 +184,7 @@
       <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Search Results <span class="text-steel font-body font-normal text-xs">(<span id="searchCount">0</span>)</span></p>
       <button id="clearSearch" class="text-[10px] font-mono uppercase tracking-wide text-steel hover:text-ink"><i class="fas fa-xmark mr-1"></i>Clear</button>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5" id="searchGrid"></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6" id="searchGrid"></div>
   </section>
 
 </main>
@@ -208,6 +219,39 @@ const gameNames = {
   onepiece:"One Piece", lorcana:"Lorcana", digimon:"Digimon",
   fab:"Flesh and Blood", swu:"Star Wars Unlimited", dbsfw:"DBS Fusion World", weiss:"Weiss Schwarz"
 };
+
+// We can't display official franchise logos or box art here (they're trademarked/
+// copyrighted assets we don't have rights to reproduce, and the API doesn't
+// provide product photos). Instead every game gets its own solid-color monogram
+// badge, and every product card gets an icon matched to its product type — so
+// games and product types are still visually identifiable at a glance.
+const gameColors = {
+  pokemon:"#1D4ED8", mtg:"#7E22CE", yugioh:"#854D0E", onepiece:"#0F766E",
+  lorcana:"#A21CAF", digimon:"#C2410C", fab:"#3F6212", swu:"#4338CA",
+  dbsfw:"#B91C1C", weiss:"#0E7490"
+};
+const gameMonograms = {
+  pokemon:"PKM", mtg:"MTG", yugioh:"YGO", onepiece:"OP", lorcana:"LOR",
+  digimon:"DGM", fab:"FAB", swu:"SWU", dbsfw:"DBS", weiss:"WS"
+};
+function gameColor(g){ return gameColors[g] || "#374151"; }
+function gameMonogram(g){ return gameMonograms[g] || (g||"?").slice(0,3).toUpperCase(); }
+function productIcon(name){
+  const n = (name||"").toLowerCase();
+  if(/\bcase\b/.test(n)) return "fa-boxes-stacked";
+  if(/elite trainer|\betb\b/.test(n)) return "fa-briefcase";
+  if(/bundle/.test(n)) return "fa-gift";
+  if(/\btin\b/.test(n)) return "fa-circle-dot";
+  if(/blister/.test(n)) return "fa-layer-group";
+  if(/collection|premium/.test(n)) return "fa-gem";
+  if(/booster box|display box|\bbox\b/.test(n)) return "fa-box-open";
+  if(/booster pack|\bpack\b/.test(n)) return "fa-clone";
+  return "fa-cube";
+}
+function monogramBadge(g, size){
+  size = size || "w-9 h-9 text-[9px]";
+  return `<div class="${size} shrink-0 flex items-center justify-center rounded-sm font-mono font-bold text-white tracking-wide" style="background:${gameColor(g)}">${esc(gameMonogram(g))}</div>`;
+}
 
 const DEMO_SETS = [
   { key:"demo-cel30", name:"30th Celebration", game:"pokemon", releaseDate:"2026-09-16", presale:true, products:[
@@ -364,8 +408,11 @@ function renderGames(){
     const st = stats[g] || {count:0, best:null};
     const active = selectedGame===g ? " active" : "";
     return `<button data-game="${esc(g)}" class="game-tile panel-cut bg-white border border-gray-200 p-4 text-left hover:shadow-lg hover:-translate-y-1 transition-all duration-200${active}">
-      <div class="tag-slant bg-brandblue inline-block mb-3"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">${st.count} set${st.count===1?"":"s"}</span></div>
-      <div class="font-display font-bold text-sm md:text-base uppercase tracking-tight text-ink leading-tight">${esc(gameNames[g]||g)}</div>
+      <div class="flex items-center gap-2.5 mb-3">
+        ${monogramBadge(g)}
+        <div class="tag-slant bg-brandblue"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">${st.count} set${st.count===1?"":"s"}</span></div>
+      </div>
+      <div class="font-display font-bold text-sm md:text-base uppercase tracking-tight text-ink leading-snug">${esc(gameNames[g]||g)}</div>
       <div class="text-[10px] font-mono uppercase tracking-wide mt-2 ${tierTextClass(marginTier(st.best))}">${st.best!==null ? "Best: "+fmtPct(st.best) : "—"}</div>
     </button>`;
   }).join("");
@@ -375,6 +422,7 @@ function renderSets(){
   if(!selectedGame){ setsSectionEl.classList.add("hidden"); return; }
   setsSectionEl.classList.remove("hidden");
   setsSectionGameEl.textContent = gameNames[selectedGame] || selectedGame;
+  $("setsSectionLogo").innerHTML = monogramBadge(selectedGame, "w-7 h-7 text-[8px]");
   let sets = catalogSets.filter(s=>s.game===selectedGame);
   sets = sets.slice().sort((a,b)=>(b.releaseDate||"0000-00-00").localeCompare(a.releaseDate||"0000-00-00"));
   if(!sets.length){ setsListEl.innerHTML = '<p class="text-center text-steel text-xs py-10">No sets found for this game.</p>'; return; }
@@ -385,16 +433,19 @@ function renderSets(){
     const best = s.products.reduce((m,p)=>{ const a=marginAdjOf(p); return (a!==null && (m===null||a>m)) ? a : m; }, null);
     const active = selectedSetKey===s.key ? " active" : "";
     const presaleTag = s.presale ? `<div class="tag-slant bg-brandblue"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-1.5 py-0.5">Presale</span></div>` : "";
-    html += `<button data-set="${esc(s.key)}" class="set-row${active} w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors">
+    html += `<button data-set="${esc(s.key)}" class="set-row${active} w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-gray-50 transition-colors">
       <div class="min-w-0">
-        <div class="font-display font-semibold text-sm text-ink truncate">${esc(s.name)}</div>
+        <div class="font-display font-semibold text-[15px] text-ink truncate">${esc(s.name)}</div>
         <div class="flex items-center gap-2 mt-1">
-          <span class="font-mono text-[9px] text-steel uppercase tracking-wide">${fmtDate(s.releaseDate)}</span>
+          <span class="font-mono text-[10px] text-steel uppercase tracking-wide">${fmtDate(s.releaseDate)}</span>
           ${presaleTag}
         </div>
       </div>
       <div class="flex items-center gap-3 shrink-0">
-        <span class="font-mono text-[11px] font-bold ${tierTextClass(marginTier(best))}">${fmtPct(best)}</span>
+        <div class="text-right">
+          <span class="block font-mono text-[12px] font-bold leading-tight ${tierTextClass(marginTier(best))}">${fmtPct(best)}</span>
+          <span class="block text-[8px] text-steel uppercase tracking-wide">best margin</span>
+        </div>
         <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
       </div>
     </button>`;
@@ -405,36 +456,37 @@ function renderSets(){
 function productCard(r){
   const php = r.priceUsd * fxRate;
   const tier = marginTier(r.marginAdj);
+  const color = gameColor(r.game);
   const profitPct = typeof r.profitProb==="number" ? Math.round(r.profitProb*100) : null;
   let badge = "";
   if(r.presale) badge = `<div class="tag-slant bg-brandblue"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">Presale</span></div>`;
   else if(isNewRelease(r.releaseDate)) badge = `<div class="tag-slant bg-brandgold"><span class="font-mono text-[8px] text-ink font-bold uppercase tracking-widest px-2 py-0.5">New</span></div>`;
   return `<div class="panel-cut bg-white border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-    <div class="flex items-center justify-between px-3 pt-3">
-      <div class="tag-slant bg-ink"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">${esc(gameNames[r.game]||r.game)}</span></div>
-      ${badge}
-    </div>
-    <div class="relative h-16 bg-[#F5F6F8] flex items-center justify-center mt-2">
-      <i class="fas fa-box-open text-2xl text-gray-300"></i>
+    <div class="relative h-20 flex items-center justify-center" style="background:${color}14">
+      <i class="fas ${productIcon(r.name)} text-3xl" style="color:${color}"></i>
+      <span class="absolute top-2 left-2 text-[8px] font-mono font-bold tracking-widest px-1.5 py-0.5 rounded-sm text-white" style="background:${color}">${esc(gameMonogram(r.game))}</span>
+      ${badge ? `<div class="absolute top-2 right-2">${badge}</div>` : ""}
     </div>
     <div class="border-t border-b border-dashed border-gray-200 px-3 py-1.5 bg-gray-50">
-      <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-widest text-center truncate">${esc(r.setName)}</p>
+      <p class="text-[10px] font-mono font-bold text-steel uppercase tracking-widest text-center truncate">${esc(r.setName)}</p>
     </div>
-    <div class="p-3 md:p-4 flex-1 flex flex-col">
-      <h3 class="text-xs md:text-sm font-semibold font-display leading-tight mb-2 uppercase tracking-tight text-ink h-8 overflow-hidden">${esc(r.name)}</h3>
+    <div class="p-3.5 md:p-4 flex-1 flex flex-col">
+      <h3 class="text-xs md:text-sm font-semibold font-display leading-snug mb-2.5 uppercase tracking-tight text-ink min-h-[2.2em]">${esc(r.name)}</h3>
       <div class="mb-3">
         <div class="text-lg md:text-xl font-display font-bold text-ink">${money(php)}</div>
-        <div class="text-[10px] text-steel">${usd(r.priceUsd)} &middot; ${fmtDate(r.releaseDate)}</div>
+        <div class="text-[10px] text-steel mt-0.5">${usd(r.priceUsd)} &middot; ${fmtDate(r.releaseDate)}</div>
       </div>
-      <div class="grid grid-cols-2 gap-2 mb-3">
-        <div class="bg-gray-50 p-2 border-l-2 ${tier==="pos"?"border-emerald-600":tier==="neg"?"border-brandred":"border-gray-300"}">
-          <p class="text-[8px] font-bold text-steel uppercase tracking-wide">Rip Margin</p>
-          <p class="text-sm font-display font-bold ${tierTextClass(tier)}">${fmtPct(r.marginAdj)}</p>
+      <div class="grid grid-cols-2 gap-2.5 mb-3.5">
+        <div class="bg-gray-50 p-2.5 border-l-2 ${tier==="pos"?"border-emerald-600":tier==="neg"?"border-brandred":"border-gray-300"}">
+          <p class="text-[9px] font-bold text-steel uppercase tracking-wide">Rip Margin</p>
+          <p class="text-base font-display font-bold leading-tight ${tierTextClass(tier)}">${fmtPct(r.marginAdj)}</p>
+          <p class="text-[8px] text-steel leading-tight mt-0.5">if cracked &amp; resold</p>
         </div>
-        <div class="bg-gray-50 p-2 border-l-2 border-brandblue">
-          <p class="text-[8px] font-bold text-steel uppercase tracking-wide">Profit Odds</p>
-          <p class="text-sm font-display font-bold text-ink">${profitPct!==null?profitPct+"%":"—"}</p>
-          ${profitPct!==null?`<div class="probbar mt-1"><div class="probbar-fill" style="width:${profitPct}%"></div></div>`:""}
+        <div class="bg-gray-50 p-2.5 border-l-2 border-brandblue">
+          <p class="text-[9px] font-bold text-steel uppercase tracking-wide">Profit Odds</p>
+          <p class="text-base font-display font-bold leading-tight text-ink">${profitPct!==null?profitPct+"%":"—"}</p>
+          <p class="text-[8px] text-steel leading-tight mt-0.5">chance you profit</p>
+          ${profitPct!==null?`<div class="probbar mt-1.5"><div class="probbar-fill" style="width:${profitPct}%"></div></div>`:""}
         </div>
       </div>
       ${r.url
@@ -465,9 +517,13 @@ function renderMovers(){
   if(!latestMovers.length){ moversSectionEl.classList.add("hidden"); return; }
   moversTrackEl.innerHTML = latestMovers.map(r=>`
     <button data-game="${esc(r.game)}" data-set="${esc(r.setKey)}" class="shrink-0 w-40 bg-white/5 hover:bg-white/10 border border-white/10 panel-cut-sm p-3 text-left transition-colors">
-      <p class="font-mono text-[8px] text-gray-400 uppercase tracking-wide truncate">${esc(r.setName)}</p>
-      <p class="text-[11px] font-semibold text-white leading-tight my-1.5 h-7 overflow-hidden">${esc(r.name)}</p>
+      <div class="flex items-center gap-1.5 mb-1.5">
+        <span class="text-[7px] font-mono font-bold text-white tracking-wide px-1 py-0.5 rounded-sm" style="background:${gameColor(r.game)}">${esc(gameMonogram(r.game))}</span>
+        <p class="font-mono text-[8px] text-gray-400 uppercase tracking-wide truncate">${esc(r.setName)}</p>
+      </div>
+      <p class="text-[11px] font-semibold text-white leading-tight mb-1.5 h-7 overflow-hidden">${esc(r.name)}</p>
       <p class="font-display font-black text-lg ${r.marginAdj>=0?"text-brandgold":"text-brandred"}">${fmtPct(r.marginAdj)}</p>
+      <p class="text-[7px] text-gray-500 uppercase tracking-wide -mt-1">rip margin</p>
     </button>`).join("");
 }
 
