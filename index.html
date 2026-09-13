@@ -165,6 +165,13 @@
     <div id="presaleNotice" class="hidden mx-1 mb-4 text-[10px] text-ink bg-brandblue/10 border border-brandblue/30 px-3 py-2.5 panel-cut-sm">
       <i class="fas fa-circle-info text-brandblue mr-1"></i> This set is presale — rip value is based on partial, hype-priced singles data. Treat these numbers as a rough early read.
     </div>
+    <div id="chaseSection" class="mb-6 hidden">
+      <div class="flex items-center justify-between mb-1 px-1">
+        <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Top Chase Cards</p>
+      </div>
+      <p class="text-[10px] text-steel px-1 mb-3 font-medium">The highest-value singles in this set — what people are actually hoping to pull.</p>
+      <div class="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-1" id="chaseTrack"></div>
+    </div>
     <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-4 mx-1 px-3.5 py-3 bg-gray-50 border border-dashed border-gray-300 panel-cut-sm">
       <div class="flex items-start gap-2 flex-1">
         <i class="fas fa-scale-balanced text-brandred mt-0.5 text-xs shrink-0"></i>
@@ -282,6 +289,7 @@ const searchEl=$("search"), sortEl=$("sort"), alertEl=$("alert"),
       productsSectionEl=$("productsSection"), productsGridEl=$("productsGrid"),
       productsSectionTitleEl=$("productsSectionTitle"), productsSectionMetaEl=$("productsSectionMeta"),
       presaleNoticeEl=$("presaleNotice"),
+      chaseSectionEl=$("chaseSection"), chaseTrackEl=$("chaseTrack"),
       searchSectionEl=$("searchSection"), searchGridEl=$("searchGrid"), searchCountEl=$("searchCount"), clearSearchEl=$("clearSearch"),
       moversSectionEl=$("moversSection"), moversTrackEl=$("moversTrack");
 
@@ -372,6 +380,86 @@ function flattenRows(sets){
     }
   }
   return rows;
+}
+
+// ---- chase cards (top singles per set) ----
+// Non-Pokémon games: Worth the Rip's own /cards/{setKey}.json (verified stable, same trusted source).
+// Pokémon: pokemontcg.io, a free public card-data API — best-effort, since it's a third party we don't
+// control. Either way this only fetches once per set, on demand, and fails quietly rather than
+// breaking the page if a source is down or rate-limited.
+const chaseCardsCache = {};
+
+async function fetchWTRChaseCards(setKey){
+  const data = await fetchJSON(`https://worththerip.com/cards/${encodeURIComponent(setKey)}.json`, 10000);
+  const cards = (data.cards||[]).filter(c=>typeof c.marketPrice==="number");
+  cards.sort((a,b)=>b.marketPrice-a.marketPrice);
+  return cards.slice(0,5).map(c=>({ name:c.name, rarity:c.rarity, priceUsd:c.marketPrice, image:c.imageSmall, url:c.tcgplayerUrl }));
+}
+
+async function fetchPokemonChaseCards(setKey){
+  const data = await fetchJSON(`https://api.pokemontcg.io/v2/cards?q=set.id:${encodeURIComponent(setKey)}&pageSize=250`, 10000);
+  const cards = (data.data||[]).map(c=>{
+    let max = null;
+    const prices = c.tcgplayer?.prices || {};
+    for(const variant of Object.values(prices)){
+      const v = (variant && (variant.market ?? variant.mid)) ?? null;
+      if(typeof v === "number" && (max===null || v>max)) max = v;
+    }
+    return { name:c.name, rarity:c.rarity, priceUsd:max, image:c.images?.large||c.images?.small, url:c.tcgplayer?.url };
+  }).filter(c=>typeof c.priceUsd==="number");
+  cards.sort((a,b)=>b.priceUsd-a.priceUsd);
+  return cards.slice(0,5);
+}
+
+async function loadChaseCards(setKey, game){
+  if(chaseCardsCache[setKey]) { renderChaseCards(); return; }
+  chaseCardsCache[setKey] = { status:"loading", cards:[] };
+  renderChaseCards();
+  try{
+    const cards = game==="pokemon" ? await fetchPokemonChaseCards(setKey) : await fetchWTRChaseCards(setKey);
+    chaseCardsCache[setKey] = { status: cards.length ? "ready" : "empty", cards };
+  }catch(e){
+    chaseCardsCache[setKey] = { status:"error", cards:[] };
+  }
+  if(selectedSetKey===setKey) renderChaseCards();
+}
+
+function chaseSkeleton(){
+  return Array.from({length:5}).map(()=>`<div class="shrink-0 w-32 md:w-36 bg-gray-100 panel-cut-sm animate-pulse" style="aspect-ratio:5/7"></div>`).join("");
+}
+
+function chaseCard(c, i){
+  const php = typeof c.priceUsd==="number" ? c.priceUsd*fxRate : null;
+  const imgTag = c.image
+    ? `<img src="${esc(c.image)}" alt="${esc(c.name)}" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+       <div class="w-full h-full items-center justify-center hidden absolute inset-0 bg-gray-100"><i class="fas fa-image text-2xl text-gray-300"></i></div>`
+    : `<div class="w-full h-full flex items-center justify-center"><i class="fas fa-image text-2xl text-gray-300"></i></div>`;
+  const inner = `<div class="relative bg-gray-100" style="aspect-ratio:5/7">
+      ${imgTag}
+      <span class="absolute top-1 left-1 bg-brandgold text-ink text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm">#${i+1}</span>
+    </div>
+    <div class="p-2">
+      <p class="text-[10px] font-semibold text-ink leading-tight h-7 overflow-hidden">${esc(c.name)}</p>
+      ${c.rarity?`<p class="text-[8px] text-steel uppercase tracking-wide truncate mt-0.5">${esc(c.rarity)}</p>`:""}
+      <p class="text-xs font-display font-bold text-brandred mt-1">${php!==null?money(php):"—"}</p>
+    </div>`;
+  const cls = "shrink-0 w-32 md:w-36 bg-white border border-gray-200 panel-cut-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-200";
+  return c.url
+    ? `<a href="${esc(c.url)}" target="_blank" rel="noopener" class="${cls}">${inner}</a>`
+    : `<div class="${cls}">${inner}</div>`;
+}
+
+function renderChaseCards(){
+  if(!selectedSetKey){ chaseSectionEl.classList.add("hidden"); return; }
+  chaseSectionEl.classList.remove("hidden");
+  const entry = chaseCardsCache[selectedSetKey];
+  if(!entry || entry.status==="loading"){
+    chaseTrackEl.innerHTML = chaseSkeleton();
+  } else if(entry.status==="ready"){
+    chaseTrackEl.innerHTML = entry.cards.map(chaseCard).join("");
+  } else {
+    chaseTrackEl.innerHTML = `<p class="text-[11px] text-steel py-4 px-1">Chase-card data isn't available for this set right now.</p>`;
+  }
 }
 
 function sortRows(rows, mode){
@@ -498,13 +586,15 @@ function productCard(r){
 }
 
 function renderProducts(){
-  if(!selectedSetKey){ productsSectionEl.classList.add("hidden"); return; }
+  if(!selectedSetKey){ productsSectionEl.classList.add("hidden"); chaseSectionEl.classList.add("hidden"); return; }
   const set = catalogSets.find(s=>s.key===selectedSetKey);
-  if(!set){ selectedSetKey=null; productsSectionEl.classList.add("hidden"); return; }
+  if(!set){ selectedSetKey=null; productsSectionEl.classList.add("hidden"); chaseSectionEl.classList.add("hidden"); return; }
   productsSectionEl.classList.remove("hidden");
   productsSectionTitleEl.textContent = set.name;
   productsSectionMetaEl.textContent = `${gameNames[set.game]||set.game} · ${fmtDate(set.releaseDate)} · ${set.products.length} product${set.products.length===1?"":"s"}`;
   presaleNoticeEl.classList.toggle("hidden", !set.presale);
+  renderChaseCards();
+  loadChaseCards(set.key, set.game);
   let rows = flattenRows([set]);
   rows = sortRows(rows, sortMode);
   productsGridEl.innerHTML = rows.map(productCard).join("") || '<p class="col-span-full text-center text-steel text-xs py-10">No products found.</p>';
