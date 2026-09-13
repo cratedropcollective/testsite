@@ -1,1045 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Pre-orders</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sealed Market Tracker | Crate Drop Collective</title>
 
-    <meta property="og:title" content="Crate Drop Collective | Pre-orders">
-    <meta property="og:description" content="Secure your TCG and Collectible pre-orders. Plan your allocations and manage your downpayments.">
-    <meta property="og:image" content="https://www.image2url.com/r2/default/images/1783493369886-febf507b-8811-4c77-b830-f093891a43b7.png">
-    <meta property="og:url" content="https://cratedropcollective.github.io/preorder">
-    <meta property="og:type" content="website">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Crate Drop Collective | Pre-orders">
-    <meta name="twitter:image" content="YOUR_NEW_IMAGE_URL_HERE.jpg">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              ink: '#14161C',
-              ink2: '#1F222B',
-              paper: '#F7F8FA',
-              steel: '#6B7280',
-              brandblue: '#2C5FAE',
-              brandred: '#E13239',
-              brandgold: '#FFC72C'
-            },
-            fontFamily: {
-              display: ['"Rajdhani"', 'sans-serif'],
-              body: ['"Poppins"', 'sans-serif'],
-              mono: ['"Space Mono"', 'monospace']
-            }
-          }
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#14161C',
+          ink2: '#1F222B',
+          paper: '#F7F8FA',
+          steel: '#6B7280',
+          brandblue: '#2C5FAE',
+          brandred: '#E13239',
+          brandgold: '#FFC72C'
+        },
+        fontFamily: {
+          display: ['"Rajdhani"', 'sans-serif'],
+          body: ['"Poppins"', 'sans-serif'],
+          mono: ['"Space Mono"', 'monospace']
         }
       }
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    }
+  }
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <style>
-        [x-cloak] { display: none !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        html, body { overflow-x: hidden; max-width: 100%; }
-        body { font-family: 'Poppins', sans-serif; touch-action: pan-y; overscroll-behavior-x: none; }
+<style>
+  html, body { overflow-x: hidden; max-width: 100%; }
+  body { font-family: 'Poppins', sans-serif; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* --- Signature geometry: diagonal-cut corners, pulled from the logo's own construction --- */
-        .panel-cut { clip-path: polygon(0 14px, 14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
-        .panel-cut-sm { clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
+  /* Signature geometry: diagonal-cut corners, pulled from the logo's own construction */
+  .panel-cut { clip-path: polygon(0 14px, 14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
+  .panel-cut-sm { clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
 
-        /* --- Slanted grade-badge tags, echoing HG/MG/RG style tags --- */
-        .tag-slant { transform: skewX(-12deg); display: inline-block; }
-        .tag-slant > span { display: inline-block; transform: skewX(12deg); }
+  /* Slanted grade-badge tags */
+  .tag-slant { transform: skewX(-12deg); display: inline-block; }
+  .tag-slant > span { display: inline-block; transform: skewX(12deg); }
 
-        /* --- Tri-color signal stripe: blue/red/gold, from the wordmark split --- */
-        .signal-stripe { display: flex; height: 5px; width: 100%; }
-        .signal-stripe > div { flex: 1; transform: skewX(-25deg); margin: 0 -3px; }
+  /* Tri-color signal stripe */
+  .signal-stripe { display: flex; height: 5px; width: 100%; }
+  .signal-stripe > div { flex: 1; transform: skewX(-25deg); margin: 0 -3px; }
 
-        input[type=range].brand-range { -webkit-appearance: none; appearance: none; background: transparent; }
-        input[type=range].brand-range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: rgba(255,199,44,0.35); }
-        input[type=range].brand-range::-webkit-slider-thumb {
-            -webkit-appearance: none; margin-top: -5px;
-            width: 14px; height: 14px; border-radius: 2px; transform: rotate(45deg);
-            background: #FFC72C; box-shadow: 0 0 0 4px rgba(255,199,44,0.2);
-            cursor: pointer;
-        }
-        input[type=range].brand-range::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(255,199,44,0.35); }
-        input[type=range].brand-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 2px; background: #FFC72C; border: none; }
+  .cta-shimmer { position: relative; overflow: hidden; }
+  .cta-shimmer::after {
+    content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,0.25), transparent);
+    transition: left 0.6s ease;
+  }
+  .cta-shimmer:hover::after { left: 130%; }
 
-        .cta-shimmer { position: relative; overflow: hidden; }
-        .cta-shimmer::after {
-            content: "";
-            position: absolute; top: 0; left: -60%;
-            width: 40%; height: 100%;
-            background: linear-gradient(115deg, transparent, rgba(255,255,255,0.25), transparent);
-            transition: left 0.6s ease;
-        }
-        .cta-shimmer:hover::after { left: 130%; }
-    </style>
+  .probbar { height: 3px; background: #e5e7eb; overflow: hidden; }
+  .probbar-fill { height: 100%; background: #2C5FAE; }
+
+  .game-tile.active { border-color: #E13239; box-shadow: 0 0 0 1px #E13239; }
+  .set-row.active { background: #F5F6F8; box-shadow: inset 3px 0 0 #E13239; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn .3s ease; }
+</style>
 </head>
-<body class="bg-paper font-body text-ink" x-data="shop()" x-cloak>
+<body class="bg-paper font-body text-ink">
 
-    <!-- Tri-color signature strip -->
-    <div class="signal-stripe">
-        <div class="bg-brandblue"></div>
-        <div class="bg-brandred"></div>
-        <div class="bg-brandgold"></div>
+<div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
+
+<nav class="bg-ink text-white p-4 sticky top-0 z-50 shadow-xl">
+  <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-3">
+    <div class="flex flex-col">
+      <span class="text-lg md:text-xl font-display font-bold tracking-tight uppercase leading-none">
+        <span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span>
+      </span>
+      <span class="text-[9px] font-mono uppercase tracking-[0.3em] text-gray-400 mt-1">Sealed Market Tracker</span>
     </div>
-
-    <!-- In-app browser notice (Facebook / Messenger webview) -->
-    <div x-show="showInAppBanner" x-cloak
-         class="bg-brandgold text-ink text-[10px] md:text-xs font-bold px-4 py-2.5 flex items-center justify-center gap-3 text-center relative">
-        <span class="max-w-2xl">
-            <i class="fas fa-triangle-exclamation mr-1"></i>
-            You're viewing this inside <span x-text="inAppBrowserName"></span>.
-            Checkout will still work here, but for the smoothest experience,
-            <button @click="openInExternalBrowser()" type="button" class="underline font-black">open this page in your browser</button>.
-        </span>
-        <button @click="showInAppBanner = false" type="button" aria-label="Dismiss" class="absolute right-3 text-base leading-none px-1">&times;</button>
+    <div class="flex items-center gap-3 font-mono text-[10px] md:text-xs text-gray-400">
+      <span><i id="liveDot" class="fas fa-circle text-emerald-500 text-[6px] mr-1.5 align-middle"></i><b id="fxVal" class="text-white">—</b> <span id="fxStatus">loading</span></span>
+      <span id="updatedAt" class="hidden sm:inline">—</span>
+      <button id="refreshBtn" class="bg-brandgold text-ink px-3 py-1.5 panel-cut-sm font-bold uppercase tracking-wide text-[10px] hover:brightness-95 transition-all">Refresh</button>
     </div>
+  </div>
+</nav>
 
-    <!-- Navigation -->
-    <nav class="bg-ink text-white p-4 sticky top-0 z-50 shadow-xl">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity">
-                <span class="text-lg md:text-xl font-display font-bold tracking-tight leading-none uppercase">
-                    <span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span>
-                </span>
-            </a>
+<div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
 
-            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-ink bg-brandgold px-4 py-1.5 uppercase tracking-wider panel-cut-sm">Preorder</a>
-            </div>
+<section class="bg-ink text-white relative overflow-hidden">
+  <div class="container mx-auto px-4 py-10 md:py-12 text-center relative z-10">
+    <p class="font-mono text-[10px] tracking-[0.35em] text-brandgold uppercase mb-3">Rip Value &amp; Odds</p>
+    <h1 class="font-display text-3xl md:text-5xl font-bold uppercase tracking-tight mb-3">Sealed Market Tracker</h1>
+    <p class="text-gray-400 text-xs md:text-sm max-w-xl mx-auto font-medium">Live TCGPlayer sealed prices converted to pesos, with rip value and profit odds worked in — so you know what's actually worth sourcing.</p>
+  </div>
+  <div class="absolute -right-10 -bottom-10 w-56 h-56 border-8 border-brandblue/20 rotate-12 hidden md:block"></div>
+  <div class="absolute -left-10 -top-10 w-40 h-40 border-8 border-brandred/20 -rotate-12 hidden md:block"></div>
+</section>
 
-            <div class="flex items-center space-x-4">
-                <button @click="cartOpen = true" class="bg-brandred hover:bg-red-600 px-4 py-2 panel-cut-sm flex items-center transition-all relative">
-                    <i class="fas fa-shopping-cart mr-2 text-xs"></i>
-                    <span class="font-bold text-xs">₱<span x-text="cartDepositTotal"></span></span>
-                    <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-brandgold text-ink text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-ink" x-text="totalItems"></span>
-                </button>
-            </div>
-        </div>
-    </nav>
+<div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
 
-    <!-- Hero -->
-    <section class="bg-ink text-white relative overflow-hidden">
-        <div class="container mx-auto px-4 py-10 md:py-14 text-center relative z-10">
-            <p class="font-mono text-[10px] tracking-[0.35em] text-brandgold uppercase mb-3">Open Preorders</p>
-            <h1 class="font-display text-4xl md:text-6xl font-bold leading-tight mb-3 uppercase tracking-tight">Reserve The Drop</h1>
-            <p class="text-gray-400 text-xs md:text-sm max-w-xl mx-auto font-medium">
-                Every listing below ships with a 30% downpayment lock-in. Final quantities confirm once distributor allocation lands — run the simulator before you commit.
-            </p>
-        </div>
-        <div class="absolute -right-10 -bottom-10 w-56 h-56 border-8 border-brandblue/20 rotate-12 hidden md:block"></div>
-        <div class="absolute -left-10 -top-10 w-40 h-40 border-8 border-brandred/20 -rotate-12 hidden md:block"></div>
-    </section>
-    <div class="signal-stripe">
-        <div class="bg-brandblue"></div>
-        <div class="bg-brandred"></div>
-        <div class="bg-brandgold"></div>
+<div class="bg-white border-b border-gray-200 sticky top-[64px] md:top-[68px] z-40">
+  <div class="py-3 px-4 container mx-auto">
+    <div class="relative">
+      <input id="search" type="text" placeholder="Search any set or product…" class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border-none text-sm focus:ring-2 focus:ring-brandblue outline-none panel-cut-sm">
+      <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-sm"></i>
     </div>
+  </div>
+</div>
 
-    <!-- Search & Planner Toggle -->
-    <div class="bg-white border-b border-gray-200 sticky top-[68px] z-40">
-        <div class="py-4 px-4 container mx-auto">
-            <div class="flex gap-2">
-                <div class="relative flex-1">
-                    <input type="text" x-model="searchQuery" placeholder="Search pre-orders..." class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none text-sm focus:ring-2 focus:ring-brandblue outline-none panel-cut-sm">
-                    <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-                </div>
-                <button @click="showPlanner = !showPlanner" class="bg-ink text-white px-4 py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider hover:bg-ink2 transition-colors flex items-center justify-center shrink-0 shadow-sm panel-cut-sm">
-                    <i class="fas fa-calculator md:mr-2 text-brandgold"></i>
-                    <span x-text="showPlanner ? 'Hide Planner' : 'Allocation Planner'" class="hidden md:inline"></span>
-                    <span x-text="showPlanner ? 'Hide' : 'Planner'" class="md:hidden ml-1"></span>
-                </button>
-            </div>
+<main class="container mx-auto px-2 md:px-4 py-6">
+
+  <div id="alert" class="hidden mb-5 bg-brandgold/15 border border-brandgold text-ink text-xs font-medium px-4 py-3 panel-cut-sm leading-relaxed"></div>
+
+  <!-- Leaderboard -->
+  <section id="moversSection" class="mb-8 hidden">
+    <div class="bg-ink panel-cut overflow-hidden shadow-xl">
+      <div class="bg-ink2 p-4 flex justify-between items-center border-b-2 border-brandgold/40">
+        <div>
+          <p class="font-mono text-[9px] text-brandgold tracking-[0.3em] uppercase mb-1">Live Rankings</p>
+          <h2 class="text-white text-sm font-display font-bold tracking-tight uppercase">Best Rip Value Right Now</h2>
         </div>
-        <div class="container mx-auto">
-            <div class="flex flex-wrap gap-2 px-4 py-3">
-                <template x-for="cat in availableCategories" :key="cat">
-                    <button @click="currentCategory = cat"
-                            :class="currentCategory === cat ? 'bg-brandred text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all flex items-center">
-                        <span x-text="cat"></span>
-                        <span class="ml-2 opacity-60 text-[9px]" x-text="`(${getCategoryCount(cat)})`"></span>
-                    </button>
-                </template>
-            </div>
-        </div>
+        <i class="fas fa-chart-line text-brandgold"></i>
+      </div>
+      <div class="flex gap-3 overflow-x-auto no-scrollbar p-4" id="moversTrack"></div>
+      <p class="px-4 pb-4 -mt-1 text-[9px] font-mono text-gray-500 uppercase tracking-wide">After ~15% resale fee &middot; presale sets excluded (speculative pricing)</p>
     </div>
+  </section>
 
-    <!-- Allocation Planner Section -->
-    <section x-show="showPlanner"
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-4"
-             class="container mx-auto px-2 md:px-4 mt-4 mb-4" style="display: none;">
-        <div class="bg-ink panel-cut overflow-hidden shadow-xl">
-            <div class="bg-ink2 p-4 flex justify-between items-center border-b-2 border-brandgold/40">
-                <div>
-                    <p class="font-mono text-[9px] text-brandgold tracking-[0.3em] uppercase mb-1">Plan Your Order</p>
-                    <h2 class="text-white text-sm font-display font-bold tracking-tight uppercase">Allocation &amp; Downpayment Simulator</h2>
-                </div>
-                <i class="fas fa-chart-pie text-brandgold"></i>
-            </div>
-
-            <div class="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase text-brandgold/90 mb-1 tracking-wider">1. Select Product</label>
-                        <select x-model.number="calcSelectedId" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
-                            <template x-for="item in products" :key="item.id">
-                                <option :value="item.id" x-text="item.name + ' (' + item.set + ')'" class="text-ink"></option>
-                            </template>
-                        </select>
-                        <p class="mt-1 text-[9px] font-mono text-brandgold uppercase tracking-wide">
-                            Standard Pack: <span x-text="products.find(p => p.id == calcSelectedId)?.unitsPerCase"></span> units per case
-                        </p>
-                    </div>
-
-                    <div class="flex bg-white/5 p-1 border border-white/10">
-                        <button @click="calcIsCase = false" :class="!calcIsCase ? 'bg-brandblue text-white' : 'text-gray-400'" class="flex-1 text-[10px] font-black py-2 transition-all uppercase">By Unit</button>
-                        <button @click="calcIsCase = true" :class="calcIsCase ? 'bg-brandblue text-white' : 'text-gray-400'" class="flex-1 text-[10px] font-black py-2 transition-all uppercase">By Case</button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider" x-text="calcIsCase ? 'Target Cases' : 'Target Units'"></label>
-                            <input type="number" x-model.number="calcInputQty" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1 tracking-wider">Allocation (%)</label>
-                            <input type="number" x-model.number="calcFillRate" class="w-full p-2.5 bg-white/5 border border-white/10 text-white text-xs font-bold outline-none focus:ring-2 focus:ring-brandgold">
-                        </div>
-                    </div>
-
-                    <input type="range" min="1" max="100" step="1" x-model="calcFillRate" class="brand-range w-full">
-                    <p class="text-[9px] text-gray-500 italic">Adjust fill rate based on historical allocation cuts (e.g., 50% means you get half of what you order).</p>
-                </div>
-
-                <div class="bg-white/5 p-5 border border-white/10 flex flex-col justify-center space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 bg-ink2 border-l-2 border-brandblue">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Est. Units Received</p>
-                            <p class="text-xl font-display font-bold text-white"><span x-text="calculatedUnits"></span> <small class="text-[10px] opacity-40 font-body">PCS</small></p>
-                        </div>
-                        <div class="p-3 bg-ink2 border-l-2 border-brandred">
-                            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Est. Total Value</p>
-                            <p class="text-xl font-display font-bold text-white">₱<span x-text="calculatedTotalValue"></span></p>
-                        </div>
-                    </div>
-
-                    <div class="p-4 bg-brandgold text-ink relative overflow-hidden panel-cut-sm">
-                        <div class="relative z-10">
-                            <p class="text-[10px] font-bold uppercase opacity-70 mb-1 tracking-wide">Total Downpayment Required (30% DP)</p>
-                            <p class="text-3xl font-display font-black tracking-tight">₱<span x-text="calculatedDownpayment"></span></p>
-                            <p class="text-[9px] font-medium mt-2 leading-tight opacity-80">
-                                Based on your Target Order of
-                                <span x-text="calcInputQty"></span> <span x-text="calcIsCase ? 'Case(s)' : 'Unit(s)'"></span>.
-                            </p>
-                        </div>
-                        <i class="fas fa-wallet absolute -bottom-2 -right-2 text-6xl opacity-10 rotate-12"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Product Grid -->
-    <main class="container mx-auto py-6 px-2 md:px-4">
-        <div x-show="isLoading" class="text-center py-12">
-            <p class="text-brandred font-bold animate-pulse uppercase tracking-widest font-mono text-xs">Loading Drops...</p>
-        </div>
-
-        <div class="flex items-center justify-between mb-4 px-1" x-show="!isLoading">
-            <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Live Lineup <span class="text-steel font-body font-normal text-xs">(<span x-text="filteredProducts.length"></span>)</span></p>
-            <div class="h-[3px] flex-1 ml-4 signal-stripe">
-                <div class="bg-brandblue/30"></div><div class="bg-brandred/30"></div><div class="bg-brandgold/30"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8" x-show="!isLoading">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <div :class="(product.soldOut || isExpired(product.deadline)) ? 'opacity-60 saturate-50' : 'hover:shadow-xl hover:-translate-y-1'" class="panel-cut bg-white border border-gray-200 overflow-hidden transition-all duration-300 flex flex-col">
-
-                    <div class="flex items-center justify-between px-3 pt-3">
-                        <div class="tag-slant bg-brandred"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5" x-text="product.type"></span></div>
-                        <div class="tag-slant bg-brandgold"><span class="font-mono text-[8px] text-ink font-bold uppercase tracking-widest px-2 py-0.5" x-text="'ETA ' + product.eta"></span></div>
-                    </div>
-
-                    <div class="relative aspect-square bg-[#F5F6F8] flex items-center justify-center p-6 mt-2">
-                        <img :src="product.image" class="max-h-full max-w-full object-contain">
-                    </div>
-
-                    <div class="border-t border-b border-dashed border-gray-200 px-3 py-1.5 bg-gray-50">
-                        <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-widest text-center" x-text="product.set"></p>
-                    </div>
-
-                    <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <h2 class="text-xs md:text-base font-semibold font-display leading-tight mb-2 h-8 md:h-12 uppercase tracking-tight" x-text="product.name"></h2>
-
-                        <div class="flex bg-gray-100 p-1 mb-3">
-                            <button @click="product.isCase = false" :class="!product.isCase ? 'bg-white shadow-sm text-brandblue' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1">UNIT</button>
-                            <button @click="product.isCase = true" :class="product.isCase ? 'bg-white shadow-sm text-brandblue' : 'text-gray-500'" class="flex-1 text-[9px] font-black py-1 uppercase">CASE (<span x-text="product.unitsPerCase"></span>)</button>
-                        </div>
-
-                        <template x-if="product.deadline">
-                            <div class="mb-3">
-                                <p class="text-[8px] font-mono text-steel uppercase tracking-widest mb-1 text-center">Launch Window</p>
-                                <div class="text-[9px] font-bold p-2 flex items-center justify-center gap-2 uppercase tracking-tight"
-                                     :class="isExpired(product.deadline) ? 'bg-brandred/10 text-brandred' : 'bg-brandblue/10 text-brandblue'">
-                                    <span x-text="isExpired(product.deadline) ? 'PREORDER CLOSED' : 'Closes In: ' + getCountdown(product.deadline)"></span>
-                                </div>
-                            </div>
-                        </template>
-
-                        <div class="space-y-1 mb-4">
-                            <div class="text-sm md:text-xl font-display font-bold text-ink">₱<span x-text="calculateFullPrice(product).toLocaleString()"></span></div>
-                            <div class="text-[10px] font-bold uppercase text-steel tracking-wide">30% Downpayment:</div>
-                            <div class="text-sm md:text-lg font-display font-bold text-brandred">₱<span x-text="calculateLiveDeposit(product).toLocaleString()"></span></div>
-                        </div>
-
-                        <div class="flex items-center space-x-2 mb-3">
-                            <div class="flex items-center border border-gray-300 h-7 bg-gray-50">
-                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="px-2 font-bold text-ink">-</button>
-                                <input type="number" x-model.number="product.selectedQty" class="w-8 text-center bg-transparent border-none text-xs font-bold focus:ring-0">
-                                <button @click="product.selectedQty++" class="px-2 font-bold text-ink">+</button>
-                            </div>
-                        </div>
-
-                        <button
-                            @click="addToCart(product)"
-                            :disabled="product.soldOut || isExpired(product.deadline)"
-                            :class="(product.soldOut || isExpired(product.deadline)) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : (product.justAdded ? 'bg-emerald-600' : 'bg-brandred hover:bg-red-600 cta-shimmer')"
-                            class="w-full h-9 panel-cut-sm text-white text-[10px] font-bold uppercase transition-all mt-auto tracking-wider">
-                            <span x-text="isExpired(product.deadline) ? 'Closed' : (product.soldOut ? 'Coming Soon' : (product.justAdded ? 'Added' : 'Add to Crate'))"></span>
-                        </button>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </main>
-
-    <!-- Cart Sidebar -->
-    <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
-        <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
-            <div class="flex justify-between items-center mb-6 border-b-2 border-brandgold pb-4">
-                <h2 class="text-xl font-display font-bold text-ink uppercase">Your Crate</h2>
-                <button @click="cartOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
-            </div>
-
-            <div class="flex-1 space-y-6">
-                <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex items-start border-b border-gray-100 pb-4">
-                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-[#F5F6F8] p-1 border border-gray-200">
-                        <div class="flex-1">
-                            <p class="font-bold text-xs"><span x-text="item.name"></span> <span class="text-brandred text-[9px]" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span></p>
-                            <p class="text-[9px] text-steel font-mono uppercase mb-2">ETA: <span x-text="item.eta"></span></p>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center border border-gray-300 h-6 bg-gray-50">
-                                    <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
-                                    <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
-                                    <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-[10px] text-brandred font-bold block uppercase">30% DP:</span>
-                                    <span class="font-black text-xs">₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <div class="mt-6 pt-6 border-t-2 border-gray-100 space-y-4" x-show="cart.length > 0">
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-steel mb-1 tracking-wider">Facebook Name <span class="text-brandred">*</span></label>
-                    <input type="text" x-model="clientFacebookName" placeholder="e.g. Juan Dela Cruz"
-                           class="w-full p-2.5 bg-gray-50 border border-gray-300 text-xs font-bold outline-none focus:ring-2 focus:ring-brandblue panel-cut-sm">
-                    <p class="text-[9px] text-steel mt-1">So we can match your order to your Messenger thread.</p>
-                </div>
-
-                <div class="bg-gray-50 p-3 border border-dashed border-gray-300">
-                    <div class="flex justify-between text-[10px] font-bold text-steel uppercase"><span>Total Order Value:</span><span>₱<span x-text="cartFullTotal"></span></span></div>
-                    <div class="flex justify-between text-sm font-black text-brandred uppercase mt-1"><span>30% Downpayment:</span><span>₱<span x-text="cartDepositTotal"></span></span></div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-2">
-                    <button @click="startAssistedCheckout()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
-                        <i class="fab fa-facebook-messenger mr-2 text-brandgold"></i> Assisted Checkout (Paste Order)
-                    </button>
-                    <button @click="proceedToPayment()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
-                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
-                    </button>
-                </div>
-            </div>
-        </div>
+  <!-- Step 1: choose a game -->
+  <section id="gamesSection" class="mb-8 scroll-mt-36">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Choose a Game</p>
+      <div class="h-[3px] flex-1 ml-4 signal-stripe"><div class="bg-brandblue/30"></div><div class="bg-brandred/30"></div><div class="bg-brandgold/30"></div></div>
     </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="gamesGrid"></div>
+  </section>
 
-    <!-- Payment Modal -->
-    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
-        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white p-6 shadow-2xl flex flex-col max-h-[90vh] panel-cut">
-            <div class="flex justify-between items-center mb-4 border-b-2 border-brandgold pb-4">
-                <div>
-                    <p class="font-mono text-[9px] text-brandred uppercase tracking-[0.25em] mb-0.5">Order Manifest</p>
-                    <h2 class="text-xl font-display font-bold text-ink uppercase">Order Breakdown</h2>
-                </div>
-                <button @click="paymentModalOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
-            </div>
-
-            <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
-                <div class="bg-gray-50 p-4 border border-gray-200">
-                    <div class="flex justify-between text-[9px] font-bold text-steel uppercase mb-3 pb-3 border-b border-gray-200">
-                        <span>Facebook Name</span>
-                        <span class="text-ink" x-text="clientFacebookName"></span>
-                    </div>
-                    <template x-for="item in cart">
-                        <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
-                            <div class="flex justify-between text-xs font-bold">
-                                <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span></span>
-                                <span>₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
-                            </div>
-                            <div class="flex justify-between text-[9px] font-bold text-steel uppercase mt-1 font-mono">
-                                <span x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span>
-                                <span>ETA: <span x-text="item.eta"></span></span>
-                                <span>Balance: ₱<span x-text="((item.fullPrice - item.depositPrice) * item.quantity).toLocaleString()"></span></span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-
-                <div class="p-4 bg-ink text-white space-y-1 panel-cut-sm">
-                    <div class="flex justify-between text-[10px] font-bold uppercase text-brandgold"><span>Total Downpayment Due (30%)</span></div>
-                    <div class="flex justify-between items-baseline">
-                        <span class="text-2xl font-display font-black tracking-tight">₱<span x-text="cartDepositTotal"></span></span>
-                        <span class="text-[10px] font-black uppercase text-gray-400">To be paid now</span>
-                    </div>
-                    <div class="pt-2 mt-2 border-t border-white/15 flex justify-between text-[10px] font-black uppercase text-gray-400">
-                        <span>Balance Remaining Later:</span>
-                        <span>₱<span x-text="cartBalanceTotal"></span></span>
-                    </div>
-                </div>
-
-                <div class="text-center py-6 px-4 border border-gray-200 relative mt-2">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandgold text-ink text-[8px] font-black uppercase tracking-widest px-3 py-1 flex items-center gap-1 panel-cut-sm">
-                        <i class="fas fa-check-circle"></i> Verified Deposit
-                    </div>
-                    <p class="text-[11px] text-steel mb-4 font-medium px-2 mt-2">
-                        <strong class="text-ink">Step 1:</strong> Pay the downpayment via Instapay to the QR below.<br>
-                        <strong class="text-ink">Step 2:</strong> Upload a clear screenshot of your payment confirmation, then submit.
-                    </p>
-                    <img src="https://www.image2url.com/r2/default/images/1777388590470-26cd0706-92f7-4a95-b141-0c218a530962.png" class="w-40 h-40 mx-auto border border-gray-200 p-1 bg-white">
-                    <p class="text-[10px] text-steel font-medium px-2 mt-4 pt-4 border-t border-dashed border-gray-300">Pre-Orders are subject to country allocation. By placing a pre-order, I acknowledge there is a possibility of allocation cuts and the store will fulfill pre-orders subject to country allocation percentage.</p>
-                </div>
-
-                <!-- Proof of payment upload — goes straight into the order row via
-                     submitSelfCheckout(); Self-Checkout no longer needs Messenger. -->
-                <div class="border border-gray-200 p-4">
-                    <p class="text-[10px] font-black uppercase text-ink mb-2 tracking-wide">Proof of Payment <span class="text-brandred">*</span></p>
-                    <input type="file" accept="image/*" capture="environment" x-ref="proofInput" @change="handleProofFileSelect($event)" class="hidden">
-                    <template x-if="!proofPreviewUrl">
-                        <button type="button" @click="$refs.proofInput.click()"
-                                class="w-full border-2 border-dashed border-gray-300 py-4 text-[11px] font-bold uppercase text-steel hover:border-brandgold hover:text-ink transition-colors">
-                            <i class="fas fa-camera mr-2"></i> Attach Screenshot / Photo
-                        </button>
-                    </template>
-                    <template x-if="proofPreviewUrl">
-                        <div class="flex items-center gap-3">
-                            <img :src="proofPreviewUrl" class="w-16 h-16 object-cover border border-gray-300">
-                            <div class="flex-1">
-                                <p class="text-[10px] font-bold text-ink"><i class="fas fa-check-circle text-green-600 mr-1"></i>Attached</p>
-                                <button type="button" @click="$refs.proofInput.click()" class="text-[10px] text-brandblue underline">Change photo</button>
-                            </div>
-                        </div>
-                    </template>
-                    <p x-show="proofUploadState === 'compressing'" class="text-[10px] text-steel mt-2">Processing image...</p>
-                    <p x-show="proofUploadState === 'error'" class="text-[10px] text-brandred font-bold mt-2" x-text="proofUploadError"></p>
-                </div>
-            </div>
-
-            <button @click="submitSelfCheckout()" :disabled="!proofImageBase64 || isSubmitting"
-                    class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase mt-4 shadow-lg cta-shimmer tracking-wide disabled:opacity-50 disabled:cursor-not-allowed">
-                <span x-text="proofUploadState === 'uploading' ? 'Submitting...' : 'Submit Order'"></span>
-            </button>
-        </div>
+  <!-- Step 2: sets for the chosen game -->
+  <section id="setsSection" class="mb-8 scroll-mt-36 hidden fade-in">
+    <div class="flex items-center justify-between mb-1 px-1">
+      <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Sets in <span id="setsSectionGame" class="text-brandred"></span></p>
     </div>
+    <p class="text-[10px] text-steel px-1 mb-3 font-medium">Newest releases first — tap a set to see its sealed products.</p>
+    <div id="setsList" class="border border-gray-200 panel-cut bg-white overflow-hidden divide-y divide-gray-100"></div>
+  </section>
 
-    <!-- Self-Checkout Success — shown once the proof-of-payment upload lands in
-         the Sheet. No Messenger step: there's nothing left for the client to send. -->
-    <div x-show="selfCheckoutSuccessOpen" x-cloak class="fixed inset-0 z-[80]">
-        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md bg-white p-6 shadow-2xl panel-cut text-center">
-            <i class="fas fa-check-circle text-4xl text-green-600 mb-3"></i>
-            <p class="font-mono text-[9px] text-brandred uppercase tracking-[0.25em] mb-1">Order <span x-text="lastSelfCheckoutOrderId"></span></p>
-            <h2 class="text-lg font-display font-bold text-ink uppercase mb-2">Order Received!</h2>
-            <p class="text-[11px] text-steel mb-4">Your order and proof of payment have been submitted. We'll confirm once we verify the payment — no need to send anything else.</p>
-            <button @click="selfCheckoutSuccessOpen = false; cart = []; clientFacebookName = ''; proofImageBase64 = null; proofPreviewUrl = null; proofUploadState = 'idle';"
-                    class="w-full bg-brandred text-white py-3 panel-cut-sm font-black text-xs uppercase tracking-wide">
-                Done
-            </button>
-        </div>
+  <!-- Step 3: products for the chosen set -->
+  <section id="productsSection" class="mb-8 scroll-mt-36 hidden fade-in">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-1 px-1">
+      <p class="font-display font-bold text-sm uppercase tracking-wide text-ink" id="productsSectionTitle">Products</p>
+      <select id="sort" class="text-[10px] font-bold uppercase tracking-wide border border-gray-300 bg-white px-2.5 py-1.5 panel-cut-sm outline-none">
+        <option value="margin-desc">Best rip value first</option>
+        <option value="profit-desc">Highest profit odds first</option>
+        <option value="price-desc">Price: High &rarr; Low</option>
+        <option value="price-asc">Price: Low &rarr; High</option>
+        <option value="name">Name A &rarr; Z</option>
+      </select>
     </div>
-
-    <!-- Finalize screen — shared by both Assisted and Self checkout. Shown instead
-         of auto-redirecting: it keeps the order summary on screen (so nothing is
-         lost if the customer needs to screenshot it or the Messenger handoff
-         doesn't fire), and opening Messenger is now an explicit, deliberate tap. -->
-    <div x-show="finalizeModalOpen" x-cloak class="fixed inset-0 z-[80]">
-        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-md bg-white p-5 shadow-2xl panel-cut max-h-[90vh] overflow-y-auto no-scrollbar">
-            <div class="text-center mb-3">
-                <p class="font-mono text-[9px] text-brandred uppercase tracking-[0.25em] mb-1">Order <span x-text="finalizeOrderId"></span></p>
-                <h2 class="text-lg font-display font-bold text-ink uppercase">
-                    <span x-show="finalizeMode === 'assisted'">Almost Done!</span>
-                    <span x-show="finalizeMode === 'self'">Screenshot This Screen</span>
-                </h2>
-            </div>
-
-            <!-- Screenshot-friendly order recap -->
-            <div class="bg-gray-50 p-3 border border-gray-200 mb-4">
-                <div class="flex justify-between text-[9px] font-bold text-steel uppercase mb-2 pb-2 border-b border-gray-200">
-                    <span>Facebook Name</span>
-                    <span class="text-ink" x-text="clientFacebookName"></span>
-                </div>
-                <template x-for="item in cart" :key="item.name">
-                    <div class="flex justify-between text-[10px] font-bold mb-1">
-                        <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span> <span class="text-steel font-mono" x-text="item.isCase ? '(CASE)' : '(UNIT)'"></span></span>
-                        <span>₱<span x-text="(item.depositPrice * item.quantity).toLocaleString()"></span></span>
-                    </div>
-                </template>
-                <div class="flex justify-between text-xs font-black text-brandred uppercase mt-2 pt-2 border-t border-gray-200">
-                    <span>Total Downpayment (30%)</span>
-                    <span>₱<span x-text="cartDepositTotal"></span></span>
-                </div>
-                <div class="flex justify-between text-[9px] font-black uppercase text-steel mt-1">
-                    <span>Balance Remaining Later</span>
-                    <span>₱<span x-text="cartBalanceTotal"></span></span>
-                </div>
-            </div>
-
-            <ol class="text-[11px] text-steel space-y-1.5 mb-4 list-decimal list-inside">
-                <template x-if="finalizeMode === 'assisted'">
-                    <div class="space-y-1.5">
-                        <li x-show="finalizeClipboardOk">Your order details are already copied to your clipboard.</li>
-                        <li x-show="!finalizeClipboardOk">Tap <strong class="text-ink">Copy Order Text</strong> below to copy your order.</li>
-                        <li>Tap <strong class="text-ink">Open Messenger</strong> below.</li>
-                        <li>Long-press the message box, choose <strong class="text-ink">Paste</strong>, then send.</li>
-                    </div>
-                </template>
-                <template x-if="finalizeMode === 'self'">
-                    <div class="space-y-1.5">
-                        <li>Take a screenshot of this order summary now.</li>
-                        <li>Make sure you've paid the 30% downpayment via the QR code.</li>
-                        <li>Tap <strong class="text-ink">Open Messenger</strong> below and send us the screenshot + your payment receipt.</li>
-                    </div>
-                </template>
-            </ol>
-
-            <button x-show="!finalizeClipboardOk" @click="copyOrderSummaryAgain()"
-                    class="w-full bg-gray-100 text-ink py-2.5 panel-cut-sm font-black text-[11px] uppercase mb-2 border border-gray-300">
-                <i class="fas fa-copy mr-1"></i> Copy Order Text
-            </button>
-
-            <button @click="openMessengerNow()"
-                    class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase shadow-lg cta-shimmer tracking-wide">
-                <i class="fab fa-facebook-messenger mr-2"></i> Open Messenger
-            </button>
-            <button @click="finalizeModalOpen = false" class="w-full text-center text-[10px] text-steel underline mt-3 py-1">Close</button>
-        </div>
+    <p class="text-[10px] text-steel font-mono uppercase tracking-wide px-1 mb-3" id="productsSectionMeta"></p>
+    <div id="presaleNotice" class="hidden mx-1 mb-4 text-[10px] text-ink bg-brandblue/10 border border-brandblue/30 px-3 py-2.5 panel-cut-sm">
+      <i class="fas fa-circle-info text-brandblue mr-1"></i> This set is presale — rip value is based on partial, hype-priced singles data. Treat these numbers as a rough early read.
     </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5" id="productsGrid"></div>
+  </section>
 
-    <script>
-        function shop() {
-            return {
-                isLoading: true,
-                cartOpen: false,
-                paymentModalOpen: false,
-                searchQuery: '',
-                currentCategory: 'All Products',
-                cart: [],
-                products: [],
-                now: new Date().getTime(),
+  <!-- Search results (overrides the drill-down while active) -->
+  <section id="searchSection" class="mb-8 hidden fade-in">
+    <div class="flex items-center justify-between mb-4 px-1">
+      <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">Search Results <span class="text-steel font-body font-normal text-xs">(<span id="searchCount">0</span>)</span></p>
+      <button id="clearSearch" class="text-[10px] font-mono uppercase tracking-wide text-steel hover:text-ink"><i class="fas fa-xmark mr-1"></i>Clear</button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5" id="searchGrid"></div>
+  </section>
 
-                showPlanner: false,
-                calcSelectedId: null,
-                calcInputQty: 1,
-                calcFillRate: 100,
-                calcIsCase: false,
+</main>
 
-                // Order logging (Assisted Checkout only)
-                clientFacebookName: '',
-                isSubmitting: false,
-                ordersEndpoint: 'https://script.google.com/macros/s/AKfycbxYXwkCT26TUXTmUp6x3h8le0sqmBF-fCxJ9DK8RAXjoXlz0O6BqGGUeZmYDyncwXvz1w/exec',
+<footer class="bg-ink text-gray-400 text-[10px] leading-relaxed px-4 py-6">
+  <div class="container mx-auto">
+    Data: <a href="https://worththerip.com/api/" target="_blank" rel="noopener" class="text-brandgold underline">Worth the Rip</a> — TCGPlayer sealed market snapshots (via TCGCSV), rip-value/odds estimates, refreshed roughly every 2 hours. Rip margin and profit-odds figures are net of an approximate 15% marketplace resale fee, matching how Worth the Rip itself presents them. Presale sets carry speculative EV — treat those numbers with extra caution. FX uses public USD/PHP sources with a cached/fallback rate if unavailable. Nothing here is financial advice.
+  </div>
+</footer>
 
-                // Self-Checkout: proof-of-payment upload — writes straight to a
-                // Sheet, no Messenger step. TEST endpoint for now — swap for the
-                // production Apps Script URL once you're happy with this flow.
-                selfCheckoutEndpoint: 'https://script.google.com/macros/s/AKfycbwWKbnbE86KnbufIC61kFEEzGjze_pq50S1hyHEiFBNDDhfkUkuBziL1Sk7jKsNKVCj/exec',
-                proofImageBase64: null,
-                proofImageType: '',
-                proofPreviewUrl: null,
-                proofUploadState: 'idle', // idle | compressing | uploading | success | error
-                proofUploadError: '',
-                selfCheckoutSuccessOpen: false,
-                lastSelfCheckoutOrderId: '',
+<script>
+/*
+  Sources (independent, degrade gracefully rather than blocking the page):
+  - ev-snapshot.json   -> primary: set name, release date, presale flag, EV, evPerPack
+  - sealed-prices.json -> supplement: product URL, low/mid price range
+  - odds-snapshot.json -> supplement: profit probability (already after resale fee)
+  - FX source(s)       -> USD -> PHP rate
+  Each is cached independently in localStorage.
+*/
 
-                // In-app browser (Facebook/Messenger webview) handling
-                showInAppBanner: false,
-                inAppWebview: false,
-                inAppBrowserName: 'Facebook',
-                isAndroidUA: false,
+const EV_URL = "https://worththerip.com/ev-snapshot.json";
+const SEALED_URL = "https://worththerip.com/sealed-prices.json";
+const ODDS_URL = "https://worththerip.com/odds-snapshot.json";
+const FX_URLS = [
+  "https://exchangerates.com/api/index.php?action=public_rate&from=USD&to=PHP",
+  "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json"
+];
+const RESALE_FEE = 0.15; // matches worththerip.com's own displayed convention
 
-                // Finalize screen — shared by assisted & self checkout
-                finalizeModalOpen: false,
-                finalizeMode: 'assisted',
-                finalizeOrderId: '',
-                finalizeSummaryText: '',
-                finalizeClipboardOk: true,
+const gameNames = {
+  pokemon:"Pokémon", mtg:"Magic: The Gathering", yugioh:"Yu-Gi-Oh!",
+  onepiece:"One Piece", lorcana:"Lorcana", digimon:"Digimon",
+  fab:"Flesh and Blood", swu:"Star Wars Unlimited", dbsfw:"DBS Fusion World", weiss:"Weiss Schwarz"
+};
 
-                async init() {
-                    // Facebook and Messenger's built-in webviews tag their user agent
-                    // with FBAN/FBAV/FBIOS/FB_IAB. Custom URL schemes (fb-messenger://)
-                    // and window.open() popups are unreliable inside these embedded
-                    // webviews, which is why checkout redirects silently no-op there.
-                    const ua = navigator.userAgent || '';
-                    const inApp = /FBAN|FBAV|FB_IAB|FBIOS/i.test(ua);
-                    this.inAppWebview = inApp;
-                    this.isAndroidUA = /Android/i.test(ua);
-                    this.inAppBrowserName = /Messenger/i.test(ua) ? 'Messenger' : 'the Facebook app';
-                    this.showInAppBanner = inApp;
+const DEMO_SETS = [
+  { key:"demo-cel30", name:"30th Celebration", game:"pokemon", releaseDate:"2026-09-16", presale:true, products:[
+    { key:"pack", name:"Booster Pack", priceUsd:16.68, ev:16.9, profitProb:0.45, url:"https://www.tcgplayer.com/" },
+    { key:"etb", name:"Elite Trainer Box", priceUsd:172.33, ev:152.1, profitProb:0.08, url:"https://www.tcgplayer.com/" }
+  ]},
+  { key:"demo-me5", name:"Pitch Black", game:"pokemon", releaseDate:"2026-07-17", presale:false, products:[
+    { key:"booster-box", name:"Booster Box (36 packs)", priceUsd:197.59, ev:256.464, profitProb:0.56, url:"https://www.tcgplayer.com/" }
+  ]},
+  { key:"demo-op17", name:"The World's Strongest Warriors (OP17)", game:"onepiece", releaseDate:"2026-08-28", presale:false, products:[
+    { key:"booster-box", name:"Booster Box (24 packs)", priceUsd:326.47, ev:109.02, profitProb:0.0, url:"https://www.tcgplayer.com/" }
+  ]}
+];
 
-                    const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSQBLjsB__nTteTD8pPY7wvfQEQUCqLstkfUb8lgfOV_NpVwraiUU07VxZrKyWsmVPE1vyLtv_6ED9Y/pub?gid=0&single=true&output=tsv';
+let catalogSets = [];
+let fxRate = null;
+let latestMovers = [];
 
-                    setInterval(() => {
-                        this.now = new Date().getTime();
-                    }, 1000);
+let selectedGame = null;
+let selectedSetKey = null;
+let searchTerm = "";
+let sortMode = "margin-desc";
 
-                    try {
-                        const response = await fetch(sheetUrl);
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        const data = await response.text();
-                        this.parseTSV(data);
-                    } catch (error) {
-                        console.error('Error fetching inventory:', error);
-                    } finally {
-                        this.isLoading = false;
-                    }
-                },
+const $ = id => document.getElementById(id);
+const searchEl=$("search"), sortEl=$("sort"), alertEl=$("alert"),
+      gamesSectionEl=$("gamesSection"), gamesGridEl=$("gamesGrid"),
+      setsSectionEl=$("setsSection"), setsListEl=$("setsList"), setsSectionGameEl=$("setsSectionGame"),
+      productsSectionEl=$("productsSection"), productsGridEl=$("productsGrid"),
+      productsSectionTitleEl=$("productsSectionTitle"), productsSectionMetaEl=$("productsSectionMeta"),
+      presaleNoticeEl=$("presaleNotice"),
+      searchSectionEl=$("searchSection"), searchGridEl=$("searchGrid"), searchCountEl=$("searchCount"), clearSearchEl=$("clearSearch"),
+      moversSectionEl=$("moversSection"), moversTrackEl=$("moversTrack");
 
-                parseTSV(tsvText) {
-                    const lines = tsvText.split(/\r?\n/);
-                    if (lines.length < 2) return;
+function money(n){ return new Intl.NumberFormat("en-PH",{style:"currency",currency:"PHP",maximumFractionDigits:0}).format(n).replace("PHP","₱"); }
+function usd(n){ return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(n); }
+function esc(s){ return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function fmtDate(d){ if(!d) return "TBA"; try{ return new Date(d+"T00:00:00").toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"}); }catch{ return "TBA"; } }
+function fmtPct(m){ if(typeof m!=="number"||!isFinite(m)) return "—"; return (m>=0?"+":"") + (m*100).toFixed(0) + "%"; }
+function marginTier(m){ if(typeof m!=="number"||!isFinite(m)) return "none"; if(m>0.15) return "pos"; if(m<-0.15) return "neg"; return "mid"; }
+function tierTextClass(t){ return t==="pos" ? "text-emerald-600" : t==="neg" ? "text-brandred" : t==="mid" ? "text-steel" : "text-gray-300"; }
+function isNewRelease(d){ if(!d) return false; const t=new Date(d+"T00:00:00").getTime(); const days=(Date.now()-t)/86400000; return days>=0 && days<=21; }
+function marginAdjOf(p){ if(typeof p.ev==="number" && p.priceUsd>0) return ((p.ev*(1-RESALE_FEE)) - p.priceUsd)/p.priceUsd; return null; }
 
-                    const headers = lines[0].split('\t').map(h => h.trim());
-                    const items = [];
+async function fetchJSON(url,timeout=12000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeout);
+  try{
+    const r=await fetch(url,{cache:"no-store",signal:controller.signal});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
 
-                    for (let i = 1; i < lines.length; i++) {
-                        const line = lines[i].trim();
-                        if (!line) continue;
+async function loadJsonSource(cacheKey,url){
+  try{
+    const data=await fetchJSON(url);
+    try{ localStorage.setItem(cacheKey,JSON.stringify(data)); }catch(e){}
+    return { data, mode:"LIVE" };
+  }catch(err){
+    try{
+      const cached=localStorage.getItem(cacheKey);
+      if(cached) return { data:JSON.parse(cached), mode:"CACHED", error:err };
+    }catch(e){}
+    return { data:null, mode:"FAILED", error:err };
+  }
+}
 
-                        const values = line.split('\t');
-                        let product = {};
+function saveFX(rate){ try{ localStorage.setItem("smtFX", JSON.stringify({rate})); }catch(e){} }
+function loadFX(){ try{ return JSON.parse(localStorage.getItem("smtFX")||"null"); }catch{ return null; } }
 
-                        headers.forEach((header, index) => {
-                            let val = values[index] ? values[index].trim() : '';
+async function getFX(){
+  for(const url of FX_URLS){
+    try{
+      const j=await fetchJSON(url);
+      let rate=null;
+      if(j?.rates?.PHP) rate=Number(j.rates.PHP);
+      else if(j?.usd?.php) rate=Number(j.usd.php);
+      if(rate>0){ saveFX(rate); return { rate, mode:"LIVE" }; }
+    }catch(e){}
+  }
+  const cached=loadFX();
+  if(cached?.rate>0) return { rate:Number(cached.rate), mode:"CACHED" };
+  return { rate:58, mode:"FALLBACK" };
+}
 
-                            if (header === 'preorderDeadline') {
-                                product.deadline = val ? new Date(val).getTime() : null;
-                            } else if (['id', 'price', 'unitsPerCase'].includes(header)) {
-                                product[header] = Number(val) || 0;
-                            } else if (header === 'soldOut') {
-                                product[header] = (val.toUpperCase() === 'TRUE');
-                            } else {
-                                product[header] = val;
-                            }
-                        });
+function buildCatalog(evData, sealedData, oddsData){
+  const evResults = evData?.results || {};
+  const sealedSets = sealedData?.sets || {};
+  const oddsResults = oddsData?.results || {};
+  const sets = [];
+  for(const [setKey, evSet] of Object.entries(evResults)){
+    const sealedSet = sealedSets[setKey];
+    const oddsSet = oddsResults[setKey];
+    const products = [];
+    for(const [productKey, evP] of Object.entries(evSet.products||{})){
+      const sealedP = sealedSet?.products?.[productKey];
+      const oddsP = oddsSet?.products?.[productKey];
+      products.push({
+        key: productKey, name: evP.name, priceUsd: evP.sealedPrice, ev: evP.ev,
+        url: sealedP?.url || null,
+        profitProb: oddsP?.profitProb ?? null
+      });
+    }
+    if(!products.length) continue;
+    sets.push({
+      key: setKey, name: evSet.name || setKey, game: evSet.game || "other",
+      releaseDate: evSet.releaseDate || null, presale: !!evSet.presale, products
+    });
+  }
+  return sets;
+}
 
-                        product.selectedQty = 1;
-                        product.isCase = false;
-                        product.justAdded = false;
-                        items.push(product);
-                    }
+function flattenRows(sets){
+  const rows=[];
+  for(const s of sets){
+    for(const p of s.products){
+      rows.push({ setKey:s.key, setName:s.name, game:s.game, releaseDate:s.releaseDate, presale:s.presale, ...p, marginAdj: marginAdjOf(p) });
+    }
+  }
+  return rows;
+}
 
-                    this.products = items;
-                    if (this.products.length > 0) {
-                        this.calcSelectedId = this.products[0].id;
-                    }
-                },
+function sortRows(rows, mode){
+  const r = rows.slice();
+  switch(mode){
+    case "profit-desc": return r.sort((a,b)=>(b.profitProb??-1)-(a.profitProb??-1));
+    case "price-desc": return r.sort((a,b)=>b.priceUsd-a.priceUsd);
+    case "price-asc": return r.sort((a,b)=>a.priceUsd-b.priceUsd);
+    case "name": return r.sort((a,b)=>a.name.localeCompare(b.name));
+    case "margin-desc": default: return r.sort((a,b)=>(b.marginAdj??-Infinity)-(a.marginAdj??-Infinity));
+  }
+}
 
-                calculateFullPrice(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * (product.selectedQty || 1);
-                },
+// ---- rendering ----
 
-                calculateLiveDeposit(product) {
-                    const base = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    return base * 0.3 * (product.selectedQty || 1);
-                },
+function computeGameStats(){
+  const stats = {};
+  for(const s of catalogSets){
+    if(!stats[s.game]) stats[s.game] = { count:0, best:null };
+    stats[s.game].count++;
+    if(s.presale) continue;
+    for(const p of s.products){
+      const adj = marginAdjOf(p);
+      if(adj!==null && (stats[s.game].best===null || adj>stats[s.game].best)) stats[s.game].best = adj;
+    }
+  }
+  return stats;
+}
 
-                getCountdown(deadline) {
-                    if (!deadline) return null;
-                    const distance = deadline - this.now;
-                    if (distance < 0) return "CLOSED";
-                    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                },
+function renderGames(){
+  const games = [...new Set(catalogSets.map(s=>s.game))].sort((a,b)=>(gameNames[a]||a).localeCompare(gameNames[b]||b));
+  const stats = computeGameStats();
+  gamesGridEl.innerHTML = games.map(g=>{
+    const st = stats[g] || {count:0, best:null};
+    const active = selectedGame===g ? " active" : "";
+    return `<button data-game="${esc(g)}" class="game-tile panel-cut bg-white border border-gray-200 p-4 text-left hover:shadow-lg hover:-translate-y-1 transition-all duration-200${active}">
+      <div class="tag-slant bg-brandblue inline-block mb-3"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">${st.count} set${st.count===1?"":"s"}</span></div>
+      <div class="font-display font-bold text-sm md:text-base uppercase tracking-tight text-ink leading-tight">${esc(gameNames[g]||g)}</div>
+      <div class="text-[10px] font-mono uppercase tracking-wide mt-2 ${tierTextClass(marginTier(st.best))}">${st.best!==null ? "Best: "+fmtPct(st.best) : "—"}</div>
+    </button>`;
+  }).join("");
+}
 
-                isExpired(deadline) {
-                    return deadline && (deadline - this.now < 0);
-                },
+function renderSets(){
+  if(!selectedGame){ setsSectionEl.classList.add("hidden"); return; }
+  setsSectionEl.classList.remove("hidden");
+  setsSectionGameEl.textContent = gameNames[selectedGame] || selectedGame;
+  let sets = catalogSets.filter(s=>s.game===selectedGame);
+  sets = sets.slice().sort((a,b)=>(b.releaseDate||"0000-00-00").localeCompare(a.releaseDate||"0000-00-00"));
+  if(!sets.length){ setsListEl.innerHTML = '<p class="text-center text-steel text-xs py-10">No sets found for this game.</p>'; return; }
+  let html="", lastYear=null;
+  for(const s of sets){
+    const year = s.releaseDate ? s.releaseDate.slice(0,4) : "TBA";
+    if(year!==lastYear){ html += `<div class="px-4 py-1.5 bg-gray-50 font-mono text-[9px] uppercase tracking-widest text-steel">${esc(year)}</div>`; lastYear=year; }
+    const best = s.products.reduce((m,p)=>{ const a=marginAdjOf(p); return (a!==null && (m===null||a>m)) ? a : m; }, null);
+    const active = selectedSetKey===s.key ? " active" : "";
+    const presaleTag = s.presale ? `<div class="tag-slant bg-brandblue"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-1.5 py-0.5">Presale</span></div>` : "";
+    html += `<button data-set="${esc(s.key)}" class="set-row${active} w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors">
+      <div class="min-w-0">
+        <div class="font-display font-semibold text-sm text-ink truncate">${esc(s.name)}</div>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="font-mono text-[9px] text-steel uppercase tracking-wide">${fmtDate(s.releaseDate)}</span>
+          ${presaleTag}
+        </div>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="font-mono text-[11px] font-bold ${tierTextClass(marginTier(best))}">${fmtPct(best)}</span>
+        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+      </div>
+    </button>`;
+  }
+  setsListEl.innerHTML = html;
+}
 
-                get calculatedUnits() {
-                    if (!this.calcSelectedId) return 0;
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    if (!product) return 0;
-                    const totalUnitsOrdered = this.calcIsCase ? (this.calcInputQty * product.unitsPerCase) : this.calcInputQty;
-                    return Math.floor(totalUnitsOrdered * (this.calcFillRate / 100));
-                },
+function productCard(r){
+  const php = r.priceUsd * fxRate;
+  const tier = marginTier(r.marginAdj);
+  const profitPct = typeof r.profitProb==="number" ? Math.round(r.profitProb*100) : null;
+  let badge = "";
+  if(r.presale) badge = `<div class="tag-slant bg-brandblue"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">Presale</span></div>`;
+  else if(isNewRelease(r.releaseDate)) badge = `<div class="tag-slant bg-brandgold"><span class="font-mono text-[8px] text-ink font-bold uppercase tracking-widest px-2 py-0.5">New</span></div>`;
+  return `<div class="panel-cut bg-white border border-gray-200 overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <div class="flex items-center justify-between px-3 pt-3">
+      <div class="tag-slant bg-ink"><span class="font-mono text-[8px] text-white uppercase tracking-widest px-2 py-0.5">${esc(gameNames[r.game]||r.game)}</span></div>
+      ${badge}
+    </div>
+    <div class="relative h-16 bg-[#F5F6F8] flex items-center justify-center mt-2">
+      <i class="fas fa-box-open text-2xl text-gray-300"></i>
+    </div>
+    <div class="border-t border-b border-dashed border-gray-200 px-3 py-1.5 bg-gray-50">
+      <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-widest text-center truncate">${esc(r.setName)}</p>
+    </div>
+    <div class="p-3 md:p-4 flex-1 flex flex-col">
+      <h3 class="text-xs md:text-sm font-semibold font-display leading-tight mb-2 uppercase tracking-tight text-ink h-8 overflow-hidden">${esc(r.name)}</h3>
+      <div class="mb-3">
+        <div class="text-lg md:text-xl font-display font-bold text-ink">${money(php)}</div>
+        <div class="text-[10px] text-steel">${usd(r.priceUsd)} &middot; ${fmtDate(r.releaseDate)}</div>
+      </div>
+      <div class="grid grid-cols-2 gap-2 mb-3">
+        <div class="bg-gray-50 p-2 border-l-2 ${tier==="pos"?"border-emerald-600":tier==="neg"?"border-brandred":"border-gray-300"}">
+          <p class="text-[8px] font-bold text-steel uppercase tracking-wide">Rip Margin</p>
+          <p class="text-sm font-display font-bold ${tierTextClass(tier)}">${fmtPct(r.marginAdj)}</p>
+        </div>
+        <div class="bg-gray-50 p-2 border-l-2 border-brandblue">
+          <p class="text-[8px] font-bold text-steel uppercase tracking-wide">Profit Odds</p>
+          <p class="text-sm font-display font-bold text-ink">${profitPct!==null?profitPct+"%":"—"}</p>
+          ${profitPct!==null?`<div class="probbar mt-1"><div class="probbar-fill" style="width:${profitPct}%"></div></div>`:""}
+        </div>
+      </div>
+      ${r.url
+        ? `<a href="${esc(r.url)}" target="_blank" rel="noopener" class="mt-auto w-full inline-flex items-center justify-center bg-brandred hover:bg-red-600 cta-shimmer text-white text-[10px] font-bold uppercase py-2.5 panel-cut-sm tracking-wider transition-colors">
+            <i class="fas fa-arrow-up-right-from-square mr-2 text-[9px]"></i> View on TCGPlayer</a>`
+        : `<div class="mt-auto"></div>`}
+    </div>
+  </div>`;
+}
 
-                get calculatedTotalValue() {
-                    if (!this.calcSelectedId) return "0";
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    const units = this.calculatedUnits;
-                    return (units * (product ? product.price : 0)).toLocaleString();
-                },
+function renderProducts(){
+  if(!selectedSetKey){ productsSectionEl.classList.add("hidden"); return; }
+  const set = catalogSets.find(s=>s.key===selectedSetKey);
+  if(!set){ selectedSetKey=null; productsSectionEl.classList.add("hidden"); return; }
+  productsSectionEl.classList.remove("hidden");
+  productsSectionTitleEl.textContent = set.name;
+  productsSectionMetaEl.textContent = `${gameNames[set.game]||set.game} · ${fmtDate(set.releaseDate)} · ${set.products.length} product${set.products.length===1?"":"s"}`;
+  presaleNoticeEl.classList.toggle("hidden", !set.presale);
+  let rows = flattenRows([set]);
+  rows = sortRows(rows, sortMode);
+  productsGridEl.innerHTML = rows.map(productCard).join("") || '<p class="col-span-full text-center text-steel text-xs py-10">No products found.</p>';
+}
 
-                get calculatedDownpayment() {
-                    if (!this.calcSelectedId) return "0";
-                    const product = this.products.find(p => p.id == this.calcSelectedId);
-                    if (!product) return "0";
-                    const basePrice = this.calcIsCase ? (product.price * product.unitsPerCase) : product.price;
-                    return (basePrice * this.calcInputQty * 0.3).toLocaleString();
-                },
+function renderMovers(){
+  const all = flattenRows(catalogSets).filter(r=>!r.presale && typeof r.marginAdj==="number" && isFinite(r.marginAdj) && r.priceUsd>0);
+  all.sort((a,b)=>b.marginAdj-a.marginAdj);
+  latestMovers = all.slice(0,10);
+  if(!latestMovers.length){ moversSectionEl.classList.add("hidden"); return; }
+  moversTrackEl.innerHTML = latestMovers.map(r=>`
+    <button data-game="${esc(r.game)}" data-set="${esc(r.setKey)}" class="shrink-0 w-40 bg-white/5 hover:bg-white/10 border border-white/10 panel-cut-sm p-3 text-left transition-colors">
+      <p class="font-mono text-[8px] text-gray-400 uppercase tracking-wide truncate">${esc(r.setName)}</p>
+      <p class="text-[11px] font-semibold text-white leading-tight my-1.5 h-7 overflow-hidden">${esc(r.name)}</p>
+      <p class="font-display font-black text-lg ${r.marginAdj>=0?"text-brandgold":"text-brandred"}">${fmtPct(r.marginAdj)}</p>
+    </button>`).join("");
+}
 
-                get availableCategories() {
-                    const live = new Set();
-                    this.products.forEach(p => {
-                        if (p.category && !p.soldOut && !this.isExpired(p.deadline)) {
-                            live.add(p.category);
-                        }
-                    });
-                    return ['All Products', ...Array.from(live).sort()];
-                },
+function renderSearch(){
+  const q = searchTerm.trim().toLowerCase();
+  let rows = flattenRows(catalogSets).filter(r=>`${r.setName} ${r.name} ${gameNames[r.game]||r.game}`.toLowerCase().includes(q));
+  rows = sortRows(rows, "margin-desc");
+  searchCountEl.textContent = rows.length;
+  searchGridEl.innerHTML = rows.map(productCard).join("") || '<p class="col-span-full text-center text-steel text-xs py-10">No matching sets or products.</p>';
+}
 
-                get filteredProducts() {
-                    return this.products
-                        .filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
-                        .filter(p => this.currentCategory === 'All Products' || p.category === this.currentCategory)
-                        .sort((a, b) => {
-                            const aActive = !a.soldOut && !this.isExpired(a.deadline);
-                            const bActive = !b.soldOut && !this.isExpired(b.deadline);
+function updateVisibility(){
+  const searching = searchTerm.trim().length>0;
+  searchSectionEl.classList.toggle("hidden", !searching);
+  gamesSectionEl.classList.toggle("hidden", searching);
+  moversSectionEl.classList.toggle("hidden", searching || !latestMovers.length);
+  if(searching) return;
+  setsSectionEl.classList.toggle("hidden", !selectedGame);
+  productsSectionEl.classList.toggle("hidden", !selectedSetKey);
+}
 
-                            if (aActive !== bActive) {
-                                return aActive ? -1 : 1;
-                            }
+function renderAll(){
+  renderGames();
+  renderMovers();
+  renderSets();
+  renderProducts();
+  updateVisibility();
+  if(searchTerm.trim()) renderSearch();
+}
 
-                            if (a.deadline && b.deadline) {
-                                return a.deadline - b.deadline;
-                            }
+function showAlert(msg){ alertEl.innerHTML = msg; alertEl.classList.remove("hidden"); }
+function clearAlert(){ alertEl.textContent=""; alertEl.classList.add("hidden"); }
 
-                            if (a.deadline) return -1;
-                            if (b.deadline) return 1;
+async function load(){
+  clearAlert();
+  $("fxStatus").textContent="loading";
 
-                            return 0;
-                        });
-                },
+  const [evRes, sealedRes, oddsRes, fxRes] = await Promise.all([
+    loadJsonSource("smtEv", EV_URL),
+    loadJsonSource("smtSealed", SEALED_URL),
+    loadJsonSource("smtOdds", ODDS_URL),
+    getFX()
+  ]);
 
-                get totalItems() {
-                    return this.cart.reduce((s, i) => s + i.quantity, 0);
-                },
-                get cartDepositTotal() {
-                    return this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0).toLocaleString();
-                },
-                get cartFullTotal() {
-                    return this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0).toLocaleString();
-                },
-                get cartBalanceTotal() {
-                    const full = this.cart.reduce((sum, item) => sum + (item.fullPrice * item.quantity), 0);
-                    const dp = this.cart.reduce((sum, item) => sum + (item.depositPrice * item.quantity), 0);
-                    return (full - dp).toLocaleString();
-                },
+  fxRate = fxRes.rate;
+  $("fxVal").textContent = "₱"+fxRate.toFixed(2);
+  $("fxStatus").textContent = fxRes.mode==="LIVE" ? "live" : fxRes.mode==="CACHED" ? "cached" : "fallback";
 
-                getCategoryCount(cat) {
-                    const live = this.products.filter(p => !p.soldOut && !this.isExpired(p.deadline));
-                    if (cat === 'All Products') return live.length;
-                    return live.filter(p => p.category === cat).length;
-                },
+  let dataMode, dataUpdated=null;
+  if(evRes.data){
+    catalogSets = buildCatalog(evRes.data, sealedRes.data, oddsRes.data);
+    dataMode = evRes.mode;
+    dataUpdated = evRes.data.sourceLastUpdated || evRes.data.fetchedAt || null;
+  } else {
+    catalogSets = DEMO_SETS;
+    dataMode = "DEMO";
+  }
+  const oddsAvailable = !!oddsRes.data;
 
-                addToCart(product) {
-                    const price = product.isCase ? (product.price * product.unitsPerCase) : product.price;
-                    const existing = this.cart.find(i => i.productId === product.id && i.isCase === product.isCase);
-                    if (existing) {
-                        existing.quantity += product.selectedQty;
-                    } else {
-                        this.cart.push({
-                            ...product,
-                            productId: product.id,
-                            fullPrice: price,
-                            depositPrice: price * 0.3,
-                            quantity: product.selectedQty
-                        });
-                    }
-                    product.justAdded = true;
-                    setTimeout(() => product.justAdded = false, 1000);
-                },
-                updateCartQty(index, change) {
-                    this.cart[index].quantity += change;
-                    if (this.cart[index].quantity <= 0) this.cart.splice(index, 1);
-                },
+  if(selectedGame && !catalogSets.some(s=>s.game===selectedGame)) selectedGame=null;
+  if(selectedSetKey && !catalogSets.some(s=>s.key===selectedSetKey)) selectedSetKey=null;
 
-                openInExternalBrowser() {
-                    if (this.isAndroidUA) {
-                        // Android intent:// escape reliably relaunches the current
-                        // page inside Chrome, outside the FB/Messenger webview.
-                        const bare = location.href.replace(/^https?:\/\//, '');
-                        window.location.href = 'intent://' + bare + '#Intent;scheme=https;package=com.android.chrome;end';
-                    } else {
-                        alert('Tap the ••• (More) icon at the top or bottom of the screen, then choose "Open in Safari" or "Open in Browser".');
-                    }
-                },
+  $("updatedAt").textContent = dataUpdated ? "Updated "+fmtDate(dataUpdated.slice(0,10)) : (dataMode==="DEMO" ? "Demo data" : "—");
+  $("liveDot").className = "fas fa-circle text-[6px] mr-1.5 align-middle " + (dataMode==="LIVE" ? "text-emerald-500" : dataMode==="CACHED" ? "text-brandgold" : "text-brandred");
 
-                validateCheckout() {
-                    if (!this.clientFacebookName.trim()) {
-                        alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
-                        return false;
-                    }
-                    return true;
-                },
+  const notes=[];
+  if(dataMode==="DEMO") notes.push("Live market data was unreachable and no cached copy was available, so a small demo dataset is shown below.");
+  else if(dataMode==="CACHED") notes.push("Live rip-value data was unreachable — showing the last cached snapshot instead.");
+  if(!oddsAvailable && dataMode!=="DEMO") notes.push("Profit-odds data is currently unavailable; price and rip margin still reflect live data where possible.");
+  if(fxRes.mode!=="LIVE" && dataMode!=="DEMO") notes.push(`FX conversion is using a ${fxRes.mode.toLowerCase()} rate.`);
+  if(notes.length) showAlert(notes.join(" ")); else clearAlert();
 
-                startAssistedCheckout() {
-                    if (!this.validateCheckout()) return;
-                    this.cartOpen = false;
-                    this.prepareFinalize('assisted');
-                },
+  renderAll();
+}
 
-                proceedToPayment() {
-                    if (!this.validateCheckout()) return;
-                    this.cartOpen = false;
-                    this.paymentModalOpen = true;
-                },
+// ---- events ----
+searchEl.addEventListener("input", ()=>{ searchTerm=searchEl.value; updateVisibility(); if(searchTerm.trim()) renderSearch(); });
+clearSearchEl.addEventListener("click", ()=>{ searchTerm=""; searchEl.value=""; updateVisibility(); });
+sortEl.addEventListener("change", ()=>{ sortMode=sortEl.value; renderProducts(); });
+$("refreshBtn").addEventListener("click", load);
 
-                // --- Self-Checkout: proof-of-payment upload -----------------------
+gamesGridEl.addEventListener("click", e=>{
+  const btn = e.target.closest("button[data-game]"); if(!btn) return;
+  selectedGame = btn.dataset.game;
+  selectedSetKey = null;
+  renderGames(); renderSets(); renderProducts(); updateVisibility();
+  requestAnimationFrame(()=> setsSectionEl.scrollIntoView({behavior:"smooth", block:"start"}));
+});
 
-                handleProofFileSelect(event) {
-                    const file = event.target.files && event.target.files[0];
-                    if (!file) return;
+setsListEl.addEventListener("click", e=>{
+  const btn = e.target.closest("button[data-set]"); if(!btn) return;
+  selectedSetKey = btn.dataset.set;
+  renderSets(); renderProducts(); updateVisibility();
+  requestAnimationFrame(()=> productsSectionEl.scrollIntoView({behavior:"smooth", block:"start"}));
+});
 
-                    this.proofUploadState = 'compressing';
-                    this.proofUploadError = '';
+moversTrackEl.addEventListener("click", e=>{
+  const btn = e.target.closest("button[data-set]"); if(!btn) return;
+  searchTerm=""; searchEl.value="";
+  selectedGame = btn.dataset.game;
+  selectedSetKey = btn.dataset.set;
+  renderAll();
+  requestAnimationFrame(()=> productsSectionEl.scrollIntoView({behavior:"smooth", block:"start"}));
+});
 
-                    this.compressImageFile(file).then(({ base64, mimeType, previewUrl }) => {
-                        this.proofImageBase64 = base64;
-                        this.proofImageType = mimeType;
-                        this.proofPreviewUrl = previewUrl;
-                        this.proofUploadState = 'idle';
-                    }).catch(err => {
-                        console.error('Image processing failed', err);
-                        this.proofUploadState = 'error';
-                        this.proofUploadError = "Couldn't read that image — try a different photo.";
-                    });
-                },
-
-                // Resizes/re-compresses client-side so the upload stays small and
-                // fast no matter how big the original screenshot or camera photo is.
-                compressImageFile(file) {
-                    const MAX_DIMENSION = 1600;
-                    const JPEG_QUALITY = 0.75;
-
-                    return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onerror = () => reject(new Error('File read failed'));
-                        reader.onload = () => {
-                            const img = new Image();
-                            img.onerror = () => reject(new Error('Image decode failed'));
-                            img.onload = () => {
-                                let { width, height } = img;
-                                if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-                                    const scale = MAX_DIMENSION / Math.max(width, height);
-                                    width = Math.round(width * scale);
-                                    height = Math.round(height * scale);
-                                }
-                                const canvas = document.createElement('canvas');
-                                canvas.width = width;
-                                canvas.height = height;
-                                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-
-                                const dataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
-                                resolve({
-                                    base64: dataUrl.split(',')[1],
-                                    mimeType: 'image/jpeg',
-                                    previewUrl: dataUrl
-                                });
-                            };
-                            img.src = reader.result;
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                },
-
-                // Submits order + proof-of-payment image directly to the Sheet via
-                // Apps Script. Replaces the old "screenshot + Messenger" hand-off
-                // for Self-Checkout — Assisted Checkout is untouched below.
-                async submitSelfCheckout() {
-                    if (!this.proofImageBase64 || this.isSubmitting) return;
-                    this.isSubmitting = true;
-                    this.proofUploadState = 'uploading';
-                    this.proofUploadError = '';
-
-                    const orderId = 'CDC-' + Date.now().toString(36).toUpperCase();
-                    const payload = {
-                        orderId,
-                        clientName: this.clientFacebookName,
-                        items: this.cart.map(i => ({
-                            name: i.name,
-                            qty: i.quantity,
-                            isCase: i.isCase,
-                            eta: i.eta,
-                            dp: i.depositPrice * i.quantity
-                        })),
-                        totalDP: this.cart.reduce((s, i) => s + i.depositPrice * i.quantity, 0),
-                        totalFull: this.cart.reduce((s, i) => s + i.fullPrice * i.quantity, 0),
-                        proofImage: this.proofImageBase64,
-                        proofImageType: this.proofImageType
-                    };
-
-                    try {
-                        const response = await fetch(this.selfCheckoutEndpoint, {
-                            method: 'POST',
-                            body: JSON.stringify(payload)
-                        });
-                        const result = await response.json();
-                        if (!result.ok) throw new Error(result.error || 'Unknown error');
-
-                        this.lastSelfCheckoutOrderId = orderId;
-                        this.proofUploadState = 'success';
-                        this.paymentModalOpen = false;
-                        this.selfCheckoutSuccessOpen = true;
-                    } catch (err) {
-                        console.error('Self-checkout submit failed', err);
-                        this.proofUploadState = 'error';
-                        this.proofUploadError = "Couldn't submit — check your connection and tap Submit again. If it keeps failing, message us on Facebook instead.";
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-
-                buildOrderSummary(orderId, queued) {
-                    let summary = `🛒 PRE ORDER SUMMARY (${orderId})\n`;
-                    summary += `FB Name: ${this.clientFacebookName}\n-----------------\n`;
-                    this.cart.forEach(i => {
-                        summary += `• ${i.quantity}x ${i.name} (${i.isCase ? 'CASE' : 'UNIT'})\n  ETA: ${i.eta}\n  DP (30%): ₱${(i.depositPrice * i.quantity).toLocaleString()}\n\n`;
-                    });
-                    summary += `TOTAL DOWNPAYMENT: ₱${this.cartDepositTotal}\n`;
-                    summary += `REMAINING BALANCE: ₱${this.cartBalanceTotal}\n`;
-                    summary += `STATUS: Payment Pending\n\n`;
-                    summary += `Pre-Orders are subject to country allocation.\n`;
-                    summary += `QR Code to settle payment is attached below, kindly send a screenshot of the proof of payment once payment is made.\n\n`;
-                    summary += `cratedropcollective.github.io/payment\n`;
-                    if (!queued) {
-                        summary += `\n\n⚠️ AUTO-LOG FAILED TO QUEUE — please keep this message, this order needs manual entry.`;
-                    }
-                    return summary;
-                },
-
-                logOrderBeacon(orderId) {
-                    try {
-                        const payload = JSON.stringify({
-                            orderId,
-                            clientName: this.clientFacebookName,
-                            clientContact: '',
-                            items: this.cart.map(i => ({
-                                name: i.name,
-                                qty: i.quantity,
-                                isCase: i.isCase,
-                                eta: i.eta,
-                                dp: i.depositPrice * i.quantity
-                            })),
-                            totalDP: this.cart.reduce((s, i) => s + i.depositPrice * i.quantity, 0),
-                            totalFull: this.cart.reduce((s, i) => s + i.fullPrice * i.quantity, 0)
-                        });
-                        const blob = new Blob([payload], { type: 'text/plain' });
-                        return navigator.sendBeacon(this.ordersEndpoint, blob);
-                    } catch (err) {
-                        console.error('Order log failed to queue', err);
-                        return false;
-                    }
-                },
-
-                // Builds the order + logs it + copies the summary, then shows the
-                // finalize screen — it does NOT navigate anywhere. Leaving on this
-                // screen means nothing gets lost: the customer can read the steps,
-                // screenshot the breakdown, and only leaves the page when they
-                // deliberately tap "Open Messenger".
-                prepareFinalize(mode) {
-                    if (this.isSubmitting) return;
-                    this.isSubmitting = true;
-
-                    const orderId = 'CDC-' + Date.now().toString(36).toUpperCase();
-                    const queued = this.logOrderBeacon(orderId);
-                    const summary = this.buildOrderSummary(orderId, queued);
-
-                    this.finalizeMode = mode;
-                    this.finalizeOrderId = orderId;
-                    this.finalizeSummaryText = summary;
-                    this.finalizeClipboardOk = true;
-                    this.paymentModalOpen = false;
-
-                    navigator.clipboard.writeText(summary).catch(err => {
-                        console.error('Clipboard failed', err);
-                        this.finalizeClipboardOk = false;
-                    });
-
-                    this.finalizeModalOpen = true;
-                    setTimeout(() => { this.isSubmitting = false; }, 800);
-                },
-
-                copyOrderSummaryAgain() {
-                    // Triggered directly by a tap, so it succeeds in browsers/webviews
-                    // that silently blocked the earlier fire-and-forget clipboard write.
-                    navigator.clipboard.writeText(this.finalizeSummaryText)
-                        .then(() => { this.finalizeClipboardOk = true; })
-                        .catch(err => console.error('Clipboard failed', err));
-                },
-
-                openMessengerNow() {
-                    if (this.inAppWebview) {
-                        // Inside Facebook's or Messenger's own in-app browser: popups
-                        // and custom schemes don't get handled there, but a plain
-                        // https link on Facebook's own m.me domain does.
-                        window.location.href = "https://m.me/cratedropcollective";
-                        return;
-                    }
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                    if (isIOS) {
-                        // Jumps straight into the existing thread — this is the
-                        // behavior that worked reliably in real mobile Safari.
-                        window.location.href = "fb-messenger://user-thread/745474078647634";
-                    } else {
-                        // New tab keeps this finalize screen open behind it, so
-                        // nothing is lost if the Messenger app handoff doesn't fire.
-                        window.open("https://m.me/cratedropcollective", "_blank");
-                    }
-                }
-            }
-        }
-    </script>
+load();
+</script>
 </body>
 </html>
