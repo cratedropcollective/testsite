@@ -184,6 +184,11 @@
                             </template>
                         </div>
 
+                        <p x-show="!product.soldOut && product.available !== null"
+                           class="text-[10px] font-mono font-bold uppercase tracking-wider mb-2"
+                           :class="product.available <= 3 ? 'text-brandred' : 'text-steel'"
+                           x-text="product.available <= 3 ? 'Only ' + product.available + ' left' : product.available + ' in stock'"></p>
+
                         <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-3">
                             <div class="flex items-center border border-gray-300 px-1 h-7 bg-gray-50">
                                 <button @click="if(product.selectedQty > 1) product.selectedQty--" class="text-gray-500 px-2 font-bold">-</button>
@@ -314,10 +319,9 @@
             cart: [],
             products: [],
 
-            // --- CONFIG: fill these in once you've set up the Holds tab + Apps Script (see setup steps) ---
+            // --- CONFIG: fill these in (see setup steps) ---
             productsTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=0&single=true&output=tsv',
-            holdsTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=936943975&single=true&output=tsv',
-            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbxMxhXmuBvQBOX0r-0KZRCyNtv4VO9vXMhQPhx8_TFpOWiuNcdMihiHDFzT29cEDJaiPw/exec',
+            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbyIfiMzgq7aG34CYaEImV2mgC3xSEza-_9wUoexuLoKjhQVysNR0HS8S95unZiEoGS2fw/exec', // live stock + holds (GET) and checkout holds (POST)
 
             // --- FETCH & PARSE TSV ---
             async init() {
@@ -328,80 +332,74 @@
                     return parseFloat(cleaned) || 0;
                 };
 
-                const parseTSV = (text) => {
-                    const rows = text.split('\n').filter(row => row.trim() !== '');
-                    if (rows.length === 0) return [];
-                    const headers = rows[0].split('\t').map(h => h.trim().toLowerCase());
-                    return rows.slice(1).map(row => {
-                        const values = row.split('\t');
-                        let obj = {};
-                        headers.forEach((h, i) => { obj[h] = values[i]?.trim(); });
-                        return obj;
-                    });
-                };
-
                 try {
-                    const [productsRes, holdsRes] = await Promise.all([
-                        fetch(this.productsTsvUrl),
-                        // A missing/unset Holds sheet shouldn't break the whole page —
-                        // fall back to "no holds" if this fetch fails.
-                        fetch(this.holdsTsvUrl).catch(() => null)
-                    ]);
+                    const response = await fetch(this.productsTsvUrl);
+                    const data = await response.text();
 
-                    const productRows = parseTSV(await productsRes.text());
+                    const rows = data.split('\n').filter(row => row.trim() !== '');
+                    const headers = rows[0].split('\t').map(h => h.trim().toLowerCase()); // Force headers to lowercase
 
-                    let holdRows = [];
-                    if (holdsRes && holdsRes.ok) {
-                        holdRows = parseTSV(await holdsRes.text());
-                    }
+                    this.products = rows.slice(1).map((row, index) => {
+                        const values = row.split('\t');
+                        let p = {};
+                        headers.forEach((header, i) => {
+                            p[header] = values[i]?.trim();
+                        });
 
-                    // "Today" in the shop's local time zone — unpaid (pending) holds
-                    // from a previous day are treated as expired and no longer count
-                    // against stock. Paid holds always count.
-                    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-                    const committedMap = {}; // productId (raw sheet string) -> qty still held
-
-                    holdRows.forEach(h => {
-                        const status = (h.status || '').toLowerCase().trim();
-                        const pid = (h.productid || '').trim();
-                        const qty = parseInt(h.qty) || 0;
-                        if (!pid || !qty) return;
-
-                        let holdDateStr = '';
-                        try {
-                            holdDateStr = new Date(h.timestamp).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
-                        } catch (e) { /* leave blank if unparsable */ }
-
-                        const stillActive = status === 'paid' || (status === 'pending' && holdDateStr === todayStr);
-                        if (stillActive) committedMap[pid] = (committedMap[pid] || 0) + qty;
-                    });
-
-                    this.products = productRows.map((p, index) => {
                         // Stock tracking is opt-in per product: leave the "stock" cell
-                        // blank in the sheet and it behaves exactly as before (unlimited).
+                        // blank in the sheet and it behaves as before (unlimited).
                         const hasStock = p.stock !== undefined && p.stock !== '';
                         const stockCount = hasStock ? cleanNumber(p.stock) : null;
-                        const committedQty = committedMap[(p.id || '').trim()] || 0;
-                        const available = stockCount !== null ? Math.max(0, stockCount - committedQty) : null;
+                        const manualSoldOut = p.soldout?.toLowerCase() === 'true';
 
                         return {
                             id: parseInt(p.id) || index,
+                            sheetId: (p.id || '').trim(), // exact id text from the sheet; used to match holds
                             name: p.name,
                             category: p.category,
                             type: p.type,
                             set: p.set,
                             price: cleanNumber(p.price),
-                            originalPrice: p.originalprice ? cleanNumber(p.originalprice) : null, // Note: originalprice is now lowercase
+                            originalPrice: p.originalprice ? cleanNumber(p.originalprice) : null,
                             image: p.image,
                             stock: stockCount,
-                            available: available, // null = not stock-tracked (unlimited)
-                            soldOut: p.soldout?.toLowerCase() === 'true' || available === 0, // Note: soldout is now lowercase
+                            available: stockCount !== null ? Math.max(0, stockCount) : null, // null = not tracked (unlimited)
+                            manualSoldOut: manualSoldOut,
+                            soldOut: manualSoldOut || (stockCount !== null && stockCount <= 0),
                             selectedQty: 1,
                             justAdded: false
                         };
                     });
                 } catch (error) {
                     console.error("Error loading inventory:", error);
+                    return;
+                }
+
+                // Overlay live availability (stock minus active holds) and keep it fresh.
+                await this.refreshAvailability();
+                setInterval(() => this.refreshAvailability(), 60000);
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden) this.refreshAvailability();
+                });
+            },
+
+            // Live "stock minus holds" from the Apps Script (not subject to publish caching).
+            // If it can't be reached, cards fall back to the raw stock number from the sheet.
+            async refreshAvailability() {
+                try {
+                    const res = await fetch(this.holdsEndpoint);
+                    const data = await res.json();
+                    if (!data || !data.ok) return;
+                    this.products.forEach(p => {
+                        if (p.stock === null) return;
+                        const live = data.available[p.sheetId];
+                        if (live !== undefined) {
+                            p.available = Math.max(0, live);
+                            p.soldOut = p.manualSoldOut || p.available <= 0;
+                        }
+                    });
+                } catch (err) {
+                    console.error('Live availability unavailable, using sheet stock:', err);
                 }
             },
 
@@ -493,22 +491,20 @@
             },
 
             async confirmAndRedirect() {
-                // 0. Record a stock hold for this checkout (Pending — becomes permanent
-                // once you mark it Paid in the Holds sheet, otherwise auto-releases at
-                // end of day). If this fails, checkout still proceeds — your manual
-                // payment verification against the bank account remains the backstop.
-                if (this.cart.length > 0) {
-                    try {
-                        await fetch(this.holdsEndpoint, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
-                            body: JSON.stringify({
-                                items: this.cart.map(i => ({ id: i.id, qty: i.quantity }))
-                            })
-                        });
-                    } catch (err) {
-                        console.error('Could not record stock hold (checkout still proceeds):', err);
-                    }
+                // 0. Record a stock hold for this checkout (Pending). Fired in the background
+                // (not awaited) so the clipboard copy and Messenger redirect still happen
+                // inside the customer's tap. keepalive lets it finish even if the page navigates.
+                // If it fails, checkout still proceeds; your manual payment check is the backstop.
+                if (this.cart.length > 0 && !this.holdsEndpoint.startsWith('PASTE_')) {
+                    fetch(this.holdsEndpoint, {
+                        method: 'POST',
+                        keepalive: true,
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
+                        body: JSON.stringify({
+                            items: this.cart.map(i => ({ id: i.sheetId, qty: i.quantity }))
+                        })
+                    }).then(() => this.refreshAvailability())
+                      .catch(err => console.error('Could not record stock hold (checkout still proceeds):', err));
                 }
 
                 // 1. Generate and Copy the Order Summary (FIXED FOR IN-STOCK PRODUCTS)
