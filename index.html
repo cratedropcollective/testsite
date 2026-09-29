@@ -247,6 +247,13 @@
             </div>
 
             <div class="mt-6 pt-6 border-t-2 border-gray-100 space-y-4" x-show="cart.length > 0">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-steel mb-1 tracking-wider">Facebook Name <span class="text-brandred">*</span></label>
+                    <input type="text" x-model="clientFacebookName" placeholder="e.g. Juan Dela Cruz"
+                           class="w-full p-2.5 bg-gray-50 border border-gray-300 text-xs font-bold outline-none focus:ring-2 focus:ring-brandblue panel-cut-sm">
+                    <p class="text-[9px] text-steel mt-1">So we can match your order to your Messenger thread.</p>
+                </div>
+
                 <div class="bg-gray-50 p-3 border border-dashed border-gray-300">
                     <div class="flex justify-between text-sm font-black text-brandred uppercase"><span>Total Amount:</span><span>₱<span x-text="cartTotal"></span></span></div>
                 </div>
@@ -312,6 +319,7 @@
         return {
             // --- INITIAL STATE ---
             cartOpen: false,
+            clientFacebookName: '',
             paymentModalOpen: false,
             searchQuery: '',
             sortOrder: 'newest',
@@ -485,12 +493,23 @@
                 if (item.quantity <= 0) this.cart.splice(index, 1);
             },
 
+            validateCheckout() {
+                if (!this.clientFacebookName.trim()) {
+                    alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
+                    return false;
+                }
+                return true;
+            },
+
             checkoutSelf() {
+                if (!this.validateCheckout()) return;
                 this.cartOpen = false;
                 this.paymentModalOpen = true;
             },
 
             async confirmAndRedirect() {
+                if (!this.validateCheckout()) return;
+
                 // 0. Record a stock hold for this checkout (Pending). Fired in the background
                 // (not awaited) so the clipboard copy and Messenger redirect still happen
                 // inside the customer's tap. keepalive lets it finish even if the page navigates.
@@ -501,14 +520,16 @@
                         keepalive: true,
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
                         body: JSON.stringify({
-                            items: this.cart.map(i => ({ id: i.sheetId, qty: i.quantity }))
+                            customerName: this.clientFacebookName,
+                            items: this.cart.map(i => ({ id: i.sheetId, name: i.name, qty: i.quantity }))
                         })
                     }).then(() => this.refreshAvailability())
                       .catch(err => console.error('Could not record stock hold (checkout still proceeds):', err));
                 }
 
                 // 1. Generate and Copy the Order Summary (FIXED FOR IN-STOCK PRODUCTS)
-                let summary = "🛒 ORDER SUMMARY\n-----------------\n";
+                let summary = "🛒 ORDER SUMMARY\n";
+                summary += `FB Name: ${this.clientFacebookName}\n-----------------\n`;
                 this.cart.forEach(i => {
                     summary += `• ${i.quantity}x ${i.name}\n  Price: ₱${(i.price * i.quantity).toLocaleString()}\n\n`;
                 });
