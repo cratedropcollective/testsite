@@ -321,7 +321,7 @@
 
             // --- CONFIG: fill these in (see setup steps) ---
             productsTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=0&single=true&output=tsv',
-            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbyIfiMzgq7aG34CYaEImV2mgC3xSEza-_9wUoexuLoKjhQVysNR0HS8S95unZiEoGS2fw/exec', // live stock + holds (GET) and checkout holds (POST)
+            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbyIfiMzgq7aG34CYaEImV2mgC3xSEza-_9wUoexuLoKjhQVysNR0HS8S95unZiEoGS2fw/exec', // live stock (GET) and checkout holds (POST)
 
             // --- FETCH & PARSE TSV ---
             async init() {
@@ -375,7 +375,7 @@
                     return;
                 }
 
-                // Overlay live availability (stock minus active holds) and keep it fresh.
+                // Overlay the live stock count (pending holds are already taken out of it) and keep it fresh.
                 await this.refreshAvailability();
                 setInterval(() => this.refreshAvailability(), 60000);
                 document.addEventListener('visibilitychange', () => {
@@ -383,7 +383,7 @@
                 });
             },
 
-            // Live "stock minus holds" from the Apps Script (not subject to publish caching).
+            // Live stock from the Apps Script (not subject to publish caching).
             // If it can't be reached, cards fall back to the raw stock number from the sheet.
             async refreshAvailability() {
                 try {
