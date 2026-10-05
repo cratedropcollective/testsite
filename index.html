@@ -456,15 +456,19 @@
 
             // Pill order: "All Products" and "On Sale" pinned first, then whatever
             // order the Categories sheet lists (row order = left-to-right), then any
-            // category not listed there, appended alphabetically so nothing goes missing.
+            // category not listed there, appended alphabetically. Every category shows
+            // up regardless of stock/sold-out status — including ones listed in the
+            // Categories sheet with no products yet — so nothing disappears or needs
+            // re-adding later. Clicking into an empty one just shows "No products found".
             get availableCategories() {
                 const cats = new Set();
                 this.products.forEach(p => {
-                    if (p.category && !p.soldOut) cats.add(p.category);
+                    if (p.category) cats.add(p.category);
                 });
+                this.categoryOrder.forEach(name => cats.add(name));
 
                 const result = ['All Products'];
-                if (this.products.some(p => p.originalPrice && !p.soldOut)) {
+                if (this.products.some(p => p.originalPrice)) {
                     result.push('On Sale');
                 }
 
