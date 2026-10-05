@@ -89,6 +89,26 @@
         </div>
     </nav>
 
+    <!-- Category Nav -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="container mx-auto">
+            <div class="flex overflow-x-auto no-scrollbar divide-x divide-gray-100">
+                <template x-for="cat in availableCategories" :key="cat">
+                    <button @click="currentCategory = cat"
+                            class="flex flex-col items-center justify-start gap-2 shrink-0 w-24 md:w-28 px-3 py-3 border-b-2 transition-colors"
+                            :class="currentCategory === cat ? 'border-brandred bg-gray-50' : 'border-transparent hover:bg-gray-50'">
+                        <div class="h-10 md:h-12 w-full flex items-center justify-center">
+                            <img x-show="categoryLogos[cat]" :src="categoryLogos[cat]" class="max-h-full max-w-full object-contain">
+                            <i x-show="!categoryLogos[cat]" class="fas fa-layer-group text-gray-300 text-lg"></i>
+                        </div>
+                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight"
+                              :class="currentCategory === cat ? 'text-brandred' : 'text-steel'" x-text="cat"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero -->
     <section class="bg-ink text-white relative overflow-hidden">
         <div class="container mx-auto px-4 py-10 md:py-14 text-center relative z-10">
@@ -122,19 +142,6 @@
                     <option value="high">Price: High to Low</option>
                 </select>
                 <i class="fas fa-chevron-down absolute right-4 top-3 text-gray-400 text-[10px] pointer-events-none"></i>
-            </div>
-        </div>
-
-        <div class="container mx-auto mt-2">
-            <div class="flex flex-wrap gap-2 px-4 py-3">
-                <template x-for="cat in availableCategories" :key="cat">
-                    <button @click="currentCategory = cat"
-                            :class="currentCategory === cat ? 'bg-brandred text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all flex items-center">
-                        <span x-text="cat"></span>
-                        <span class="ml-2 opacity-60 text-[9px]" x-text="`(${getCategoryCount(cat)})`"></span>
-                    </button>
-                </template>
             </div>
         </div>
     </div>
@@ -328,8 +335,11 @@
             products: [],
 
             // --- CONFIG: fill these in (see setup steps) ---
-            productsTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=0&single=true&output=tsv',
-            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbyIfiMzgq7aG34CYaEImV2mgC3xSEza-_9wUoexuLoKjhQVysNR0HS8S95unZiEoGS2fw/exec', // live stock (GET) and checkout holds (POST)
+            productsTsvUrl: 'PASTE_YOUR_NEW_PRODUCTS_TSV_LINK_HERE',
+            holdsEndpoint: 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_EXEC_URL_HERE', // live stock (GET) and checkout holds (POST)
+            categoriesTsvUrl: 'PASTE_YOUR_CATEGORIES_TSV_LINK_HERE', // optional — leave as-is to fall back to alphabetical order, no logos
+            categoryOrder: [],  // filled from the Categories sheet, top-to-bottom row order = left-to-right order
+            categoryLogos: {},  // filled from the Categories sheet: { 'Pokemon TCG': 'https://...' }
 
             // --- FETCH & PARSE TSV ---
             async init() {
@@ -341,7 +351,10 @@
                 };
 
                 try {
-                    const response = await fetch(this.productsTsvUrl);
+                    const [response, catResponse] = await Promise.all([
+                        fetch(this.productsTsvUrl),
+                        fetch(this.categoriesTsvUrl).catch(() => null) // optional — a missing/unset tab just falls back to alphabetical
+                    ]);
                     const data = await response.text();
 
                     const rows = data.split('\n').filter(row => row.trim() !== '');
@@ -378,6 +391,26 @@
                             justAdded: false
                         };
                     });
+
+                    // Category display order (optional — see setup steps).
+                    // Row order in the sheet becomes left-to-right pill order.
+                    if (catResponse && catResponse.ok) {
+                        const catText = await catResponse.text();
+                        const catRows = catText.split('\n').filter(row => row.trim() !== '');
+                        if (catRows.length > 1) {
+                            const catHeaders = catRows[0].split('\t').map(h => h.trim().toLowerCase());
+                            const nameIdx = catHeaders.indexOf('category');
+                            const imgIdx = catHeaders.indexOf('image');
+                            catRows.slice(1).forEach(row => {
+                                const vals = row.split('\t');
+                                const name = nameIdx >= 0 ? (vals[nameIdx] || '').trim() : '';
+                                if (!name) return;
+                                this.categoryOrder.push(name);
+                                const img = imgIdx >= 0 ? (vals[imgIdx] || '').trim() : '';
+                                if (img) this.categoryLogos[name] = img;
+                            });
+                        }
+                    }
                 } catch (error) {
                     console.error("Error loading inventory:", error);
                     return;
@@ -421,16 +454,23 @@
                 return this.cart.reduce((sum, item) => sum + item.quantity, 0);
             },
 
+            // Pill order: "All Products" and "On Sale" pinned first, then whatever
+            // order the Categories sheet lists (row order = left-to-right), then any
+            // category not listed there, appended alphabetically so nothing goes missing.
             get availableCategories() {
                 const cats = new Set();
                 this.products.forEach(p => {
                     if (p.category && !p.soldOut) cats.add(p.category);
                 });
+
                 const result = ['All Products'];
                 if (this.products.some(p => p.originalPrice && !p.soldOut)) {
                     result.push('On Sale');
                 }
-                return result.concat(Array.from(cats).sort());
+
+                const ordered = this.categoryOrder.filter(name => cats.has(name));
+                const leftover = Array.from(cats).filter(name => !this.categoryOrder.includes(name)).sort();
+                return result.concat(ordered, leftover);
             },
 
             get filteredProducts() {
