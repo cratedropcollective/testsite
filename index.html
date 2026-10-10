@@ -312,10 +312,16 @@ details[open] .chev{transform:rotate(180deg)}
    "Anyone with the link -> Viewer". Leave '' to use only the backup
    content in the SITE object further down.
    =================================================================== */
-const SHEET_ID = 'https://docs.google.com/spreadsheets/d/1A_gvFv5OV-0U4fUfE0DDMUEJp3tMg-Ayc7awzb-AfuA/';
+const SHEET_ID = 'https://docs.google.com/spreadsheets/d/1A_gvFv5OV-0U4fUfE0DDMUEJp3tMg-Ayc7awzb-AfuA';
 
 /* Tab names in your sheet. Only change these if you rename the tabs. */
 const TABS = { settings:'Settings', banners:'Banners', brands:'Brands', games:'Games', trust:'Trust', faq:'FAQ' };
+
+/* OPTIONAL backup method (the same way your other pages read their sheet):
+   In the sheet choose File > Share > Publish to web, pick ONE tab, choose
+   "Tab-separated values (.tsv)" or "Comma-separated values (.csv)", click Publish,
+   and paste the link for that tab below. A tab with a link here uses it instead of SHEET_ID. */
+const SHEET_URLS = { settings:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=483730859&single=true&output=tsv', banners:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=1478195071&single=true&output=tsv', brands:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=469983361&single=true&output=tsv', games:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=2037629836&single=true&output=tsv', trust:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=851837178&single=true&output=tsv', faq:'https://docs.google.com/spreadsheets/d/e/2PACX-1vSX0U2ymaY_q7htOO_e0hSPN5yCZ7J1DNjsD87gE4uSKdh5O1EKzfM9PlxtSdzXrvyUiaklbxcHuj20/pub?gid=1257582249&single=true&output=tsv' };
 
 /* ===================================================================
    BACKUP CONTENT (used until the sheet loads, or if it can't be reached).
@@ -569,32 +575,91 @@ function render(site) {
 }
 
 /* ---------------- Google Sheet loading ---------------- */
-function parseCSV(t) {
+const PAGE_VERSION = 'v3 - 2026-10-11';
+/* Add ?debug=1 to the end of your page address to see a status panel (e.g. cratedropcollective.github.io/?debug=1) */
+const DEBUG = /[?&]debug(=|&|$)/.test(location.search);
+const dbgLines = [];
+function dbg(msg) {
+  dbgLines.push(msg);
+  if (!DEBUG) return;
+  let p = document.getElementById('dbgPanel');
+  if (!p) {
+    p = document.createElement('pre'); p.id = 'dbgPanel';
+    p.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99999;max-width:calc(100vw - 16px);max-height:60vh;overflow:auto;background:rgba(0,0,0,.88);color:#9f9;font:11px/1.45 monospace;padding:10px;border-radius:6px;white-space:pre-wrap;word-break:break-all';
+    document.body.appendChild(p);
+  }
+  p.textContent = dbgLines.join('\n');
+}
+
+/* SHEET_ID may be the bare ID or the whole sheet address: both work */
+const SHEET_KEY = (() => { const m = String(SHEET_ID || '').match(/\/d\/([\w-]+)/); return m ? m[1] : String(SHEET_ID || '').trim(); })();
+
+function parseCSV(t, d = ',') {
   const rows = []; let row = [], f = '', q = false;
   for (let i = 0; i < t.length; i++) {
     const c = t[i];
     if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
     else if (c === '"') q = true;
-    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === d) { row.push(f); f = ''; }
     else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
     else f += c;
   }
   if (f !== '' || row.length) { row.push(f); rows.push(row); }
   return rows;
 }
-function toObjects(rows) {
-  const head = rows[0].map(h => h.trim().toLowerCase());
-  return rows.slice(1).filter(r => r.some(c => c.trim() !== '')).map(r => { const o = {}; head.forEach((h, i) => o[h] = (r[i] || '').trim()); return o; });
+/* Finds the header row (it should be row 1, but Google sometimes shifts it) and returns the rows from there */
+function withHeader(rows, req) {
+  for (let i = 0; i < Math.min(rows.length, 3); i++) if (rows[i].some(h => String(h).trim().toLowerCase() === req)) return rows.slice(i);
+  return null;
 }
-async function loadTab(name, requiredHeader) {
-  const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(name)}`;
+function toObjects(rows) {
+  const head = rows[0].map(h => String(h).trim().toLowerCase());
+  return rows.slice(1).filter(r => r.some(c => String(c).trim() !== '')).map(r => { const o = {}; head.forEach((h, i) => o[h] = String(r[i] ?? '').trim()); return o; });
+}
+function tableToRows(t) {
+  const cols = t.cols.map(c => c.label || '');
+  const rows = t.rows.map(r => (r.c || []).map(c => c ? (c.f != null ? c.f : (c.v != null ? c.v : '')) : ''));
+  return [cols, ...rows];
+}
+async function fetchText(url) {
   const r = await fetch(url, { cache: 'no-store' });
-  if (!r.ok) throw new Error(name + ' ' + r.status);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   const t = (await r.text()).replace(/^\uFEFF/, '');
-  if (/^\s*</.test(t)) throw new Error(name + ': sheet is not shared');
-  const rows = parseCSV(t);
-  if (!rows.length || !rows[0].map(h => h.trim().toLowerCase()).includes(requiredHeader)) throw new Error(name + ': tab or header not found');
-  return toObjects(rows);
+  if (/^\s*</.test(t)) throw new Error('got a web page instead of data (sheet not shared, or not a Google Sheet)');
+  return t;
+}
+/* Backup route that avoids browser cross-site rules: loads the data through a script tag */
+function jsonp(url) {
+  return new Promise((res, rej) => {
+    const cb = '__cdc' + Math.random().toString(36).slice(2), sc = document.createElement('script');
+    const clean = () => { delete window[cb]; sc.remove(); clearTimeout(tm); };
+    const tm = setTimeout(() => { clean(); rej(new Error('no response (sheet not shared, or blocked)')); }, 10000);
+    window[cb] = d => { clean(); d && d.status === 'ok' ? res(d) : rej(new Error('Google said: ' + JSON.stringify((d && d.errors) || d).slice(0, 160))); };
+    sc.onerror = () => { clean(); rej(new Error('script blocked')); };
+    sc.src = url + '&tqx=out:json;responseHandler:' + cb;
+    document.head.appendChild(sc);
+  });
+}
+async function loadTab(key, name, req) {
+  const fails = []; let rows = null, how = '';
+  const custom = (SHEET_URLS[key] || '').trim();
+  if (custom) {
+    try { rows = parseCSV(await fetchText(custom), /output=tsv|\.tsv(\?|$)/i.test(custom) ? '\t' : ','); how = 'published link'; }
+    catch (e) { fails.push('published link: ' + e.message); }
+  }
+  if (!rows && SHEET_KEY) {
+    const base = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_KEY)}/gviz/tq?headers=1&sheet=${encodeURIComponent(name)}`;
+    try { rows = parseCSV(await fetchText(base + '&tqx=out:csv')); how = 'csv'; }
+    catch (e) { fails.push('csv: ' + e.message); }
+    if (!rows) {
+      try { rows = tableToRows((await jsonp(base)).table); how = 'script'; }
+      catch (e) { fails.push('script: ' + e.message); }
+    }
+  }
+  if (!rows) throw new Error(fails.join(' | ') || 'no sheet link set');
+  const fixed = withHeader(rows, req);
+  if (!fixed) throw new Error(`column "${req}" not found. First row was: ${(rows[0] || []).slice(0, 6).join(' | ') || '(empty)'}. Is the tab name "${name}" spelled exactly?`);
+  return { data: toObjects(fixed), how };
 }
 
 const isOn = r => !/^(no|false|0|off|hide|hidden)$/i.test((r.active || '').trim());
@@ -655,20 +720,29 @@ function merge(d) {
 
 (async function init() {
   const CACHE = 'cdc_sheet_v2';
+  dbg('Page version: ' + PAGE_VERSION);
   let cached = null;
   try { cached = JSON.parse(localStorage.getItem(CACHE) || 'null'); } catch (e) {}
-  render(merge(cached || {}));            /* instant: cached sheet data, or backup content */
-  if (!SHEET_ID) return;
+  dbg('Saved copy of sheet data: ' + (cached ? Object.keys(cached).join(', ') : 'none'));
+  const draw = d => { try { render(merge(d)); } catch (e) { dbg('PAGE ERROR while drawing: ' + e.message); console.error(e); } };
+  draw(cached || {});                     /* instant: saved sheet data, or backup content */
+
+  const hasUrls = Object.values(SHEET_URLS).some(v => String(v || '').trim());
+  if (!SHEET_KEY && !hasUrls) { dbg('SHEET_ID is EMPTY in this file, so only the built-in default content is shown. Paste your Sheet ID into const SHEET_ID near the top of the script.'); return; }
+  dbg(SHEET_KEY ? `Sheet ID in use: ${SHEET_KEY.slice(0, 6)}...${SHEET_KEY.slice(-4)} (${SHEET_KEY.length} characters)` : 'No SHEET_ID, using SHEET_URLS only');
+  if (/^2PACX/i.test(SHEET_KEY)) dbg('WARNING: that ID looks like a "published" ID. Use the ID from the sheet\'s normal address bar (the part between /d/ and /edit).');
 
   const jobs = { settings: 'key', banners: 'title', brands: 'logo', games: 'name', trust: 'title', faq: 'question' };
   const out = {};
   await Promise.all(Object.entries(jobs).map(async ([k, hdr]) => {
-    try { out[k] = await loadTab(TABS[k], hdr); } catch (e) { console.warn('Sheet tab skipped:', e.message); }
+    try { const r = await loadTab(k, TABS[k], hdr); out[k] = r.data; dbg(`OK    ${TABS[k]}: ${r.data.length} rows (via ${r.how})`); }
+    catch (e) { console.warn('Sheet tab skipped:', TABS[k], e.message); dbg(`FAIL  ${TABS[k]}: ${e.message}`); }
   }));
-  if (!Object.keys(out).length) return;   /* sheet unreachable: keep what is on screen */
+  if (!Object.keys(out).length) { dbg('No tab could be read, so the page is showing ' + (cached ? 'the last saved' : 'the built-in default') + ' content.'); return; }
   const data = Object.assign({}, cached || {}, out);
   try { localStorage.setItem(CACHE, JSON.stringify(data)); } catch (e) {}
-  render(merge(data));
+  draw(data);
+  try { const m = merge(data); dbg(`Showing: ${m.banners.length} banners, ${m.games.items.length} games, ${m.brands.items.length} brands, community link ${m.community.link ? 'SET' : 'not set'}, games/brands layout = ${m.layout.games}/${m.layout.brands}`); } catch (e) {}
 })();
 </script>
 </body>
