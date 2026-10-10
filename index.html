@@ -1,660 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crate Drop Collective | Sealed Products</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              ink: '#14161C',
-              ink2: '#1F222B',
-              paper: '#F7F8FA',
-              steel: '#6B7280',
-              brandblue: '#2C5FAE',
-              brandred: '#E13239',
-              brandgold: '#FFC72C'
-            },
-            fontFamily: {
-              display: ['"Rajdhani"', 'sans-serif'],
-              body: ['"Poppins"', 'sans-serif'],
-              mono: ['"Space Mono"', 'monospace']
-            }
-          }
-        }
-      }
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        [x-cloak] { display: none !important; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        html, body { overflow-x: hidden; max-width: 100%; }
-        /* 'clip' blocks sideways overflow without turning body into a scroll container, which would break position: sticky */
-        @supports (overflow: clip) { html, body { overflow-x: clip; } }
-        body { font-family: 'Poppins', sans-serif; touch-action: pan-y; overscroll-behavior-x: none; }
-
-        .panel-cut { clip-path: polygon(0 14px, 14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%); }
-        .panel-cut-sm { clip-path: polygon(0 8px, 8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
-
-        .tag-slant { transform: skewX(-12deg); display: inline-block; }
-        .tag-slant > span { display: inline-block; transform: skewX(12deg); }
-
-        .signal-stripe { display: flex; height: 5px; width: 100%; }
-        .signal-stripe > div { flex: 1; transform: skewX(-25deg); margin: 0 -3px; }
-
-        .cta-shimmer { position: relative; overflow: hidden; }
-        .cta-shimmer::after {
-            content: "";
-            position: absolute; top: 0; left: -60%;
-            width: 40%; height: 100%;
-            background: linear-gradient(115deg, transparent, rgba(255,255,255,0.25), transparent);
-            transition: left 0.6s ease;
-        }
-        .cta-shimmer:hover::after { left: 130%; }
-
-        /* Category scroll hint */
-        @keyframes nudgeR { 0%,100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
-        @keyframes nudgeL { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
-        .cat-nudge-r { animation: nudgeR 1.6s ease-in-out infinite; }
-        .cat-nudge-l { animation: nudgeL 1.6s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) { .cat-nudge-r, .cat-nudge-l { animation: none; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crate Drop Collective | Your Next Big Pull Starts Here</title>
+<meta name="description" content="Your home for TCG drops. Reserve upcoming Pokémon, One Piece, Gundam, Lorcana, Magic, and more TCG releases, or shop sealed products ready to ship.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{colors:{ink:'#14161C',ink2:'#1F222B',paper:'#F7F8FA',steel:'#6B7280',brandblue:'#2C5FAE',brandred:'#E13239',brandgold:'#FFC72C'},fontFamily:{display:['"Rajdhani"','sans-serif'],body:['"Poppins"','sans-serif'],mono:['"Space Mono"','monospace']}}}}
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Poppins:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Poppins',sans-serif}
+.panel-cut{clip-path:polygon(0 14px,14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%)}
+.panel-cut-sm{clip-path:polygon(0 8px,8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)}
+.tag-slant{transform:skewX(-12deg);display:inline-block}
+.tag-slant>span{display:inline-block;transform:skewX(12deg)}
+.signal-stripe{display:flex;height:5px;width:100%}
+.signal-stripe>div{flex:1;transform:skewX(-25deg);margin:0 -3px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #FFC72C;outline-offset:3px}
+.hero-bars{background:repeating-linear-gradient(115deg,transparent 0 46px,rgba(255,255,255,.035) 46px 92px)}
+.lift{transition:transform .25s,box-shadow .25s}
+.lift:hover{transform:translateY(-3px)}
+details>summary{list-style:none;cursor:pointer}
+details>summary::-webkit-details-marker{display:none}
+details[open] .chev{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
 </head>
-<body class="bg-paper font-body text-ink" x-data="shop()" x-cloak>
+<body class="bg-paper text-ink font-body">
 
-    <!-- Tri-color signature strip -->
-    <div class="signal-stripe">
-        <div class="bg-brandblue"></div>
-        <div class="bg-brandred"></div>
-        <div class="bg-brandgold"></div>
-    </div>
+<!--
+  ============ EDIT YOUR CONTENT HERE (bottom of file: SITE object) ============
+  announcement : thin bar above the header. Set text to '' to hide it.
+  banners      : first one is the big hero banner, the rest show in "Latest" below.
+                 Add an image URL to use a photo; leave image '' for a colour panel.
+-->
 
-    <nav id="topNav" class="bg-ink text-white p-4 sticky top-0 z-50 shadow-xl">
-        <div class="container mx-auto flex flex-wrap justify-between items-center gap-y-4">
-            <a href="https://cratedropcollective.github.io/" class="flex flex-col hover:opacity-80 transition-opacity shrink-0">
-                <span class="text-lg md:text-xl font-display font-bold tracking-tight leading-none uppercase">
-                    <span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span>
-                </span>
-            </a>
+<div id="announce" class="hidden"></div>
 
-            <div class="flex items-center space-x-1 md:space-x-3 order-last w-full justify-center md:w-auto md:order-none">
-                 <a href="https://cratedropcollective.github.io/" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Home</a>
-                 <a href="/products" class="text-[10px] md:text-xs font-bold text-ink bg-brandgold px-4 py-1.5 uppercase tracking-wider panel-cut-sm">Products</a>
-                 <a href="/preorder" class="text-[10px] md:text-xs font-bold text-gray-400 hover:text-white uppercase tracking-wider transition-colors px-3 py-1.5">Preorder</a>
-            </div>
+<div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
 
-            <button @click="cartOpen = true" class="bg-brandred hover:bg-red-600 px-4 py-2 panel-cut-sm flex items-center transition-all relative shrink-0">
-                <i class="fas fa-shopping-cart mr-2 text-xs text-white"></i>
-                <span class="font-bold text-xs text-white">₱<span x-text="cartTotal"></span></span>
-                <span x-show="cart.length > 0" class="absolute -top-1 -right-1 bg-brandgold text-ink text-[8px] font-bold w-4 h-4 flex items-center justify-center rounded-full border-2 border-ink" x-text="totalItems"></span>
-            </button>
-        </div>
+<header class="bg-ink text-white sticky top-0 z-50 shadow-xl">
+  <div class="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
+    <a href="/" class="font-display font-bold text-xl md:text-2xl tracking-tight leading-none uppercase shrink-0" aria-label="Crate Drop Collective home">
+      <span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-gray-300" aria-label="Main">
+      <a href="/preorder" class="px-3 py-2 hover:text-white">Preorders</a>
+      <a href="/products" class="px-3 py-2 hover:text-white">Ready stock</a>
+      <a href="#how" class="px-3 py-2 hover:text-white">How it works</a>
+      <a href="#faq" class="px-3 py-2 hover:text-white">FAQ</a>
     </nav>
+    <a data-messenger href="https://facebook.com/cratedropcollective" class="bg-brandgold text-ink text-[11px] font-bold uppercase tracking-wider px-4 py-2 panel-cut-sm hover:bg-yellow-300 shrink-0">
+      <i class="fab fa-facebook-messenger mr-1.5"></i>Message us
+    </a>
+  </div>
+</header>
 
-    <!-- Category Nav (sticky: stays under the top nav while scrolling) -->
-    <div id="catBar" class="bg-white border-b border-gray-200 sticky z-40 shadow-sm" style="top: var(--nav-h, 68px)">
-        <div class="container mx-auto relative">
-            <div x-ref="catScroll" @scroll.passive="updateCatFade()" class="flex overflow-x-auto no-scrollbar divide-x divide-gray-100">
-                <template x-for="cat in availableCategories" :key="cat">
-                    <button @click="currentCategory = cat; $el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })"
-                            class="flex flex-col items-center justify-start gap-1.5 md:gap-2 shrink-0 w-20 md:w-28 px-2 md:px-3 py-2 md:py-3 border-b-2 transition-colors"
-                            :class="currentCategory === cat ? 'border-brandred bg-gray-50' : 'border-transparent hover:bg-gray-50'">
-                        <div class="h-8 md:h-12 w-full flex items-center justify-center">
-                            <img x-show="categoryLogos[cat]" :src="categoryLogos[cat]" class="max-h-full max-w-full object-contain">
-                            <i x-show="!categoryLogos[cat]" class="fas fa-layer-group text-gray-300 text-lg"></i>
-                        </div>
-                        <span class="text-[9px] font-bold uppercase tracking-wide text-center leading-tight"
-                              :class="currentCategory === cat ? 'text-brandred' : 'text-steel'" x-text="cat"></span>
-                    </button>
-                </template>
-            </div>
+<!-- HERO -->
+<section class="bg-ink text-white relative overflow-hidden hero-bars">
+  <div class="container mx-auto px-4 py-12 md:py-20 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center relative z-10">
+    <div>
+      <h1 class="font-display font-bold uppercase leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
+        CHASE THE CARDS. CATCH THE DROP.
+      </h1>
+      <p class="mt-6 text-gray-300 text-sm md:text-base leading-relaxed max-w-md">
+        From the next big release to sealed products ready to ship, make your next TCG pickup count.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="/preorder" class="bg-brandred hover:bg-red-600 text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Browse preorders</a>
+        <a href="/products" class="border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Shop ready stock</a>
+      </div>
+    </div>
+    <div id="heroBanner"></div>
+  </div>
+</section>
+<div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
 
-            <!-- Scroll hints: fade + nudging chevron on whichever side has more categories -->
-            <div x-show="catFadeLeft" x-transition.opacity class="pointer-events-none absolute left-0 top-0 bottom-0 w-9 bg-gradient-to-r from-white via-white/80 to-transparent flex items-center pl-1.5">
-                <i class="fas fa-chevron-left text-[10px] text-gray-400 cat-nudge-l"></i>
-            </div>
-            <div x-show="catFadeRight" x-transition.opacity class="pointer-events-none absolute right-0 top-0 bottom-0 w-9 bg-gradient-to-l from-white via-white/80 to-transparent flex items-center justify-end pr-1.5">
-                <i class="fas fa-chevron-right text-[10px] text-gray-400 cat-nudge-r"></i>
-            </div>
+<!-- TRUST STRIP -->
+<section class="bg-white border-b border-gray-200" aria-label="Why shop with us">
+  <div class="container mx-auto px-4 py-6 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5" id="trust"></div>
+</section>
+
+<main>
+<!-- DESTINATIONS -->
+<section class="container mx-auto px-4 py-14 md:py-20">
+  <h2 class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">YOUR NEXT TCG PICKUP STARTS HERE.</h2>
+  <p class="mt-2 text-steel text-sm max-w-lg">Lock in upcoming drops or shop sealed products already in hand.</p>
+  <div class="mt-8 grid md:grid-cols-2 gap-6">
+    <a href="/preorder" class="lift group bg-ink text-white panel-cut p-8 md:p-10 flex flex-col justify-between min-h-[300px] hover:shadow-2xl">
+      <div>
+        <div class="tag-slant bg-brandgold"><span class="font-mono text-[9px] font-bold text-ink uppercase tracking-widest px-2 py-1">Open for reservation</span></div>
+        <h3 class="mt-5 font-display font-bold text-4xl uppercase tracking-tight">Preorders</h3>
+        <p class="mt-3 text-gray-400 text-sm leading-relaxed max-w-xs">Get ahead of the next release. Reserve your picks before preorder windows close.</p>
+      </div>
+      <div class="mt-8 flex items-end justify-between">
+        <p class="text-sm text-gray-300"><span class="font-display font-bold text-3xl text-brandgold">30%</span> down to reserve</p>
+        <span class="text-xs font-bold uppercase tracking-widest">Enter shop <i class="fas fa-arrow-right ml-1.5 text-brandgold group-hover:translate-x-1.5 transition-transform"></i></span>
+      </div>
+    </a>
+    <a href="/products" class="lift group bg-white border border-gray-200 panel-cut p-8 md:p-10 flex flex-col justify-between min-h-[300px] hover:shadow-2xl">
+      <div>
+        <div class="tag-slant bg-brandred"><span class="font-mono text-[9px] font-bold text-white uppercase tracking-widest px-2 py-1">In hand</span></div>
+        <h3 class="mt-5 font-display font-bold text-4xl uppercase tracking-tight">Ready stock</h3>
+        <p class="mt-3 text-steel text-sm leading-relaxed max-w-xs">Your next pickup, without the preorder wait. In-stock sealed products, ready to ship.</p>
+      </div>
+      <div class="mt-8 flex items-end justify-between">
+        <p class="text-sm text-steel"><span class="font-display font-bold text-3xl text-brandred">Now</span> no waiting on allocation</p>
+        <span class="text-xs font-bold uppercase tracking-widest">Enter shop <i class="fas fa-arrow-right ml-1.5 text-brandred group-hover:translate-x-1.5 transition-transform"></i></span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- LATEST BANNERS -->
+<section id="latestWrap" class="container mx-auto px-4 pb-14 md:pb-20 hidden">
+  <h2 class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">THE LATEST DROPS</h2>
+  <div id="latest" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+</section>
+
+<!-- GAMES -->
+<section class="bg-white border-y border-gray-200">
+  <div class="container mx-auto px-4 py-12">
+    <h2 class="font-display font-bold text-2xl md:text-3xl uppercase tracking-tight">FIND YOUR GAME</h2>
+    <ul id="games" class="mt-5 flex flex-wrap gap-2"></ul>
+  </div>
+</section>
+
+<!-- HOW IT WORKS (preorder flow diagram) -->
+<section id="how" class="container mx-auto px-4 py-14 md:py-20">
+  <div class="max-w-3xl mx-auto">
+  <h2 class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">FROM PREORDER TO YOUR DOOR</h2>
+  <p class="mt-2 text-sm text-steel max-w-lg">Choose your upcoming TCG releases here. We’ll guide you through confirmation, payment, and updates in Messenger.</p>
+  <!-- Legend -->
+  <div class="mt-6 flex flex-wrap gap-3 text-xs font-semibold">
+    <span class="inline-flex items-center gap-2 bg-ink text-white px-3 py-1.5"><i class="fas fa-globe"></i>On our website</span>
+    <span class="inline-flex items-center gap-2 bg-brandblue text-white px-3 py-1.5"><i class="fab fa-facebook-messenger"></i>In our Facebook page inbox</span>
+  </div>
+
+  <div class="mt-8 flex flex-col items-stretch">
+
+    <!-- Step 1 -->
+    <section class="bg-white border border-gray-200 border-l-8 border-l-ink panel-cut p-5">
+      <p class="text-[11px] font-bold text-steel flex items-center gap-2"><i class="fas fa-globe"></i>On our website &middot; Step 1</p>
+      <h3 class="mt-1 font-display font-bold text-2xl uppercase leading-tight">Choose your items</h3>
+      <p class="mt-1 text-sm text-steel">Add preorder items to your crate. You'll see the 30% downpayment for each one.</p>
+    </section>
+    <i class="fas fa-arrow-down text-steel text-lg text-center my-3" aria-hidden="true"></i>
+
+    <!-- Step 2 -->
+    <section class="bg-white border border-gray-200 border-l-8 border-l-ink panel-cut p-5">
+      <p class="text-[11px] font-bold text-steel flex items-center gap-2"><i class="fas fa-globe"></i>On our website &middot; Step 2</p>
+      <h3 class="mt-1 font-display font-bold text-2xl uppercase leading-tight">Enter your Facebook Name and tap checkout</h3>
+      <p class="mt-1 text-sm text-steel">Use the name on your Facebook profile so we can match your order to your Messenger chat. Then pick one:</p>
+
+      <div class="mt-4 grid sm:grid-cols-2 gap-3">
+        <div class="bg-paper border border-gray-200 p-4">
+          <p class="font-display font-bold text-lg uppercase"><i class="fab fa-facebook-messenger text-brandblue mr-1.5"></i>Assisted checkout</p>
+          <p class="mt-1 text-xs text-steel leading-relaxed">Your order text is copied for you. Messenger opens. Paste the order and send it.</p>
         </div>
+        <div class="bg-paper border border-gray-200 p-4">
+          <p class="font-display font-bold text-lg uppercase"><i class="fas fa-qrcode text-brandred mr-1.5"></i>Self-checkout (QR)</p>
+          <p class="mt-1 text-xs text-steel leading-relaxed">Pay the deposit using the QR code. Then send your order screenshot and proof of payment in Messenger.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Converging arrows -->
+    <div class="grid grid-cols-2 text-brandblue text-lg text-center my-3" aria-hidden="true">
+      <i class="fas fa-arrow-down"></i><i class="fas fa-arrow-down"></i>
     </div>
 
-    <!-- Hero — toggle with the showHero flag near the top of shop() to bring it back -->
-    <div x-show="showHero">
-        <section class="bg-ink text-white relative overflow-hidden">
-            <div class="container mx-auto px-4 py-10 md:py-14 text-center relative z-10">
-                <p class="font-mono text-[10px] tracking-[0.35em] text-brandgold uppercase mb-3">Ready Stock</p>
-                <h1 class="font-display text-4xl md:text-6xl font-bold leading-tight mb-3 uppercase tracking-tight">Grab And Go</h1>
-                <p class="text-gray-400 text-xs md:text-sm max-w-xl mx-auto font-medium">
-                    Everything below is in hand and ships now — no allocation, no waiting on distributor cuts. Full payment secures your order.
-                </p>
-            </div>
-            <div class="absolute -right-10 -bottom-10 w-56 h-56 border-8 border-brandblue/20 rotate-12 hidden md:block"></div>
-            <div class="absolute -left-10 -top-10 w-40 h-40 border-8 border-brandred/20 -rotate-12 hidden md:block"></div>
-        </section>
-        <div class="signal-stripe">
-            <div class="bg-brandblue"></div>
-            <div class="bg-brandred"></div>
-            <div class="bg-brandgold"></div>
+    <!-- Facebook inbox hub -->
+    <section class="bg-brandblue text-white panel-cut p-6 md:p-7 shadow-xl">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 shrink-0 rounded-full bg-white text-brandblue flex items-center justify-center text-2xl"><i class="fab fa-facebook-messenger"></i></div>
+        <div>
+          <p class="text-[11px] font-bold uppercase tracking-wider text-blue-100">Both options end here &middot; Step 3</p>
+          <h3 class="font-display font-bold text-2xl md:text-3xl uppercase leading-tight">Send it to our Facebook page inbox</h3>
+          <p class="mt-1 text-sm text-blue-100 leading-relaxed">Whichever checkout you pick, your order and proof of payment go to our Facebook page inbox. Facebook only lets us reply after you message us first, so sending your order starts the chat.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- Everything after: inbox -->
+    <div class="ml-6 md:ml-8 border-l-4 border-brandblue pl-5 md:pl-7 py-5 space-y-5">
+      <div class="relative bg-white border border-gray-200 border-l-8 border-l-brandblue panel-cut p-5">
+        <p class="text-[11px] font-bold text-brandblue flex items-center gap-2"><i class="fab fa-facebook-messenger"></i>In our Facebook page inbox &middot; Step 4</p>
+        <h3 class="mt-1 font-display font-bold text-2xl uppercase leading-tight">We confirm your deposit</h3>
+        <p class="mt-1 text-sm text-steel">We check your payment and reply in the chat to confirm your order.</p>
+      </div>
+      <div class="bg-white border border-gray-200 border-l-8 border-l-brandblue panel-cut p-5">
+        <p class="text-[11px] font-bold text-brandblue flex items-center gap-2"><i class="fab fa-facebook-messenger"></i>In our Facebook page inbox &middot; Step 5</p>
+        <h3 class="mt-1 font-display font-bold text-2xl uppercase leading-tight">We update you on allocation</h3>
+        <p class="mt-1 text-sm text-steel">Distributors decide allocation after orders are placed. We message you once your final quantity is confirmed.</p>
+      </div>
+      <div class="bg-white border border-gray-200 border-l-8 border-l-brandblue panel-cut p-5">
+        <p class="text-[11px] font-bold text-brandblue flex items-center gap-2"><i class="fab fa-facebook-messenger"></i>In our Facebook page inbox &middot; Step 6</p>
+        <h3 class="mt-1 font-display font-bold text-2xl uppercase leading-tight">Pay the balance and get shipping updates</h3>
+        <p class="mt-1 text-sm text-steel">When your items arrive, we message you the remaining balance. After you pay, we send shipping updates in the same chat.</p>
+      </div>
     </div>
+  </div>
 
-    <div id="searchBar" class="bg-white border-b border-gray-200 md:sticky z-30" style="top: calc(var(--nav-h, 68px) + var(--cat-h, 0px))">
-        <div class="pt-4 px-4 container mx-auto flex flex-col md:flex-row gap-3">
-            <div class="relative flex-1">
-                <input type="text" x-model="searchQuery" placeholder="Search products..."
-                       class="w-full pl-10 pr-4 py-2 bg-gray-100 border-none text-base md:text-sm focus:ring-2 focus:ring-brandblue outline-none panel-cut-sm">
-                <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-            </div>
-            <div class="relative min-w-[140px]">
-                <select x-model="sortOrder"
-                        class="w-full h-full pl-4 pr-10 py-2 bg-gray-100 border-none text-xs font-bold uppercase appearance-none focus:ring-2 focus:ring-brandblue outline-none cursor-pointer panel-cut-sm">
-                    <option value="newest">Latest</option>
-                    <option value="low">Price: Low to High</option>
-                    <option value="high">Price: High to Low</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-4 top-3 text-gray-400 text-[10px] pointer-events-none"></i>
-            </div>
-        </div>
+  <!-- Callout -->
+  <section class="mt-4 bg-ink text-white panel-cut p-6 md:p-7">
+    <h3 class="font-display font-bold text-2xl uppercase leading-tight"><i class="fas fa-bell text-brandgold mr-2"></i>Keep your Messenger on</h3>
+    <p class="mt-2 text-sm text-gray-300 leading-relaxed max-w-lg">All updates on your preorder come from our Facebook page. Message us from the same Facebook account you used for your order so we can find it fast.</p>
+    <div class="mt-5 flex flex-col sm:flex-row gap-3">
+      <a data-messenger href="https://facebook.com/cratedropcollective" class="bg-brandgold text-ink text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center"><i class="fab fa-facebook-messenger mr-2"></i>Message our page</a>
+      <a href="/preorder" class="border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Browse preorders</a>
     </div>
+  </section>
+  </div>
+</section>
 
-    <main class="container mx-auto py-6 px-2 md:px-4">
-        <div class="flex items-center justify-between mb-4 px-1">
-            <p class="font-display font-bold text-sm uppercase tracking-wide text-ink">In The Warehouse <span class="text-steel font-body font-normal text-xs">(<span x-text="filteredProducts.length"></span>)</span></p>
-            <div class="h-[3px] flex-1 ml-4 signal-stripe">
-                <div class="bg-brandblue/30"></div><div class="bg-brandred/30"></div><div class="bg-brandgold/30"></div>
-            </div>
-        </div>
+<!-- FAQ -->
+<section id="faq" class="bg-white border-t border-gray-200">
+  <div class="container mx-auto px-4 py-14 max-w-3xl">
+    <h2 class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">GOOD TO KNOW</h2>
+    <div id="faqList" class="mt-6 divide-y divide-gray-200 border-y border-gray-200"></div>
+  </div>
+</section>
+</main>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
-            <template x-for="product in filteredProducts" :key="product.id">
-                <div class="panel-cut bg-white border border-gray-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
-                     :class="product.soldOut ? 'opacity-70' : ''">
-
-                    <div class="relative aspect-square bg-[#F5F6F8] flex items-center justify-center p-4 overflow-hidden"
-                         :class="product.soldOut ? 'grayscale' : ''">
-                        <img :src="product.image" :alt="product.name"
-                             class="max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-500 hover:scale-105">
-
-                        <div x-show="!product.soldOut" class="absolute top-2 left-2 tag-slant bg-brandred">
-                            <span class="text-[8px] font-mono font-bold text-white px-2 py-0.5 uppercase tracking-widest" x-text="product.type"></span>
-                        </div>
-
-                        <template x-if="product.originalPrice && !product.soldOut">
-                            <div class="absolute top-2 right-2 tag-slant bg-brandgold animate-pulse">
-                                <span class="text-[8px] font-mono font-black text-ink px-2 py-0.5 uppercase tracking-widest">Sale</span>
-                            </div>
-                        </template>
-
-                        <div x-show="isLowStock(product)" class="absolute bottom-2 left-2 tag-slant bg-ink">
-                            <span class="flex items-center gap-1 text-[8px] font-mono font-bold text-brandgold px-2 py-0.5 uppercase tracking-widest">
-                                <span class="w-1.5 h-1.5 rounded-full bg-brandred animate-pulse"></span>Low Stock
-                            </span>
-                        </div>
-
-                        <span x-show="product.soldOut" class="absolute inset-0 flex items-center justify-center bg-ink/50 text-white font-display font-bold text-xs uppercase tracking-widest">Sold Out</span>
-                    </div>
-
-                    <div class="border-t border-b border-dashed border-gray-200 px-3 py-1.5 bg-gray-50">
-                        <p class="text-[9px] font-mono font-bold text-steel uppercase tracking-widest text-center" x-text="product.set"></p>
-                    </div>
-
-                    <div class="p-3 md:p-5 flex-1 flex flex-col">
-                        <h2 class="text-xs md:text-base font-semibold font-display leading-tight mb-2 h-8 md:h-12 overflow-hidden uppercase tracking-tight" x-text="product.name"></h2>
-
-                        <div class="flex items-baseline space-x-2 mb-3">
-                            <p class="text-sm md:text-xl font-display font-bold" :class="product.originalPrice ? 'text-brandred' : 'text-ink'">₱<span x-text="product.price.toLocaleString()"></span></p>
-                            <template x-if="product.originalPrice">
-                                <p class="text-[10px] md:text-xs text-gray-400 line-through font-bold">₱<span x-text="product.originalPrice.toLocaleString()"></span></p>
-                            </template>
-                        </div>
-
-                        <div x-show="!product.soldOut" class="flex items-center space-x-1 mb-3">
-                            <div class="flex items-center border border-gray-300 px-1 h-7 bg-gray-50">
-                                <button @click="if(product.selectedQty > 1) product.selectedQty--" class="text-gray-500 px-2 font-bold">-</button>
-                                <span class="text-[10px] md:text-xs font-bold w-4 text-center" x-text="product.selectedQty"></span>
-                                <button @click="if(product.available === null || product.selectedQty < product.available) product.selectedQty++" class="text-gray-500 px-2 font-bold" :class="(product.available !== null && product.selectedQty >= product.available) ? 'opacity-30 cursor-not-allowed' : ''">+</button>
-                            </div>
-                        </div>
-
-                        <button @click="addToCart(product)"
-                                :disabled="product.soldOut"
-                                :class="product.soldOut ? 'bg-gray-300' : (product.justAdded ? 'bg-emerald-600' : 'bg-brandred hover:bg-red-600 cta-shimmer')"
-                                class="w-full h-9 panel-cut-sm text-white transition-all text-[10px] md:text-xs font-bold flex items-center justify-center uppercase mt-auto tracking-wider">
-                            <span x-show="product.soldOut">Out of Stock</span>
-                            <span x-show="!product.soldOut && !product.justAdded">Add to Crate</span>
-                            <span x-show="!product.soldOut && product.justAdded"><i class="fas fa-check mr-1"></i> Added</span>
-                        </button>
-                    </div>
-                </div>
-            </template>
-        </div>
-
-        <div x-show="filteredProducts.length === 0" class="text-center py-20 text-gray-400">
-            <i class="fas fa-search mb-4 text-3xl"></i>
-            <p class="text-sm font-bold uppercase tracking-widest">No products found</p>
-        </div>
-    </main>
-
-    <div x-show="cartOpen" class="fixed inset-0 z-[60]" style="display: none;">
-        <div class="absolute inset-0 bg-ink/70 backdrop-blur-sm" @click="cartOpen = false" x-transition.opacity></div>
-        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-white p-6 overflow-y-auto flex flex-col shadow-2xl" x-transition:enter="transition ease-out duration-300 transform translate-x-full" x-transition:enter-end="translate-x-0">
-            <div class="flex justify-between items-center mb-6 border-b-2 border-brandgold pb-4">
-                <h2 class="text-xl font-display font-bold text-ink uppercase">Your Crate</h2>
-                <button @click="cartOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
-            </div>
-
-            <div class="flex-1 space-y-6">
-                <template x-for="(item, index) in cart" :key="index">
-                    <div class="flex items-start border-b border-gray-100 pb-4">
-                        <img :src="item.image" class="w-12 h-12 object-contain mr-4 bg-[#F5F6F8] p-1 border border-gray-200">
-                        <div class="flex-1">
-                            <p class="font-bold text-xs" x-text="item.name"></p>
-                            <p class="text-[9px] text-brandblue font-mono uppercase mb-2" x-text="item.set"></p>
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center border border-gray-300 h-6 bg-gray-50">
-                                    <button @click="updateCartQty(index, -1)" class="px-2 text-xs font-bold">-</button>
-                                    <span class="text-[10px] font-black w-6 text-center" x-text="item.quantity"></span>
-                                    <button @click="updateCartQty(index, 1)" class="px-2 text-xs font-bold">+</button>
-                                </div>
-                                <div class="text-right">
-                                    <span class="font-black text-xs">₱<span x-text="(item.price * item.quantity).toLocaleString()"></span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-
-            <div class="mt-6 pt-6 border-t-2 border-gray-100 space-y-4" x-show="cart.length > 0">
-                <div>
-                    <label class="block text-[10px] font-bold uppercase text-steel mb-1 tracking-wider">Facebook Name <span class="text-brandred">*</span></label>
-                    <input type="text" x-model="clientFacebookName" placeholder="e.g. Juan Dela Cruz"
-                           class="w-full p-2.5 bg-gray-50 border border-gray-300 text-xs font-bold outline-none focus:ring-2 focus:ring-brandblue panel-cut-sm">
-                    <p class="text-[9px] text-steel mt-1">So we can match your order to your Messenger thread.</p>
-                </div>
-
-                <div class="bg-gray-50 p-3 border border-dashed border-gray-300">
-                    <div class="flex justify-between text-sm font-black text-brandred uppercase"><span>Total Amount:</span><span>₱<span x-text="cartTotal"></span></span></div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-2">
-                    <button @click="confirmAndRedirect()" class="w-full bg-ink text-white py-3 panel-cut-sm font-black text-xs uppercase shadow hover:bg-ink2 transition-all tracking-wide">
-                        <i class="fab fa-facebook-messenger mr-2 text-brandgold"></i> Assisted Checkout (Paste Order in Messenger)
-                    </button>
-                    <button @click="checkoutSelf()" class="w-full bg-brandgold text-ink py-3 panel-cut-sm font-black text-xs uppercase shadow hover:brightness-95 transition-all tracking-wide">
-                        <i class="fas fa-qrcode mr-2"></i> Self-Checkout (Pay via QR)
-                    </button>
-                </div>
-            </div>
-        </div>
+<footer class="bg-ink text-gray-400">
+  <div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
+  <div class="container mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+    <div>
+      <p class="font-display font-bold text-xl uppercase tracking-tight leading-none"><span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span></p>
+      <p class="mt-2 text-xs">Your next big pull starts here. TCG preorders and sealed products, ready when you are.</p>
     </div>
+    <nav class="flex items-center gap-5 text-xs font-bold uppercase tracking-wider" aria-label="Footer">
+      <a href="/preorder" class="hover:text-white">Preorders</a>
+      <a href="/products" class="hover:text-white">Ready stock</a>
+      <a data-messenger href="https://facebook.com/cratedropcollective" class="hover:text-white" aria-label="Messenger"><i class="fab fa-facebook-messenger text-lg"></i></a>
+      <a id="igLink" href="#" class="hover:text-white hidden" aria-label="Instagram"><i class="fab fa-instagram text-lg"></i></a>
+    </nav>
+  </div>
+  <p class="text-center text-[10px] font-mono pb-6">&copy; <span id="yr">2026</span> Crate Drop Collective</p>
+</footer>
 
-    <div x-show="paymentModalOpen" class="fixed inset-0 z-[70]" style="display: none;">
-        <div class="absolute inset-0 bg-ink/85 backdrop-blur-sm" @click="paymentModalOpen = false" x-transition.opacity></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white p-6 shadow-2xl flex flex-col max-h-[90vh] panel-cut">
-            <div class="flex justify-between items-center mb-4 border-b-2 border-brandgold pb-4">
-                <div>
-                    <p class="font-mono text-[9px] text-brandred uppercase tracking-[0.25em] mb-0.5">Order Manifest</p>
-                    <h2 class="text-xl font-display font-bold text-ink uppercase">Order Summary</h2>
-                </div>
-                <button @click="paymentModalOpen = false" class="text-3xl text-steel hover:text-ink">&times;</button>
-            </div>
+<script>
+/* ===================== EDIT YOUR CONTENT HERE =====================
 
-            <div class="overflow-y-auto flex-1 no-scrollbar space-y-4">
-                <div class="bg-gray-50 p-4 border border-gray-200">
-                    <template x-for="item in cart">
-                        <div class="mb-3 pb-3 border-b border-gray-200 last:border-0 last:pb-0">
-                            <div class="flex justify-between text-xs font-bold">
-                                <span><span x-text="item.quantity"></span>x <span x-text="item.name"></span></span>
-                                <span>₱<span x-text="(item.price * item.quantity).toLocaleString()"></span></span>
-                            </div>
-                        </div>
-                    </template>
-                </div>
+  WHERE EACH THING APPEARS ON THE PAGE
+  ┌─────────────────────────────────────────────┐
+  │ [A] announcement  (thin gold bar, very top) │
+  │ header: logo | nav | Message us  [messenger]│
+  ├─────────────────────────────────────────────┤
+  │ HERO:  headline + buttons   │ [B] banners[0]│  <- big hero banner
+  ├─────────────────────────────────────────────┤
+  │ trust strip                  [trust]        │
+  │ Preorders / Ready stock cards               │
+  │ [C] banners[1], [2], ...  ("Latest" grid)   │  <- smaller banners
+  │ [games] chips · how it works · [faq]        │
+  │ footer: [instagram] [messenger]             │
+  └─────────────────────────────────────────────┘
 
-                <div class="p-4 bg-ink text-white text-center panel-cut-sm">
-                    <div class="text-[10px] font-bold uppercase text-brandgold mb-1">Total Amount Paid</div>
-                    <div class="text-3xl font-display font-black tracking-tight">₱<span x-text="cartTotal"></span></div>
-                </div>
+  WHERE TO PUT URLS
+  link      = the page a banner/bar opens when tapped.
+              Use '/preorder', '/products', or a full https:// link.
+  image     = the banner photo. Use a full https:// link, or a path to a
+              file in your repo, e.g. 'images/banner-1.jpg'.
+              Leave '' to show a colour panel instead of a photo.
+  instagram = your Instagram page link (icon stays hidden until set).
+  messenger = your Facebook / Messenger link (used by every Message button).
 
-                <div class="text-center py-6 px-4 border border-gray-200 relative mt-2">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brandgold text-ink text-[8px] font-black uppercase tracking-widest px-3 py-1 flex items-center gap-1 panel-cut-sm">
-                        <i class="fas fa-check-circle"></i> Payment Verified
-                    </div>
-                    <p class="text-[11px] text-steel mb-4 font-medium px-2 mt-2">Pay via Instapay. <strong class="text-ink">TAKE A SCREENSHOT</strong> of this screen and your payment receipt.</p>
-                    <img src="https://www.image2url.com/r2/default/images/1783494876265-bc690fba-d1e1-44bf-bd84-48323fc518aa.png" class="w-40 h-40 mx-auto border border-gray-200 p-1 bg-white">
-                    <p class="text-[10px] text-steel font-medium px-2 mt-4 pt-4 border-t border-dashed border-gray-300">Orders amounting to <strong class="text-ink">₱50,000</strong> and above may settle via <strong class="text-ink">Private Message</strong>.</p>
-                </div>
-            </div>
+  BEST IMAGE SIZES (images are cropped to fill, so keep the subject centred)
+  [B] Hero banner (banners[0])
+      Export at 1200 x 900 px (4:3). Shown about 600 x 400 on desktop and
+      full width x 320 on mobile. Keep key content in the top 55% and
+      centre 80%: the bottom-left holds the text overlay.
+  [C] "Latest" banners (banners[1] onward)
+      Export at 800 x 500 px (16:10). Shown about 400 x 220 on desktop,
+      full width x 220 on mobile. Keep key content in the top 60%.
+  For both: JPG or WebP, under 300 KB each, no text baked into the
+  image (the title/text/button are added by the page, over a dark fade).
 
-            <button @click="confirmAndRedirect()" class="w-full bg-brandred text-white py-4 panel-cut-sm font-black text-sm uppercase mt-4 shadow-lg cta-shimmer tracking-wide">
-                Send Proof to Messenger
-            </button>
-        </div>
-    </div>
+  TO ADD A BANNER: copy one { ... } line inside banners, paste it after
+  the last one, and change tag / title / text / link / cta / image.
+  ================================================================== */
+const SITE = {
+  messenger: 'https://facebook.com/cratedropcollective',
+  instagram: '',                       // [FOOTER] paste your Instagram URL here to show the icon
 
-    <script>
-    function shop() {
-        return {
-            // --- INITIAL STATE ---
-            cartOpen: false,
-            showHero: false, // flip to true to bring the hero banner back
-            clientFacebookName: '',
-            paymentModalOpen: false,
-            searchQuery: '',
-            sortOrder: 'newest',
-            currentCategory: 'All Products',
-            catFadeLeft: false,
-            catFadeRight: false,
-            lowStockThreshold: 3, // show the "Low Stock" tag when remaining units <= this number
-            cart: [],
-            products: [],
+  announcement: {                      // [A] gold bar at the very top. Set text to '' to hide it.
+                                       // link = where the bar's button goes
+    text: 'The next drop could be your next big pull. Preorders are open.',
+    link: '/preorder', cta: 'View preorders'
+  },
 
-            // --- CONFIG: fill these in (see setup steps) ---
-            productsTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=0&single=true&output=tsv',
-            holdsEndpoint: 'https://script.google.com/macros/s/AKfycbyIfiMzgq7aG34CYaEImV2mgC3xSEza-_9wUoexuLoKjhQVysNR0HS8S95unZiEoGS2fw/exec', // live stock (GET) and checkout holds (POST)
-            categoriesTsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcJoujvVGq3Prhwuyd0D7_N-fHQ1Vpj8OLvV51eh7c_fPXkmTuVqErBNtRk87MfnGWbtMekeZBONyT/pub?gid=59198118&single=true&output=tsv', // optional — leave as-is to fall back to alphabetical order, no logos
-            categoryOrder: [],  // filled from the Categories sheet, top-to-bottom row order = left-to-right order
-            categoryLogos: {},  // filled from the Categories sheet: { 'Pokemon TCG': 'https://...' }
+  banners: [                           // [B] 1st = hero banner (1200x900). [C] the rest = "Latest" cards (800x500).
+                                       // link = page it opens, image = photo URL ('' = colour panel)
+    { tag: 'Get ahead of the drop', title: 'Your next chase starts here', text: 'Reserve upcoming TCG releases before preorder windows close.', link: '/preorder', cta: 'Explore preorders', image: '', theme: 'red' },
+    { tag: 'In hand, ready to go', title: 'The wait is over', text: 'Shop sealed TCG products already in stock and ready to ship.', link: '/products', cta: 'Shop ready stock', image: '', theme: 'blue' },
+    { tag: 'Made for collectors', title: 'Every game. Every chase.', text: 'Explore TCGs for players, collectors, and the next big pull.', link: '/products', cta: 'Explore TCGs', image: '', theme: 'ink' }
+  ],
 
-            // --- FETCH & PARSE TSV ---
-            async init() {
-                // Keep the sticky bars stacked correctly: measure the real nav / category bar heights
-                // (the top nav wraps to two rows on mobile, so a fixed offset doesn't hold).
-                const root = document.documentElement;
-                const syncBars = () => {
-                    const nav = document.getElementById('topNav');
-                    const cat = document.getElementById('catBar');
-                    if (nav) root.style.setProperty('--nav-h', nav.offsetHeight + 'px');
-                    if (cat) root.style.setProperty('--cat-h', cat.offsetHeight + 'px');
-                    this.updateCatFade();
-                };
-                if (window.ResizeObserver) {
-                    const ro = new ResizeObserver(syncBars);
-                    ['topNav', 'catBar'].forEach(id => { const el = document.getElementById(id); if (el) ro.observe(el); });
-                }
-                window.addEventListener('resize', syncBars);
-                syncBars();
-                // Re-check the scroll hint whenever the category list changes (sheet loads after first paint)
-                this.$watch('availableCategories', () => this.$nextTick(() => this.updateCatFade()));
+  trust: [
+    { icon: 'fa-shield-halved', title: 'Clear payment terms', text: '30% to reserve, balance when it arrives' },
+    { icon: 'fa-boxes-stacked', title: 'Live stock counts', text: 'Ready-stock availability updates as items sell' },
+    { icon: 'fa-comments', title: 'Updates in one place', text: 'Every preorder update comes from our Facebook page' },
+    { icon: 'fa-receipt', title: 'Order summary every time', text: 'You get a record of what you ordered' }
+  ],
 
-                // Helper to remove commas/currency symbols before math
-                const cleanNumber = (val) => {
-                    if (!val) return 0;
-                    const cleaned = val.toString().replace(/[^0-9.-]+/g, "");
-                    return parseFloat(cleaned) || 0;
-                };
+  games: ['Pokémon TCG','One Piece TCG','Gundam TCG','Disney Lorcana','Magic: The Gathering','Dragon Ball Super Card Game','Riftbound','Final Fantasy TCG','Palworld TCG','Marvel TCG'],
 
-                try {
-                    const [response, catResponse] = await Promise.all([
-                        fetch(this.productsTsvUrl),
-                        fetch(this.categoriesTsvUrl).catch(() => null) // optional — a missing/unset tab just falls back to alphabetical
-                    ]);
-                    const data = await response.text();
+  faq: [
+    { q: 'What is the difference between preorder and ready stock?', a: 'Preorders are for upcoming releases and need a 30% downpayment. Ready-stock items are already with us, so you pay in full and we ship.' },
+    { q: 'Why is the final quantity not guaranteed on a preorder?', a: 'Distributors decide allocation after orders are placed. We confirm your final quantity as soon as the allocation lands.' },
+    { q: 'How do I pay?', a: 'Both checkout options go through our Facebook page inbox. Assisted checkout copies your order for you to paste in Messenger. Self-checkout lets you pay by QR, then you send your order screenshot and proof of payment in Messenger.' }
+  ]
+};
+/* ================================================================== */
 
-                    const rows = data.split('\n').filter(row => row.trim() !== '');
-                    const headers = rows[0].split('\t').map(h => h.trim().toLowerCase()); // Force headers to lowercase
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const themes = { red: 'bg-brandred text-white', blue: 'bg-brandblue text-white', ink: 'bg-ink2 text-white', gold: 'bg-brandgold text-ink' };
 
-                    this.products = rows.slice(1).map((row, index) => {
-                        const values = row.split('\t');
-                        let p = {};
-                        headers.forEach((header, i) => {
-                            p[header] = values[i]?.trim();
-                        });
+function bannerHTML(b, big) {
+  const bg = b.image ? 'bg-ink text-white' : (themes[b.theme] || themes.ink);
+  const img = b.image ? `<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent"></div>` : '';
+  return `<a href="${esc(b.link || '#')}" class="lift group relative overflow-hidden panel-cut flex flex-col justify-end ${bg} ${big ? 'min-h-[320px] lg:min-h-[400px] p-8' : 'min-h-[220px] p-6'} shadow-xl">
+    ${img}
+    <div class="relative z-10">
+      ${b.tag ? `<div class="tag-slant bg-brandgold mb-3"><span class="font-mono text-[9px] font-bold text-ink uppercase tracking-widest px-2 py-1">${esc(b.tag)}</span></div>` : ''}
+      <h3 class="font-display font-bold uppercase tracking-tight leading-none ${big ? 'text-4xl md:text-5xl' : 'text-2xl'}">${esc(b.title)}</h3>
+      ${b.text ? `<p class="mt-2 text-sm opacity-90 max-w-sm">${esc(b.text)}</p>` : ''}
+      ${b.cta ? `<span class="mt-4 inline-flex items-center text-xs font-bold uppercase tracking-widest">${esc(b.cta)} <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1.5 transition-transform"></i></span>` : ''}
+    </div></a>`;
+}
 
-                        // Stock tracking is opt-in per product: leave the "stock" cell
-                        // blank in the sheet and it behaves as before (unlimited).
-                        const hasStock = p.stock !== undefined && p.stock !== '';
-                        const stockCount = hasStock ? cleanNumber(p.stock) : null;
-                        const manualSoldOut = p.soldout?.toLowerCase() === 'true';
+(function render() {
+  const a = SITE.announcement;
+  if (a && a.text) {
+    const el = $('announce');
+    el.className = 'bg-brandgold text-ink text-xs font-semibold text-center px-4 py-2';
+    el.innerHTML = `${esc(a.text)} ${a.link ? `<a href="${esc(a.link)}" class="underline font-bold ml-1">${esc(a.cta || 'Learn more')}</a>` : ''}`;
+  }
+  document.querySelectorAll('[data-messenger]').forEach(l => l.href = SITE.messenger);
+  if (SITE.instagram) { const ig = $('igLink'); ig.href = SITE.instagram; ig.classList.remove('hidden'); }
 
-                        return {
-                            id: parseInt(p.id) || index,
-                            sheetId: (p.id || '').trim(), // exact id text from the sheet; used to match holds
-                            name: p.name,
-                            category: p.category,
-                            type: p.type,
-                            set: p.set,
-                            price: cleanNumber(p.price),
-                            originalPrice: p.originalprice ? cleanNumber(p.originalprice) : null,
-                            image: p.image,
-                            stock: stockCount,
-                            available: stockCount !== null ? Math.max(0, stockCount) : null, // null = not tracked (unlimited)
-                            manualSoldOut: manualSoldOut,
-                            soldOut: manualSoldOut || (stockCount !== null && stockCount <= 0),
-                            selectedQty: 1,
-                            justAdded: false
-                        };
-                    });
+  const [first, ...rest] = SITE.banners || [];
+  if (first) $('heroBanner').innerHTML = bannerHTML(first, true);
+  if (rest.length) { $('latestWrap').classList.remove('hidden'); $('latest').innerHTML = rest.map(b => bannerHTML(b, false)).join(''); }
 
-                    // Category display order (optional — see setup steps).
-                    // Row order in the sheet becomes left-to-right pill order.
-                    if (catResponse && catResponse.ok) {
-                        const catText = await catResponse.text();
-                        const catRows = catText.split('\n').filter(row => row.trim() !== '');
-                        if (catRows.length > 1) {
-                            const catHeaders = catRows[0].split('\t').map(h => h.trim().toLowerCase());
-                            const nameIdx = catHeaders.indexOf('category');
-                            const imgIdx = catHeaders.indexOf('image');
-                            catRows.slice(1).forEach(row => {
-                                const vals = row.split('\t');
-                                const name = nameIdx >= 0 ? (vals[nameIdx] || '').trim() : '';
-                                if (!name) return;
-                                this.categoryOrder.push(name);
-                                const img = imgIdx >= 0 ? (vals[imgIdx] || '').trim() : '';
-                                if (img) this.categoryLogos[name] = img;
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error loading inventory:", error);
-                    return;
-                }
+  $('trust').innerHTML = SITE.trust.map(t => `<div class="flex items-start gap-3">
+    <i class="fas ${esc(t.icon)} text-brandblue text-lg mt-0.5 w-5 text-center"></i>
+    <div><p class="font-display font-bold text-base uppercase leading-tight">${esc(t.title)}</p><p class="text-xs text-steel mt-0.5 leading-snug">${esc(t.text)}</p></div></div>`).join('');
 
-                // Overlay the live stock count (pending holds are already taken out of it) and keep it fresh.
-                await this.refreshAvailability();
-                setInterval(() => this.refreshAvailability(), 60000);
-                document.addEventListener('visibilitychange', () => {
-                    if (!document.hidden) this.refreshAvailability();
-                });
-            },
+  $('games').innerHTML = SITE.games.map(g => `<li><a href="/products" class="inline-block border border-gray-300 hover:border-ink hover:bg-paper text-xs font-semibold px-3.5 py-2 transition-colors">${esc(g)}</a></li>`).join('');
 
-            // Live stock from the Apps Script (not subject to publish caching).
-            // If it can't be reached, cards fall back to the raw stock number from the sheet.
-            async refreshAvailability() {
-                try {
-                    const res = await fetch(this.holdsEndpoint);
-                    const data = await res.json();
-                    if (!data || !data.ok) return;
-                    this.products.forEach(p => {
-                        if (p.stock === null) return;
-                        const live = data.available[p.sheetId];
-                        if (live !== undefined) {
-                            p.available = Math.max(0, live);
-                            p.soldOut = p.manualSoldOut || p.available <= 0;
-                        }
-                    });
-                } catch (err) {
-                    console.error('Live availability unavailable, using sheet stock:', err);
-                }
-            },
+  $('faqList').innerHTML = SITE.faq.map(f => `<details class="group py-4">
+    <summary class="flex items-center justify-between gap-4 font-semibold text-sm md:text-base">${esc(f.q)}<i class="fas fa-chevron-down chev text-xs text-steel transition-transform"></i></summary>
+    <p class="mt-3 text-sm text-steel leading-relaxed max-w-xl">${esc(f.a)}</p></details>`).join('');
 
-            // --- GETTERS ---
-            get cartTotal() {
-                const total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                return total.toLocaleString();
-            },
-
-            get totalItems() {
-                return this.cart.reduce((sum, item) => sum + item.quantity, 0);
-            },
-
-            // Pill order: "All Products" and "On Sale" pinned first, then whatever
-            // order the Categories sheet lists (row order = left-to-right), then any
-            // category not listed there, appended alphabetically. Every category shows
-            // up regardless of stock/sold-out status — including ones listed in the
-            // Categories sheet with no products yet — so nothing disappears or needs
-            // re-adding later. Clicking into an empty one just shows "No products found".
-            get availableCategories() {
-                const cats = new Set();
-                this.products.forEach(p => {
-                    if (p.category) cats.add(p.category);
-                });
-                this.categoryOrder.forEach(name => cats.add(name));
-
-                const result = ['All Products'];
-                if (this.products.some(p => p.originalPrice)) {
-                    result.push('On Sale');
-                }
-
-                const ordered = this.categoryOrder.filter(name => cats.has(name));
-                const leftover = Array.from(cats).filter(name => !this.categoryOrder.includes(name)).sort();
-                return result.concat(ordered, leftover);
-            },
-
-            get filteredProducts() {
-                return this.products.filter(p => {
-                    const matchesSearch = p.name && p.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                    let matchesCat = false;
-                    
-                    if (this.currentCategory === 'All Products') {
-                        matchesCat = true;
-                    } else if (this.currentCategory === 'On Sale') {
-                        matchesCat = !!p.originalPrice; 
-                    } else {
-                        matchesCat = p.category === this.currentCategory;
-                    }
-                    return matchesSearch && matchesCat;
-                }).sort((a, b) => {
-                    if (a.soldOut !== b.soldOut) return a.soldOut - b.soldOut;
-                    
-                    if (this.sortOrder === 'low') return a.price - b.price;
-                    if (this.sortOrder === 'high') return b.price - a.price;
-                    return b.id - a.id;
-                });
-            },
-
-            // --- METHODS ---
-            updateCatFade() {
-                const el = this.$refs.catScroll;
-                if (!el) return;
-                this.catFadeLeft = el.scrollLeft > 4;
-                this.catFadeRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
-            },
-
-            isLowStock(product) {
-                return !product.soldOut && product.available !== null && product.available <= this.lowStockThreshold;
-            },
-
-            getCategoryCount(cat) {
-                const live = this.products.filter(p => !p.soldOut);
-                if (cat === 'All Products') return live.length;
-                if (cat === 'On Sale') return live.filter(p => p.originalPrice).length;
-                return live.filter(p => p.category === cat).length;
-            },
-
-            addToCart(product) {
-                const existing = this.cart.find(i => i.id === product.id);
-                let qtyToAdd = product.selectedQty;
-
-                if (product.available !== null) {
-                    const alreadyInCart = existing ? existing.quantity : 0;
-                    const room = product.available - alreadyInCart;
-                    qtyToAdd = Math.max(0, Math.min(qtyToAdd, room));
-                }
-                if (qtyToAdd <= 0) return; // nothing left to add
-
-                if (existing) {
-                    existing.quantity += qtyToAdd;
-                } else {
-                    this.cart.push({ ...product, quantity: qtyToAdd });
-                }
-                product.justAdded = true;
-                setTimeout(() => product.justAdded = false, 1000);
-                product.selectedQty = 1; 
-            },
-
-            updateCartQty(index, change) {
-                const item = this.cart[index];
-                if (change > 0 && item.available !== null && item.quantity >= item.available) {
-                    return; // can't reserve more than what's actually available
-                }
-                item.quantity += change;
-                if (item.quantity <= 0) this.cart.splice(index, 1);
-            },
-
-            validateCheckout() {
-                if (!this.clientFacebookName.trim()) {
-                    alert('Please enter your Facebook Name first — we need it to match your order to your Messenger thread.');
-                    return false;
-                }
-                return true;
-            },
-
-            checkoutSelf() {
-                if (!this.validateCheckout()) return;
-                this.cartOpen = false;
-                this.paymentModalOpen = true;
-            },
-
-            async confirmAndRedirect() {
-                if (!this.validateCheckout()) return;
-
-                // 0. Record a stock hold for this checkout (Pending). Fired in the background
-                // (not awaited) so the clipboard copy and Messenger redirect still happen
-                // inside the customer's tap. keepalive lets it finish even if the page navigates.
-                // If it fails, checkout still proceeds; your manual payment check is the backstop.
-                if (this.cart.length > 0 && !this.holdsEndpoint.startsWith('PASTE_')) {
-                    fetch(this.holdsEndpoint, {
-                        method: 'POST',
-                        keepalive: true,
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight against Apps Script
-                        body: JSON.stringify({
-                            customerName: this.clientFacebookName,
-                            items: this.cart.map(i => ({ id: i.sheetId, name: i.name, qty: i.quantity }))
-                        })
-                    }).then(() => this.refreshAvailability())
-                      .catch(err => console.error('Could not record stock hold (checkout still proceeds):', err));
-                }
-
-                // 1. Generate and Copy the Order Summary (FIXED FOR IN-STOCK PRODUCTS)
-                let summary = "🛒 ORDER SUMMARY\n";
-                summary += `FB Name: ${this.clientFacebookName}\n-----------------\n`;
-                this.cart.forEach(i => {
-                    summary += `• ${i.quantity}x ${i.name}\n  Price: ₱${(i.price * i.quantity).toLocaleString()}\n\n`;
-                });
-                
-                // Use standard cartTotal instead of missing deposit variables
-                summary += `TOTAL AMOUNT: ₱${this.cartTotal}\n`;
-                summary += `STATUS: Payment Pending\n`;
-
-                try {
-                    await navigator.clipboard.writeText(summary);
-                } catch (err) {
-                    console.error('Clipboard failed', err);
-                }
-
-                // 2. Platform Detection
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-                // 3. Conditional Redirection
-                if (isIOS) {
-                    window.location.href = "fb-messenger://user-thread/745474078647634";
-                } else {
-                    window.open("https://m.me/cratedropcollective", "_blank");
-                }
-            }
-        } 
-    }
-    </script>
+  $('yr').textContent = new Date().getFullYear();
+})();
+</script>
 </body>
 </html>
