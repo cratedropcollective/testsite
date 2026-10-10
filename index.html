@@ -23,6 +23,20 @@ body{font-family:'Poppins',sans-serif}
 a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #FFC72C;outline-offset:3px}
 .hero-bars{background:repeating-linear-gradient(115deg,transparent 0 46px,rgba(255,255,255,.035) 46px 92px)}
 .lift{transition:transform .25s,box-shadow .25s}
+.hero-slide{transition:opacity .6s ease,visibility .6s}
+.hero-slide.is-off{opacity:0;visibility:hidden;pointer-events:none}
+.hero-dot{width:10px;height:10px;border-radius:9999px;background:rgba(255,255,255,.3);transition:background .2s,width .2s}
+.hero-dot.on{background:#FFC72C;width:26px}
+.marquee{overflow:hidden}
+.marquee.scroll{overflow-x:auto}
+.marquee.run{-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.marquee-track{display:flex;width:max-content;margin:0 auto;padding:0;list-style:none}
+.marquee.run .marquee-track{margin:0;animation:marq var(--dur,40s) linear infinite}
+.marquee.run:hover .marquee-track{animation-play-state:paused}
+@keyframes marq{to{transform:translateX(-50%)}}
+.logo-img{transition:filter .2s,opacity .2s}
+body.gray-logos .logo-img{filter:grayscale(1);opacity:.8}
+body.gray-logos .group:hover .logo-img{filter:none;opacity:1}
 .lift:hover{transform:translateY(-3px)}
 details>summary{list-style:none;cursor:pointer}
 details>summary::-webkit-details-marker{display:none}
@@ -33,10 +47,11 @@ details[open] .chev{transform:rotate(180deg)}
 <body class="bg-paper text-ink font-body">
 
 <!--
-  ============ EDIT YOUR CONTENT HERE (bottom of file: SITE object) ============
-  announcement : thin bar above the header. Set text to '' to hide it.
-  banners      : first one is the big hero banner, the rest show in "Latest" below.
-                 Add an image URL to use a photo; leave image '' for a colour panel.
+  ============ HOW THIS PAGE GETS ITS CONTENT ============
+  Day to day: edit your Google Sheet (tabs: Settings, Banners, Brands, Games, Trust, FAQ).
+  Logos for games and brands show in a strip right under the hero (switchable in Settings).
+  One-time setup: paste your Sheet ID into SHEET_ID at the bottom of this file.
+  The SITE object at the bottom is the BACKUP content, shown if the sheet can't be reached.
 -->
 
 <div id="announce" class="hidden"></div>
@@ -54,34 +69,56 @@ details[open] .chev{transform:rotate(180deg)}
       <a href="#how" class="px-3 py-2 hover:text-white">How it works</a>
       <a href="#faq" class="px-3 py-2 hover:text-white">FAQ</a>
     </nav>
-    <a data-messenger href="https://facebook.com/cratedropcollective" class="bg-brandgold text-ink text-[11px] font-bold uppercase tracking-wider px-4 py-2 panel-cut-sm hover:bg-yellow-300 shrink-0">
-      <i class="fab fa-facebook-messenger mr-1.5"></i>Message us
-    </a>
+    <div class="flex items-center gap-2 shrink-0">
+      <a id="headCommunity" href="#" class="hidden lg:inline-flex items-center border border-white/30 hover:border-white text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 panel-cut-sm">
+        <i class="fas fa-users mr-1.5"></i><span id="headCommunityText">Join our community</span>
+      </a>
+      <a data-messenger href="https://facebook.com/cratedropcollective" class="bg-brandgold text-ink text-[11px] font-bold uppercase tracking-wider px-4 py-2 panel-cut-sm hover:bg-yellow-300 shrink-0">
+        <i class="fab fa-facebook-messenger mr-1.5"></i>Message us
+      </a>
+    </div>
   </div>
 </header>
 
 <!-- HERO -->
-<section class="bg-ink text-white relative overflow-hidden hero-bars">
+<section id="heroSection" class="bg-ink text-white relative overflow-hidden hero-bars">
   <div class="container mx-auto px-4 py-12 md:py-20 grid lg:grid-cols-2 gap-10 lg:gap-14 items-center relative z-10">
     <div>
-      <h1 class="font-display font-bold uppercase leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
+      <h1 id="heroTitle" class="font-display font-bold uppercase leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
         CHASE THE CARDS. CATCH THE DROP.
       </h1>
-      <p class="mt-6 text-gray-300 text-sm md:text-base leading-relaxed max-w-md">
+      <p id="heroSub" class="mt-6 text-gray-300 text-sm md:text-base leading-relaxed max-w-md">
         From the next big release to sealed products ready to ship, make your next TCG pickup count.
       </p>
       <div class="mt-8 flex flex-col sm:flex-row gap-3">
-        <a href="/preorder" class="bg-brandred hover:bg-red-600 text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Browse preorders</a>
-        <a href="/products" class="border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Shop ready stock</a>
+        <a id="heroBtn1" href="/preorder" class="bg-brandred hover:bg-red-600 text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Browse preorders</a>
+        <a id="heroBtn2" href="/products" class="border border-white/30 hover:border-white text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 panel-cut-sm text-center">Shop ready stock</a>
       </div>
+      <a id="heroCommunity" href="#" class="hidden mt-6 items-center text-xs font-bold uppercase tracking-wider text-brandgold hover:text-yellow-300">
+        <i class="fas fa-users mr-2"></i><span id="heroCommunityText">Join our community</span><i class="fas fa-arrow-right ml-2"></i>
+      </a>
     </div>
     <div id="heroBanner"></div>
   </div>
 </section>
 <div class="signal-stripe"><div class="bg-brandblue"></div><div class="bg-brandred"></div><div class="bg-brandgold"></div></div>
 
+<!-- TOP LOGO STRIP (games + brands) -->
+<section id="topLogos" class="bg-paper border-b border-gray-200 hidden" aria-label="Games and brands we carry">
+  <div class="container mx-auto px-4 py-6 space-y-5">
+    <div id="stripGamesRow" class="hidden">
+      <p id="stripGamesLabel" class="font-mono text-[10px] font-bold uppercase tracking-widest text-steel mb-3 text-center"></p>
+      <div id="stripGames" class="marquee"><ul class="marquee-track"></ul></div>
+    </div>
+    <div id="stripBrandsRow" class="hidden">
+      <p id="stripBrandsLabel" class="font-mono text-[10px] font-bold uppercase tracking-widest text-steel mb-3 text-center"></p>
+      <div id="stripBrands" class="marquee"><ul class="marquee-track"></ul></div>
+    </div>
+  </div>
+</section>
+
 <!-- TRUST STRIP -->
-<section class="bg-white border-b border-gray-200" aria-label="Why shop with us">
+<section id="trustWrap" class="bg-white border-b border-gray-200" aria-label="Why shop with us">
   <div class="container mx-auto px-4 py-6 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5" id="trust"></div>
 </section>
 
@@ -122,11 +159,18 @@ details[open] .chev{transform:rotate(180deg)}
   <div id="latest" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 </section>
 
+<!-- BRANDS WE CARRY -->
+<section id="brandsWrap" class="container mx-auto px-4 pb-14 md:pb-20 hidden">
+  <h2 id="brandsTitle" class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">BRANDS WE CARRY</h2>
+  <p id="brandsSub" class="mt-2 text-steel text-sm max-w-lg"></p>
+  <ul id="brands" class="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"></ul>
+</section>
+
 <!-- GAMES -->
-<section class="bg-white border-y border-gray-200">
+<section id="gamesWrap" class="bg-white border-y border-gray-200">
   <div class="container mx-auto px-4 py-12">
-    <h2 class="font-display font-bold text-2xl md:text-3xl uppercase tracking-tight">FIND YOUR GAME</h2>
-    <ul id="games" class="mt-5 flex flex-wrap gap-2"></ul>
+    <h2 id="gamesTitle" class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight">GAMES WE CARRY</h2>
+    <ul id="games" class="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"></ul>
   </div>
 </section>
 
@@ -218,6 +262,20 @@ details[open] .chev{transform:rotate(180deg)}
   </div>
 </section>
 
+<!-- COMMUNITY -->
+<section id="communityWrap" class="hidden bg-brandblue text-white relative overflow-hidden hero-bars">
+  <div class="container mx-auto px-4 py-10 md:py-14 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+    <div class="flex flex-col md:flex-row items-center gap-4 md:gap-5">
+      <div class="w-14 h-14 shrink-0 rounded-full bg-white text-brandblue flex items-center justify-center text-2xl"><i class="fas fa-users"></i></div>
+      <div>
+        <h2 id="communityTitle" class="font-display font-bold text-3xl md:text-4xl uppercase tracking-tight leading-none"></h2>
+        <p id="communitySub" class="mt-2 text-sm text-blue-100 max-w-lg"></p>
+      </div>
+    </div>
+    <a id="communityBtn" href="#" class="bg-brandgold hover:bg-yellow-300 text-ink text-xs font-bold uppercase tracking-wider px-7 py-4 panel-cut-sm text-center shrink-0"><i class="fab fa-facebook mr-2"></i><span id="communityBtnText">Join our community</span></a>
+  </div>
+</section>
+
 <!-- FAQ -->
 <section id="faq" class="bg-white border-t border-gray-200">
   <div class="container mx-auto px-4 py-14 max-w-3xl">
@@ -232,11 +290,12 @@ details[open] .chev{transform:rotate(180deg)}
   <div class="container mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
     <div>
       <p class="font-display font-bold text-xl uppercase tracking-tight leading-none"><span class="text-brandblue">CRATE</span><span class="text-brandred">DROP</span><span class="text-brandgold">COLLECTIVE</span></p>
-      <p class="mt-2 text-xs">Your next big pull starts here. TCG preorders and sealed products, ready when you are.</p>
+      <p id="footTag" class="mt-2 text-xs">Your next big pull starts here. TCG preorders and sealed products, ready when you are.</p>
     </div>
     <nav class="flex items-center gap-5 text-xs font-bold uppercase tracking-wider" aria-label="Footer">
       <a href="/preorder" class="hover:text-white">Preorders</a>
       <a href="/products" class="hover:text-white">Ready stock</a>
+      <a id="footCommunity" href="#" class="hover:text-white hidden" aria-label="Community"><i class="fas fa-users text-lg"></i></a>
       <a data-messenger href="https://facebook.com/cratedropcollective" class="hover:text-white" aria-label="Messenger"><i class="fab fa-facebook-messenger text-lg"></i></a>
       <a id="igLink" href="#" class="hover:text-white hidden" aria-label="Instagram"><i class="fab fa-instagram text-lg"></i></a>
     </nav>
@@ -245,121 +304,371 @@ details[open] .chev{transform:rotate(180deg)}
 </footer>
 
 <script>
-/* ===================== EDIT YOUR CONTENT HERE =====================
+/* ===================================================================
+   SETUP (one time): paste your Google Sheet ID below.
+   Open your sheet, look at the address bar:
+     https://docs.google.com/spreadsheets/d/  THIS_LONG_PART  /edit
+   Copy THIS_LONG_PART between the quotes. The sheet must be shared as
+   "Anyone with the link -> Viewer". Leave '' to use only the backup
+   content in the SITE object further down.
+   =================================================================== */
+const SHEET_ID = 'https://docs.google.com/spreadsheets/d/1A_gvFv5OV-0U4fUfE0DDMUEJp3tMg-Ayc7awzb-AfuA';
 
-  WHERE EACH THING APPEARS ON THE PAGE
-  ┌─────────────────────────────────────────────┐
-  │ [A] announcement  (thin gold bar, very top) │
-  │ header: logo | nav | Message us  [messenger]│
-  ├─────────────────────────────────────────────┤
-  │ HERO:  headline + buttons   │ [B] banners[0]│  <- big hero banner
-  ├─────────────────────────────────────────────┤
-  │ trust strip                  [trust]        │
-  │ Preorders / Ready stock cards               │
-  │ [C] banners[1], [2], ...  ("Latest" grid)   │  <- smaller banners
-  │ [games] chips · how it works · [faq]        │
-  │ footer: [instagram] [messenger]             │
-  └─────────────────────────────────────────────┘
+/* Tab names in your sheet. Only change these if you rename the tabs. */
+const TABS = { settings:'Settings', banners:'Banners', brands:'Brands', games:'Games', trust:'Trust', faq:'FAQ' };
 
-  WHERE TO PUT URLS
-  link      = the page a banner/bar opens when tapped.
-              Use '/preorder', '/products', or a full https:// link.
-  image     = the banner photo. Use a full https:// link, or a path to a
-              file in your repo, e.g. 'images/banner-1.jpg'.
-              Leave '' to show a colour panel instead of a photo.
-  instagram = your Instagram page link (icon stays hidden until set).
-  messenger = your Facebook / Messenger link (used by every Message button).
+/* ===================================================================
+   BACKUP CONTENT (used until the sheet loads, or if it can't be reached).
+   You normally edit the Google Sheet instead of this block.
 
-  BEST IMAGE SIZES (images are cropped to fill, so keep the subject centred)
-  [B] Hero banner (banners[0])
-      Export at 1200 x 900 px (4:3). Shown about 600 x 400 on desktop and
-      full width x 320 on mobile. Keep key content in the top 55% and
-      centre 80%: the bottom-left holds the text overlay.
-  [C] "Latest" banners (banners[1] onward)
-      Export at 800 x 500 px (16:10). Shown about 400 x 220 on desktop,
-      full width x 220 on mobile. Keep key content in the top 60%.
-  For both: JPG or WebP, under 300 KB each, no text baked into the
-  image (the title/text/button are added by the page, over a dark fade).
-
-  TO ADD A BANNER: copy one { ... } line inside banners, paste it after
-  the last one, and change tag / title / text / link / cta / image.
-  ================================================================== */
+   BEST IMAGE SIZES (images are cropped to fill, keep the subject centred)
+   Hero banner:            1200 x 900 px (4:3). Optional phone version: 800 x 800.
+   Latest banners:         800 x 500 px (16:10).
+   Hero background:        1920 x 1080 px, dark-friendly, under 400 KB.
+   Game / brand logos:     about 300 x 120 px, transparent PNG / WebP / SVG, under 60 KB.
+   JPG or WebP under 300 KB for banners. Leave text out of banner images,
+   unless the banner's layout is image-only (then the image is the whole banner).
+   =================================================================== */
 const SITE = {
   messenger: 'https://facebook.com/cratedropcollective',
-  instagram: '',                       // [FOOTER] paste your Instagram URL here to show the icon
-
-  announcement: {                      // [A] gold bar at the very top. Set text to '' to hide it.
-                                       // link = where the bar's button goes
-    text: 'The next drop could be your next big pull. Preorders are open.',
-    link: '/preorder', cta: 'View preorders'
-  },
-
-  banners: [                           // [B] 1st = hero banner (1200x900). [C] the rest = "Latest" cards (800x500).
-                                       // link = page it opens, image = photo URL ('' = colour panel)
+  instagram: '',
+  announcement: { text: 'The next drop could be your next big pull. Preorders are open.', link: '/preorder', cta: 'View preorders' },
+  hero: { headline: 'CHASE THE CARDS. CATCH THE DROP.', sub: 'From the next big release to sealed products ready to ship, make your next TCG pickup count.',
+          btn1Text: 'Browse preorders', btn1Link: '/preorder', btn2Text: 'Shop ready stock', btn2Link: '/products', background: '' },
+  layout: { games: 'strip', brands: 'strip', grayscale: false },   /* strip = logo bar under the hero, grid = section further down, off = hidden */
+  community: { link: '', text: 'Join our community', heading: 'Join the Crate Drop community', sub: 'Hang out with fellow collectors, catch drop news first, and share your pulls.' },
+  banners: [
     { tag: 'Get ahead of the drop', title: 'Your next chase starts here', text: 'Reserve upcoming TCG releases before preorder windows close.', link: '/preorder', cta: 'Explore preorders', image: '', theme: 'red' },
     { tag: 'In hand, ready to go', title: 'The wait is over', text: 'Shop sealed TCG products already in stock and ready to ship.', link: '/products', cta: 'Shop ready stock', image: '', theme: 'blue' },
     { tag: 'Made for collectors', title: 'Every game. Every chase.', text: 'Explore TCGs for players, collectors, and the next big pull.', link: '/products', cta: 'Explore TCGs', image: '', theme: 'ink' }
   ],
-
+  brands: { heading: 'Brands we carry', sub: 'The names behind the products on our shelves.',
+            items: [ { name: 'The Pokémon Company', logo: '', link: '' }, { name: 'Bandai', logo: '', link: '' }, { name: 'Ravensburger', logo: '', link: '' }, { name: 'Wizards of the Coast', logo: '', link: '' } ] },
+  games: { heading: 'Games we carry',
+           items: ['Pokémon TCG','One Piece TCG','Gundam TCG','Disney Lorcana','Magic: The Gathering','Dragon Ball Super Card Game','Riftbound','Final Fantasy TCG','Palworld TCG','Marvel TCG'].map(n => ({ name: n, logo: '', link: '/products' })) },
   trust: [
     { icon: 'fa-shield-halved', title: 'Clear payment terms', text: '30% to reserve, balance when it arrives' },
     { icon: 'fa-boxes-stacked', title: 'Live stock counts', text: 'Ready-stock availability updates as items sell' },
     { icon: 'fa-comments', title: 'Updates in one place', text: 'Every preorder update comes from our Facebook page' },
     { icon: 'fa-receipt', title: 'Order summary every time', text: 'You get a record of what you ordered' }
   ],
-
-  games: ['Pokémon TCG','One Piece TCG','Gundam TCG','Disney Lorcana','Magic: The Gathering','Dragon Ball Super Card Game','Riftbound','Final Fantasy TCG','Palworld TCG','Marvel TCG'],
-
   faq: [
     { q: 'What is the difference between preorder and ready stock?', a: 'Preorders are for upcoming releases and need a 30% downpayment. Ready-stock items are already with us, so you pay in full and we ship.' },
     { q: 'Why is the final quantity not guaranteed on a preorder?', a: 'Distributors decide allocation after orders are placed. We confirm your final quantity as soon as the allocation lands.' },
     { q: 'How do I pay?', a: 'Both checkout options go through our Facebook page inbox. Assisted checkout copies your order for you to paste in Messenger. Self-checkout lets you pay by QR, then you send your order screenshot and proof of payment in Messenger.' }
-  ]
+  ],
+  footer: 'Your next big pull starts here. TCG preorders and sealed products, ready when you are.'
 };
-/* ================================================================== */
+/* =================================================================== */
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const themes = { red: 'bg-brandred text-white', blue: 'bg-brandblue text-white', ink: 'bg-ink2 text-white', gold: 'bg-brandgold text-ink' };
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* Only allow safe links: http(s), mailto, "/path", "#anchor" or a plain relative path like images/x.jpg */
+function safeUrl(u) {
+  u = String(u || '').trim();
+  if (!u) return '';
+  if (/^(https?:\/\/|mailto:|\/|#)/i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.\-]*:/i.test(u)) return '';
+  return u;
+}
+/* Turns a Google Drive share link into a direct image link. Other links pass through. */
+function imgUrl(u) {
+  u = safeUrl(u);
+  const m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/) || u.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([\w-]+)/);
+  return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : u;
+}
+
+/* ---------------- banners ---------------- */
 function bannerHTML(b, big) {
-  const bg = b.image ? 'bg-ink text-white' : (themes[b.theme] || themes.ink);
-  const img = b.image ? `<img src="${esc(b.image)}" alt="" class="absolute inset-0 w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent"></div>` : '';
-  return `<a href="${esc(b.link || '#')}" class="lift group relative overflow-hidden panel-cut flex flex-col justify-end ${bg} ${big ? 'min-h-[320px] lg:min-h-[400px] p-8' : 'min-h-[220px] p-6'} shadow-xl">
-    ${img}
-    <div class="relative z-10">
+  const image = imgUrl(b.image), mobile = imgUrl(b.image_mobile);
+  const imageOnly = !!image && b.layout === 'image-only';
+  const bg = image ? 'bg-ink text-white' : (themes[b.theme] || themes.ink);
+  const pic = image ? `<picture>${mobile ? `<source media="(max-width:639px)" srcset="${esc(mobile)}">` : ''}<img src="${esc(image)}" alt="${esc(imageOnly ? b.title : '')}" data-hide-on-error class="absolute inset-0 w-full h-full object-cover"></picture>` : '';
+  const fade = image && !imageOnly ? '<div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-transparent"></div>' : '';
+  const text = imageOnly ? '' : `<div class="relative z-10">
       ${b.tag ? `<div class="tag-slant bg-brandgold mb-3"><span class="font-mono text-[9px] font-bold text-ink uppercase tracking-widest px-2 py-1">${esc(b.tag)}</span></div>` : ''}
       <h3 class="font-display font-bold uppercase tracking-tight leading-none ${big ? 'text-4xl md:text-5xl' : 'text-2xl'}">${esc(b.title)}</h3>
       ${b.text ? `<p class="mt-2 text-sm opacity-90 max-w-sm">${esc(b.text)}</p>` : ''}
       ${b.cta ? `<span class="mt-4 inline-flex items-center text-xs font-bold uppercase tracking-widest">${esc(b.cta)} <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1.5 transition-transform"></i></span>` : ''}
-    </div></a>`;
+    </div>`;
+  return `<a href="${esc(safeUrl(b.link) || '#')}" ${imageOnly ? `aria-label="${esc(b.title)}"` : ''} class="lift group relative overflow-hidden panel-cut flex flex-col justify-end ${bg} ${big ? 'min-h-[320px] lg:min-h-[400px] p-8' : 'min-h-[220px] p-6'} shadow-xl">${pic}${fade}${text}</a>`;
 }
 
-(function render() {
-  const a = SITE.announcement;
-  if (a && a.text) {
-    const el = $('announce');
-    el.className = 'bg-brandgold text-ink text-xs font-semibold text-center px-4 py-2';
-    el.innerHTML = `${esc(a.text)} ${a.link ? `<a href="${esc(a.link)}" class="underline font-bold ml-1">${esc(a.cta || 'Learn more')}</a>` : ''}`;
+/* Rows marked position=hero rotate in the hero. With none marked, the first banner is the hero. Everything else is "Latest". */
+function splitBanners(list) {
+  let hero = list.filter(b => b.position === 'hero');
+  const rest = list.filter(b => b.position !== 'hero');
+  if (!hero.length) { const i = rest.findIndex(b => b.position !== 'latest'); if (i >= 0) hero = rest.splice(i, 1); }
+  return { hero, rest };
+}
+
+let heroTimer = null;
+function renderHero(list) {
+  clearInterval(heroTimer);
+  const box = $('heroBanner');
+  box.onmouseenter = box.onmouseleave = box.onfocusin = box.onfocusout = null;
+  if (!list.length) { box.innerHTML = ''; return; }
+  if (list.length === 1) { box.innerHTML = bannerHTML(list[0], true); return; }
+  box.innerHTML = `<div class="grid">${list.map((b, i) => `<div class="hero-slide${i ? ' is-off' : ''}" style="grid-area:1/1">${bannerHTML(b, true)}</div>`).join('')}</div>
+    <div class="flex justify-center gap-2 mt-4">${list.map((_, i) => `<button type="button" data-hero-dot="${i}" aria-label="Show banner ${i + 1}" class="hero-dot${i ? '' : ' on'}"></button>`).join('')}</div>`;
+  let idx = 0;
+  const show = i => { idx = i; box.querySelectorAll('.hero-slide').forEach((el, k) => el.classList.toggle('is-off', k !== i)); box.querySelectorAll('.hero-dot').forEach((d, k) => d.classList.toggle('on', k === i)); };
+  const start = () => { clearInterval(heroTimer); if (!reduceMotion()) heroTimer = setInterval(() => show((idx + 1) % list.length), 6000); };
+  box.querySelectorAll('.hero-dot').forEach(d => d.addEventListener('click', () => { show(+d.dataset.heroDot); start(); }));
+  box.onmouseenter = box.onfocusin = () => clearInterval(heroTimer);
+  box.onmouseleave = box.onfocusout = start;
+  start();
+}
+
+/* ---------------- logo tiles ---------------- */
+function logoTile(it, mode, bg) {
+  const strip = mode === 'strip', logo = imgUrl(it.logo), link = safeUrl(it.link);
+  const name = `<span class="font-display font-bold uppercase text-center leading-tight text-ink ${strip ? 'text-sm whitespace-nowrap' : 'text-lg'}">${esc(it.name)}</span>`;
+  const inner = logo ? `<img src="${esc(logo)}" alt="${esc(it.name)}" ${strip ? '' : 'loading="lazy"'} data-brand-logo class="logo-img w-auto object-contain ${strip ? 'h-9 max-w-[170px]' : 'max-h-12 max-w-full'}">` : name;
+  const cls = `group flex items-center justify-center ${strip ? 'h-16 px-5' : 'h-24 w-full px-4'} ${bg} border border-gray-200 panel-cut-sm hover:border-ink transition-colors`;
+  const el = link ? `<a href="${esc(link)}" class="${cls}" aria-label="${esc(it.name)}">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
+  return `<li${strip ? ' class="shrink-0 px-1.5"' : ''}>${el}</li>`;
+}
+
+/* A strip scrolls slowly on its own when the logos don't fit; otherwise it stays centred and still. */
+function fitMarquees() {
+  document.querySelectorAll('.marquee').forEach(el => {
+    const track = el.querySelector('.marquee-track');
+    if (!track) return;
+    if (track.dataset.orig === undefined) track.dataset.orig = track.innerHTML;
+    track.innerHTML = track.dataset.orig;
+    el.classList.remove('run', 'scroll');
+    if (track.offsetWidth <= el.clientWidth + 1) return;
+    if (reduceMotion()) { el.classList.add('scroll'); return; }
+    const w = track.offsetWidth;
+    track.insertAdjacentHTML('beforeend', track.dataset.orig.replace(/<li/g, '<li aria-hidden="true"'));
+    track.style.setProperty('--dur', Math.max(20, Math.round(w / 45)) + 's');
+    el.classList.add('run');
+  });
+}
+function fitWhenImagesReady() {
+  fitMarquees();
+  const pending = [...document.querySelectorAll('.marquee img')].filter(i => !i.complete);
+  if (!pending.length) return;
+  let n = pending.length, done = false;
+  const go = () => { if (!done) { done = true; fitMarquees(); } };
+  pending.forEach(i => { const f = () => { if (--n <= 0) go(); }; i.addEventListener('load', f, { once: true }); i.addEventListener('error', f, { once: true }); });
+  setTimeout(go, 3000);
+}
+let resizeT; window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(fitMarquees, 200); });
+
+/* A logo that fails to load falls back to the name (brands/games) or to the colour panel (banners) */
+document.addEventListener('error', e => {
+  const i = e.target;
+  if (!i || i.tagName !== 'IMG') return;
+  if (i.hasAttribute('data-hide-on-error')) i.style.display = 'none';
+  else if (i.hasAttribute('data-brand-logo')) {
+    const s = document.createElement('span');
+    s.className = 'font-display font-bold uppercase text-center leading-tight text-ink text-sm whitespace-nowrap';
+    s.textContent = i.alt; i.replaceWith(s);
   }
-  document.querySelectorAll('[data-messenger]').forEach(l => l.href = SITE.messenger);
-  if (SITE.instagram) { const ig = $('igLink'); ig.href = SITE.instagram; ig.classList.remove('hidden'); }
+}, true);
 
-  const [first, ...rest] = SITE.banners || [];
-  if (first) $('heroBanner').innerHTML = bannerHTML(first, true);
-  if (rest.length) { $('latestWrap').classList.remove('hidden'); $('latest').innerHTML = rest.map(b => bannerHTML(b, false)).join(''); }
+/* ---------------- render ---------------- */
+function setLink(el, href, newTab) {
+  if (!el) return;
+  el.href = href;
+  if (newTab) { el.target = '_blank'; el.rel = 'noopener'; }
+}
 
-  $('trust').innerHTML = SITE.trust.map(t => `<div class="flex items-start gap-3">
-    <i class="fas ${esc(t.icon)} text-brandblue text-lg mt-0.5 w-5 text-center"></i>
+function render(site) {
+  /* announcement bar */
+  const a = site.announcement, bar = $('announce');
+  if (a && a.text) {
+    bar.className = 'bg-brandgold text-ink text-xs font-semibold text-center px-4 py-2';
+    const al = safeUrl(a.link);
+    bar.innerHTML = `${esc(a.text)} ${al ? `<a href="${esc(al)}" class="underline font-bold ml-1">${esc(a.cta || 'Learn more')}</a>` : ''}`;
+  } else { bar.className = 'hidden'; bar.innerHTML = ''; }
+
+  document.querySelectorAll('[data-messenger]').forEach(l => l.href = safeUrl(site.messenger) || '#');
+  const ig = $('igLink');
+  if (safeUrl(site.instagram)) { ig.href = safeUrl(site.instagram); ig.classList.remove('hidden'); } else ig.classList.add('hidden');
+
+  /* hero text, buttons, background */
+  const h = site.hero;
+  $('heroTitle').textContent = h.headline;
+  $('heroSub').textContent = h.sub;
+  [['heroBtn1', h.btn1Text, h.btn1Link], ['heroBtn2', h.btn2Text, h.btn2Link]].forEach(([id, t, l]) => {
+    const el = $(id);
+    if (t) { el.textContent = t; el.href = safeUrl(l) || '#'; el.classList.remove('hidden'); } else el.classList.add('hidden');
+  });
+  const hs = $('heroSection'), hbg = imgUrl(h.background);
+  hs.style.backgroundImage = hbg ? `linear-gradient(rgba(20,22,28,.85),rgba(20,22,28,.7)),url("${hbg.replace(/["()\s]/g, encodeURIComponent)}")` : '';
+  hs.style.backgroundSize = hbg ? 'cover' : '';
+  hs.style.backgroundPosition = hbg ? 'center' : '';
+
+  /* community button (header, hero link, footer, band): all hidden until a link is set */
+  const c = site.community, cl = safeUrl(c.link);
+  const label = c.text || 'Join our community';
+  $('headCommunity').style.display = cl ? '' : 'none';   /* stays hidden below the lg breakpoint via its classes */
+  $('heroCommunity').classList.toggle('hidden', !cl);
+  $('heroCommunity').classList.toggle('inline-flex', !!cl);
+  $('footCommunity').classList.toggle('hidden', !cl);
+  $('communityWrap').classList.toggle('hidden', !cl);
+  if (cl) {
+    ['headCommunity', 'heroCommunity', 'footCommunity', 'communityBtn'].forEach(id => setLink($(id), cl, true));
+    ['headCommunityText', 'heroCommunityText', 'communityBtnText'].forEach(id => $(id).textContent = label);
+    $('communityTitle').textContent = c.heading || '';
+    $('communitySub').textContent = c.sub || '';
+  }
+
+  /* banners */
+  const { hero, rest } = splitBanners(site.banners || []);
+  renderHero(hero);
+  $('latestWrap').classList.toggle('hidden', !rest.length);
+  $('latest').innerHTML = rest.map(b => bannerHTML(b, false)).join('');
+
+  /* logos: strip under the hero, or grid sections lower down */
+  const L = site.layout, gi = site.games.items || [], bi = site.brands.items || [];
+  document.body.classList.toggle('gray-logos', !!L.grayscale);
+  const gStrip = L.games === 'strip' && gi.length, bStrip = L.brands === 'strip' && bi.length;
+  $('topLogos').classList.toggle('hidden', !(gStrip || bStrip));
+  $('stripGamesRow').classList.toggle('hidden', !gStrip);
+  $('stripBrandsRow').classList.toggle('hidden', !bStrip);
+  $('stripGamesLabel').textContent = site.games.heading || '';
+  $('stripBrandsLabel').textContent = site.brands.heading || '';
+  [['stripGames', gi], ['stripBrands', bi]].forEach(([id, items]) => {
+    const track = $(id).querySelector('.marquee-track');
+    delete track.dataset.orig;
+    track.innerHTML = items.map(it => logoTile(it, 'strip', 'bg-white')).join('');
+  });
+
+  $('brandsWrap').classList.toggle('hidden', !(L.brands === 'grid' && bi.length));
+  $('brandsTitle').textContent = site.brands.heading;
+  $('brandsSub').textContent = site.brands.sub || '';
+  $('brandsSub').classList.toggle('hidden', !site.brands.sub);
+  $('brands').innerHTML = bi.map(it => logoTile(it, 'grid', 'bg-white')).join('');
+
+  $('gamesWrap').classList.toggle('hidden', !(L.games === 'grid' && gi.length));
+  $('gamesTitle').textContent = site.games.heading;
+  $('games').innerHTML = gi.map(it => logoTile(it, 'grid', 'bg-paper')).join('');
+
+  /* trust */
+  $('trustWrap').classList.toggle('hidden', !(site.trust && site.trust.length));
+  $('trust').innerHTML = (site.trust || []).map(t => `<div class="flex items-start gap-3">
+    <i class="fas ${esc(String(t.icon || 'fa-circle-check').replace(/[^\w-]/g, ''))} text-brandblue text-lg mt-0.5 w-5 text-center"></i>
     <div><p class="font-display font-bold text-base uppercase leading-tight">${esc(t.title)}</p><p class="text-xs text-steel mt-0.5 leading-snug">${esc(t.text)}</p></div></div>`).join('');
 
-  $('games').innerHTML = SITE.games.map(g => `<li><a href="/products" class="inline-block border border-gray-300 hover:border-ink hover:bg-paper text-xs font-semibold px-3.5 py-2 transition-colors">${esc(g)}</a></li>`).join('');
-
-  $('faqList').innerHTML = SITE.faq.map(f => `<details class="group py-4">
+  /* faq */
+  $('faq').classList.toggle('hidden', !(site.faq && site.faq.length));
+  $('faqList').innerHTML = (site.faq || []).map(f => `<details class="group py-4">
     <summary class="flex items-center justify-between gap-4 font-semibold text-sm md:text-base">${esc(f.q)}<i class="fas fa-chevron-down chev text-xs text-steel transition-transform"></i></summary>
     <p class="mt-3 text-sm text-steel leading-relaxed max-w-xl">${esc(f.a)}</p></details>`).join('');
 
+  $('footTag').textContent = site.footer || '';
   $('yr').textContent = new Date().getFullYear();
+  fitWhenImagesReady();
+}
+
+/* ---------------- Google Sheet loading ---------------- */
+function parseCSV(t) {
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(f); f = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && t[i + 1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if (f !== '' || row.length) { row.push(f); rows.push(row); }
+  return rows;
+}
+function toObjects(rows) {
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  return rows.slice(1).filter(r => r.some(c => c.trim() !== '')).map(r => { const o = {}; head.forEach((h, i) => o[h] = (r[i] || '').trim()); return o; });
+}
+async function loadTab(name, requiredHeader) {
+  const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:csv&headers=1&sheet=${encodeURIComponent(name)}`;
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(name + ' ' + r.status);
+  const t = (await r.text()).replace(/^\uFEFF/, '');
+  if (/^\s*</.test(t)) throw new Error(name + ': sheet is not shared');
+  const rows = parseCSV(t);
+  if (!rows.length || !rows[0].map(h => h.trim().toLowerCase()).includes(requiredHeader)) throw new Error(name + ': tab or header not found');
+  return toObjects(rows);
+}
+
+const isOn = r => !/^(no|false|0|off|hide|hidden)$/i.test((r.active || '').trim());
+function parseDay(s, end) {
+  const m = String(s || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2] - 1, +m[3], end ? 23 : 0, end ? 59 : 0, end ? 59 : 0);
+  const d = new Date(s); return isNaN(d) ? null : d;
+}
+function inWindow(r) {
+  const now = new Date(), a = r.start_date && parseDay(r.start_date, false), b = r.end_date && parseDay(r.end_date, true);
+  return !(a && now < a) && !(b && now > b);
+}
+const yes = v => /^(yes|true|1|on)$/i.test(String(v || '').trim());
+const pick = (v, allowed, fallback) => { v = String(v || '').trim().toLowerCase(); return allowed.includes(v) ? v : fallback; };
+
+/* Layer sheet data on top of the backup content */
+function merge(d) {
+  const s = JSON.parse(JSON.stringify(SITE));
+  if (d.settings) {
+    const st = {}; d.settings.forEach(r => { if (r.key) st[r.key.trim().toLowerCase()] = r.value || ''; });
+    const set = (obj, prop, key, blankOk) => { if (key in st && (st[key] !== '' || blankOk)) obj[prop] = st[key]; };
+    set(s, 'messenger', 'messenger_link');
+    set(s, 'instagram', 'instagram_link', true);
+    set(s.announcement, 'text', 'announcement_text', true);
+    set(s.announcement, 'cta', 'announcement_cta');
+    set(s.announcement, 'link', 'announcement_link');
+    set(s.hero, 'headline', 'hero_headline');
+    set(s.hero, 'sub', 'hero_subtext', true);
+    set(s.hero, 'btn1Text', 'hero_button1_text', true); set(s.hero, 'btn1Link', 'hero_button1_link');
+    set(s.hero, 'btn2Text', 'hero_button2_text', true); set(s.hero, 'btn2Link', 'hero_button2_link');
+    set(s.hero, 'background', 'hero_background', true);
+    set(s.community, 'link', 'community_link', true);
+    set(s.community, 'text', 'community_text');
+    set(s.community, 'heading', 'community_heading');
+    set(s.community, 'sub', 'community_subtext', true);
+    set(s.games, 'heading', 'games_heading');
+    set(s.brands, 'heading', 'brands_heading');
+    set(s.brands, 'sub', 'brands_subtext', true);
+    set(s, 'footer', 'footer_tagline', true);
+    if ('games_layout' in st) s.layout.games = pick(st.games_layout, ['strip', 'grid', 'off'], 'strip');
+    if ('brands_layout' in st) s.layout.brands = pick(st.brands_layout, ['strip', 'grid', 'off'], 'strip');
+    if ('logo_grayscale' in st) s.layout.grayscale = yes(st.logo_grayscale);
+  }
+  if (d.banners) {
+    const b = d.banners.filter(r => isOn(r) && inWindow(r) && r.title).map(r => ({
+      position: pick(r.position, ['hero', 'latest'], ''), tag: r.tag, title: r.title, text: r.text, cta: r.cta, link: r.link,
+      image: r.image, image_mobile: r.image_mobile, layout: pick(String(r.layout || '').replace(/[\s_]+/g, '-'), ['overlay', 'image-only'], 'overlay'),
+      theme: (r.theme || 'ink').toLowerCase()
+    }));
+    if (b.length) s.banners = b;
+  }
+  if (d.brands) s.brands.items = d.brands.filter(r => isOn(r) && r.name).map(r => ({ name: r.name, logo: r.logo, link: r.link }));
+  if (d.games) s.games.items = d.games.filter(r => isOn(r) && r.name).map(r => ({ name: r.name, logo: r.logo, link: r.link || '/products' }));
+  if (d.trust) { const t = d.trust.filter(r => isOn(r) && r.title).map(r => ({ icon: r.icon, title: r.title, text: r.text })); if (t.length) s.trust = t; }
+  if (d.faq) s.faq = d.faq.filter(r => isOn(r) && r.question && r.answer).map(r => ({ q: r.question, a: r.answer }));
+  return s;
+}
+
+(async function init() {
+  const CACHE = 'cdc_sheet_v2';
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(CACHE) || 'null'); } catch (e) {}
+  render(merge(cached || {}));            /* instant: cached sheet data, or backup content */
+  if (!SHEET_ID) return;
+
+  const jobs = { settings: 'key', banners: 'title', brands: 'logo', games: 'name', trust: 'title', faq: 'question' };
+  const out = {};
+  await Promise.all(Object.entries(jobs).map(async ([k, hdr]) => {
+    try { out[k] = await loadTab(TABS[k], hdr); } catch (e) { console.warn('Sheet tab skipped:', e.message); }
+  }));
+  if (!Object.keys(out).length) return;   /* sheet unreachable: keep what is on screen */
+  const data = Object.assign({}, cached || {}, out);
+  try { localStorage.setItem(CACHE, JSON.stringify(data)); } catch (e) {}
+  render(merge(data));
 })();
 </script>
 </body>
